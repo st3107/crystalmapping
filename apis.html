@@ -1,0 +1,1288 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>API Documents &mdash; crystalmapping 0.0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/clipboard.min.js"></script>
+        <script src="_static/copybutton.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/plot_directive.css" type="text/css" />
+  <link rel="stylesheet" href="_static/copybutton.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Minimum Version of Python and NumPy" href="min_versions.html" />
+    <link rel="prev" title="Use new algorithm to run the batch processing" href="new_algorithm.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> crystalmapping
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="experiment.html">Run experiments at NSLS-II</a></li>
+<li class="toctree-l1"><a class="reference internal" href="old_algorithm.html">Use the old peak tracking algorithm in streaming data processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="new_algorithm.html">Use new algorithm to run the batch processing</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">API Documents</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-crystalmapping.plans">crystalmapping.plans</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-crystalmapping.servers">crystalmapping.servers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-crystalmapping.utils">crystalmapping.utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-crystalmapping.callbacks">crystalmapping.callbacks</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="min_versions.html">Minimum Version of Python and NumPy</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">crystalmapping</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>API Documents</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/apis.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <section id="api-documents">
+<h1>API Documents<a class="headerlink" href="#api-documents" title="Permalink to this headline">¶</a></h1>
+<section id="module-crystalmapping.plans">
+<span id="crystalmapping-plans"></span><h2>crystalmapping.plans<a class="headerlink" href="#module-crystalmapping.plans" title="Permalink to this headline">¶</a></h2>
+<dl class="py exception">
+<dt class="sig sig-object py" id="crystalmapping.plans.TomoPlanError">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">crystalmapping.plans.</span></span><span class="sig-name descname"><span class="pre">TomoPlanError</span></span><a class="reference internal" href="_modules/crystalmapping/plans.html#TomoPlanError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.plans.TomoPlanError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Error in the plans.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="crystalmapping.plans.configure_area_det">
+<span class="sig-prename descclassname"><span class="pre">crystalmapping.plans.</span></span><span class="sig-name descname"><span class="pre">configure_area_det</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">detector</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exposure</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">acq_time</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/crystalmapping/plans.html#configure_area_det"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.plans.configure_area_det" title="Permalink to this definition">¶</a></dt>
+<dd><p>Configure exposure time of a detector in continuous acquisition mode.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="crystalmapping.plans.dark_plan">
+<span class="sig-prename descclassname"><span class="pre">crystalmapping.plans.</span></span><span class="sig-name descname"><span class="pre">dark_plan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">detector</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/crystalmapping/plans.html#dark_plan"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.plans.dark_plan" title="Permalink to this definition">¶</a></dt>
+<dd><p>Take a dark scan in “dark” stream.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="crystalmapping.plans.fly_scan_nd">
+<span class="sig-prename descclassname"><span class="pre">crystalmapping.plans.</span></span><span class="sig-name descname"><span class="pre">fly_scan_nd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">detectors</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)"><span class="pre">list</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">move_velocity</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_per_point</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_per_frame</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">shutter</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.9)"><span class="pre">object</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">shutter_open</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shutter_close</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shutter_wait_open</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><span class="pre">float</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shutter_wait_close</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><span class="pre">float</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">take_dark</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><span class="pre">bool</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">md</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><span class="pre">dict</span></a><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backoff</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><span class="pre">float</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">snake</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><span class="pre">bool</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Generator</span><a class="reference internal" href="_modules/crystalmapping/plans.html#fly_scan_nd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.plans.fly_scan_nd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Move on a grid and do a fly scan at each point in the grid.</p>
+<p>For example, <cite>fly_scan_nd([detector], motor_y, 0, 10, 11,
+motor_x, 0, 20, 21, motor_fly, 0, 5, 6,
+time_per_point=10, time_per_frame=1, shutter=shutter,
+shutter_open=1, shutter_close=0,
+shutter_wait_open=2, shutter_wait_close=5,
+move_velocity=5, take_dark=True,
+md={“task”: “fly scan sample 1”, backoff=0.5, snake=False})</cite>
+means that set detector so that it will collect one image for 10 s
+one image contains 10 frames and each frame for 1 s</p>
+<p>for y in 0, 1, 2, …, 10:
+for x in 0, 1, 2, …, 20:
+move to (x, y)
+wait 5 s
+collect dark image during the movement
+open shutter
+wait 2 s
+fly scan the motor_fly from -0.5 to 5.5
+collect 6 images during the fly
+close shutter</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>detectors</strong><span class="classifier">list</span></dt><dd><p>A list of detectors. The first one must be an area detector. The list shouldn’t include the motors in the
+<cite>args</cite>.</p>
+</dd>
+<dt><strong>*args :</strong></dt><dd><dl class="simple">
+<dt>patterned like (<code class="docutils literal notranslate"><span class="pre">motor1,</span> <span class="pre">start1,</span> <span class="pre">stop1,</span> <span class="pre">num1,</span></code></dt><dd><p><code class="docutils literal notranslate"><span class="pre">motor2,</span> <span class="pre">start2,</span> <span class="pre">stop2,</span> <span class="pre">num2,</span></code>
+<code class="docutils literal notranslate"><span class="pre">motor3,</span> <span class="pre">start3,</span> <span class="pre">stop3,</span> <span class="pre">num3,</span></code> …
+<code class="docutils literal notranslate"><span class="pre">motorN,</span> <span class="pre">startN,</span> <span class="pre">stopN,</span> <span class="pre">numN</span></code>)</p>
+</dd>
+</dl>
+<p>The first motor is the “slowest”, the outer loop. The last motor
+is the “fly” motor, the non-stoping scan along an axis. For all motors
+except the first motor, there is a “snake” argument: a boolean
+indicating whether to following snake-like, winding trajectory or a
+simple left-to-right trajectory.</p>
+</dd>
+<dt><strong>move_velocity</strong><span class="classifier">float</span></dt><dd><p>The speed for the motors to move to the next grid point.</p>
+</dd>
+<dt><strong>time_per_point</strong><span class="classifier">float</span></dt><dd><p>The time to collect one image at one point.</p>
+</dd>
+<dt><strong>time_per_frame</strong><span class="classifier">float</span></dt><dd><p>The time to collect one frame in a image. One image contains serveral frames.</p>
+</dd>
+<dt><strong>shutter</strong><span class="classifier">object</span></dt><dd><p>The fast shutter.</p>
+</dd>
+<dt><strong>shutter_open</strong><span class="classifier">typing.Any</span></dt><dd><p>The value of the shutter in open state.</p>
+</dd>
+<dt><strong>shutter_close</strong><span class="classifier">typing.Any</span></dt><dd><p>The value of the shutter in close state.</p>
+</dd>
+<dt><strong>shutter_wait_open</strong><span class="classifier">float, optional</span></dt><dd><p>The time between the shutter open and the start of the light image collection, by default 0.</p>
+</dd>
+<dt><strong>shutter_wait_close</strong><span class="classifier">float, optional</span></dt><dd><p>The time between the shutter close and the start of the dark image collection, by default 0.</p>
+</dd>
+<dt><strong>take_dark</strong><span class="classifier">bool, optional</span></dt><dd><p>If true, take a dark image at the end of the fly scan, by default True</p>
+</dd>
+<dt><strong>md</strong><span class="classifier">dict, optional</span></dt><dd><p>The dictionary of the metadata to added into the plan, by default None</p>
+</dd>
+<dt><strong>backoff</strong><span class="classifier">float, optional</span></dt><dd><p>If non-zero, fly scan from start - backoff to end + backoff, by default 0.</p>
+</dd>
+<dt><strong>snake</strong><span class="classifier">bool, optional</span></dt><dd><p>If true, snake the axis of the fly scan, by default False</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Yields</dt>
+<dd class="field-even"><dl class="simple">
+<dt>Iterator[typing.Generic]</dt><dd><p>The messages of the plan.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><dl class="simple">
+<dt>TomoPlanError</dt><dd><p>Empty detector list.</p>
+</dd>
+<dt>TomoPlanError</dt><dd><p>Not enough motors.</p>
+</dd>
+<dt>TomoPlanError</dt><dd><p>Wrong motor positions format.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="crystalmapping.plans.fly_scan_nd_no_shutter">
+<span class="sig-prename descclassname"><span class="pre">crystalmapping.plans.</span></span><span class="sig-name descname"><span class="pre">fly_scan_nd_no_shutter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">detectors</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)"><span class="pre">list</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">move_velocity</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_per_point</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_per_frame</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">shutter</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.9)"><span class="pre">object</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">shutter_open</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shutter_close</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shutter_wait_open</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><span class="pre">float</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shutter_wait_close</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><span class="pre">float</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">take_dark</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><span class="pre">bool</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">md</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><span class="pre">dict</span></a><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backoff</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><span class="pre">float</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">snake</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><span class="pre">bool</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Generator</span><a class="reference internal" href="_modules/crystalmapping/plans.html#fly_scan_nd_no_shutter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.plans.fly_scan_nd_no_shutter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Move on a grid and do a fly scan at each point in the grid.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>detectors</strong><span class="classifier">list</span></dt><dd><p>A list of detectors. The first one must be an area detector. The list shouldn’t include the motors in the
+<cite>args</cite>.</p>
+</dd>
+<dt><strong>*args :</strong></dt><dd><dl class="simple">
+<dt>patterned like (<code class="docutils literal notranslate"><span class="pre">motor1,</span> <span class="pre">start1,</span> <span class="pre">stop1,</span> <span class="pre">num1,</span></code></dt><dd><p><code class="docutils literal notranslate"><span class="pre">motor2,</span> <span class="pre">start2,</span> <span class="pre">stop2,</span> <span class="pre">num2,</span></code>
+<code class="docutils literal notranslate"><span class="pre">motor3,</span> <span class="pre">start3,</span> <span class="pre">stop3,</span> <span class="pre">num3,</span></code> …
+<code class="docutils literal notranslate"><span class="pre">motorN,</span> <span class="pre">startN,</span> <span class="pre">stopN,</span> <span class="pre">numN</span></code>)</p>
+</dd>
+</dl>
+<p>The first motor is the “slowest”, the outer loop. The last motor
+is the “fly” motor, the non-stoping scan along an axis. For all motors
+except the first motor, there is a “snake” argument: a boolean
+indicating whether to following snake-like, winding trajectory or a
+simple left-to-right trajectory.</p>
+</dd>
+<dt><strong>move_velocity</strong><span class="classifier">float</span></dt><dd><p>The speed for the motors to move to the next grid point.</p>
+</dd>
+<dt><strong>time_per_point</strong><span class="classifier">float</span></dt><dd><p>The time to collect one image at one point.</p>
+</dd>
+<dt><strong>time_per_frame</strong><span class="classifier">float</span></dt><dd><p>The time to collect one frame in a image. One image contains serveral frames.</p>
+</dd>
+<dt><strong>shutter</strong><span class="classifier">object</span></dt><dd><p>The fast shutter.</p>
+</dd>
+<dt><strong>shutter_open</strong><span class="classifier">typing.Any</span></dt><dd><p>The value of the shutter in open state.</p>
+</dd>
+<dt><strong>shutter_close</strong><span class="classifier">typing.Any</span></dt><dd><p>The value of the shutter in close state.</p>
+</dd>
+<dt><strong>shutter_wait_open</strong><span class="classifier">float, optional</span></dt><dd><p>The time between the shutter open and the start of the light image collection, by default 0.</p>
+</dd>
+<dt><strong>shutter_wait_close</strong><span class="classifier">float, optional</span></dt><dd><p>The time between the shutter close and the start of the dark image collection, by default 0.</p>
+</dd>
+<dt><strong>take_dark</strong><span class="classifier">bool, optional</span></dt><dd><p>If true, take a dark image at the end of the fly scan, by default True</p>
+</dd>
+<dt><strong>md</strong><span class="classifier">dict, optional</span></dt><dd><p>The dictionary of the metadata to added into the plan, by default None</p>
+</dd>
+<dt><strong>backoff</strong><span class="classifier">float, optional</span></dt><dd><p>If non-zero, fly scan from start - backoff to end + backoff, by default 0.</p>
+</dd>
+<dt><strong>snake</strong><span class="classifier">bool, optional</span></dt><dd><p>If true, snake the axis of the fly scan, by default False</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Yields</dt>
+<dd class="field-even"><dl class="simple">
+<dt>Iterator[typing.Generic]</dt><dd><p>The messages of the plan.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><dl class="simple">
+<dt>TomoPlanError</dt><dd><p>Empty detector list.</p>
+</dd>
+<dt>TomoPlanError</dt><dd><p>Not enough motors.</p>
+</dd>
+<dt>TomoPlanError</dt><dd><p>Wrong motor positions format.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="crystalmapping.plans.grid_scan_nd">
+<span class="sig-prename descclassname"><span class="pre">crystalmapping.plans.</span></span><span class="sig-name descname"><span class="pre">grid_scan_nd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">detectors</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)"><span class="pre">list</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">snake</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)"><span class="pre">list</span></a><span class="p"><span class="pre">,</span> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><span class="pre">bool</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_per_point</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_per_frame</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">shutter</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.9)"><span class="pre">object</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">shutter_open</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shutter_close</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shutter_wait_open</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><span class="pre">float</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shutter_wait_close</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><span class="pre">float</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">take_dark</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><span class="pre">bool</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">md</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Generator</span><a class="reference internal" href="_modules/crystalmapping/plans.html#grid_scan_nd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.plans.grid_scan_nd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Scan over a mesh; each motor is on an independent trajectory.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>detectors</strong><span class="classifier">list</span></dt><dd><p>A list of ‘readable’ objects</p>
+</dd>
+<dt><strong>*args :</strong></dt><dd><dl class="simple">
+<dt>patterned like (<code class="docutils literal notranslate"><span class="pre">motor1,</span> <span class="pre">start1,</span> <span class="pre">stop1,</span> <span class="pre">num1,</span></code></dt><dd><p><code class="docutils literal notranslate"><span class="pre">motor2,</span> <span class="pre">start2,</span> <span class="pre">stop2,</span> <span class="pre">num2,</span></code>
+<code class="docutils literal notranslate"><span class="pre">motor3,</span> <span class="pre">start3,</span> <span class="pre">stop3,</span> <span class="pre">num3,</span></code> …
+<code class="docutils literal notranslate"><span class="pre">motorN,</span> <span class="pre">startN,</span> <span class="pre">stopN,</span> <span class="pre">numN</span></code>)</p>
+</dd>
+</dl>
+<p>The first motor is the “slowest”, the outer loop. The last motor
+is the “fly” motor, the non-stoping scan along an axis. For all motors
+except the first motor, there is a “snake” argument: a boolean
+indicating whether to following snake-like, winding trajectory or a
+simple left-to-right trajectory.</p>
+</dd>
+<dt><strong>snake</strong><span class="classifier">bool, optional</span></dt><dd><p>If true, snake the axis of the fly scan, by default None</p>
+</dd>
+<dt><strong>time_per_point</strong><span class="classifier">float</span></dt><dd><p>The time to collect one image at one point.</p>
+</dd>
+<dt><strong>time_per_frame</strong><span class="classifier">float</span></dt><dd><p>The time to collect one frame in a image. One image contains serveral frames.</p>
+</dd>
+<dt><strong>time_per_point</strong><span class="classifier">float</span></dt><dd><p>The time to collect one image at one point.</p>
+</dd>
+<dt><strong>time_per_frame</strong><span class="classifier">float</span></dt><dd><p>The time to collect one frame in a image. One image contains serveral frames.</p>
+</dd>
+<dt><strong>shutter</strong><span class="classifier">object</span></dt><dd><p>The fast shutter.</p>
+</dd>
+<dt><strong>shutter_open</strong><span class="classifier">typing.Any</span></dt><dd><p>The value of the shutter in open state.</p>
+</dd>
+<dt><strong>shutter_close</strong><span class="classifier">typing.Any</span></dt><dd><p>The value of the shutter in close state.</p>
+</dd>
+<dt><strong>shutter_wait_open</strong><span class="classifier">float, optional</span></dt><dd><p>The time between the shutter open and the start of the light image collection, by default 0.</p>
+</dd>
+<dt><strong>shutter_wait_close</strong><span class="classifier">float, optional</span></dt><dd><p>The time between the shutter close and the start of the dark image collection, by default 0.</p>
+</dd>
+<dt><strong>take_dark</strong><span class="classifier">bool, optional</span></dt><dd><p>If true, take a dark image at the end of the fly scan, by default True</p>
+</dd>
+<dt><strong>md</strong><span class="classifier">[type], optional</span></dt><dd><p>The dictionary of the metadata to added into the plan, by default None, by default None</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Yields</dt>
+<dd class="field-even"><dl class="simple">
+<dt>Iterator[typing.Generic]</dt><dd><p>The messages of the plan.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><dl class="simple">
+<dt>TomoPlanError</dt><dd><p>Empty detector list.</p>
+</dd>
+<dt>TomoPlanError</dt><dd><p>Not enough motors.</p>
+</dd>
+<dt>TomoPlanError</dt><dd><p>Wrong motor positions format.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="crystalmapping.plans.grid_scan_no_dark">
+<span class="sig-prename descclassname"><span class="pre">crystalmapping.plans.</span></span><span class="sig-name descname"><span class="pre">grid_scan_no_dark</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">detectors</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)"><span class="pre">list</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">snake</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)"><span class="pre">list</span></a><span class="p"><span class="pre">,</span> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><span class="pre">bool</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_per_point</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_per_frame</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">shutter</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.9)"><span class="pre">object</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">shutter_open</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shutter_close</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shutter_wait_open</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><span class="pre">float</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">md</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Generator</span><a class="reference internal" href="_modules/crystalmapping/plans.html#grid_scan_no_dark"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.plans.grid_scan_no_dark" title="Permalink to this definition">¶</a></dt>
+<dd><p>Scan over a mesh; each motor is on an independent trajectory.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>detectors</strong><span class="classifier">list</span></dt><dd><p>A list of ‘readable’ objects</p>
+</dd>
+<dt><strong>*args :</strong></dt><dd><dl class="simple">
+<dt>patterned like (<code class="docutils literal notranslate"><span class="pre">motor1,</span> <span class="pre">start1,</span> <span class="pre">stop1,</span> <span class="pre">num1,</span></code></dt><dd><p><code class="docutils literal notranslate"><span class="pre">motor2,</span> <span class="pre">start2,</span> <span class="pre">stop2,</span> <span class="pre">num2,</span></code>
+<code class="docutils literal notranslate"><span class="pre">motor3,</span> <span class="pre">start3,</span> <span class="pre">stop3,</span> <span class="pre">num3,</span></code> …
+<code class="docutils literal notranslate"><span class="pre">motorN,</span> <span class="pre">startN,</span> <span class="pre">stopN,</span> <span class="pre">numN</span></code>)</p>
+</dd>
+</dl>
+<p>The first motor is the “slowest”, the outer loop. The last motor
+is the “fly” motor, the non-stoping scan along an axis. For all motors
+except the first motor, there is a “snake” argument: a boolean
+indicating whether to following snake-like, winding trajectory or a
+simple left-to-right trajectory.</p>
+</dd>
+<dt><strong>snake</strong><span class="classifier">bool, optional</span></dt><dd><p>If true, snake the axis of the fly scan, by default None</p>
+</dd>
+<dt><strong>time_per_point</strong><span class="classifier">float</span></dt><dd><p>The time to collect one image at one point.</p>
+</dd>
+<dt><strong>time_per_frame</strong><span class="classifier">float</span></dt><dd><p>The time to collect one frame in a image. One image contains serveral frames.</p>
+</dd>
+<dt><strong>time_per_point</strong><span class="classifier">float</span></dt><dd><p>The time to collect one image at one point.</p>
+</dd>
+<dt><strong>time_per_frame</strong><span class="classifier">float</span></dt><dd><p>The time to collect one frame in a image. One image contains serveral frames.</p>
+</dd>
+<dt><strong>shutter</strong><span class="classifier">object</span></dt><dd><p>The fast shutter.</p>
+</dd>
+<dt><strong>shutter_open</strong><span class="classifier">typing.Any</span></dt><dd><p>The value of the shutter in open state.</p>
+</dd>
+<dt><strong>shutter_close</strong><span class="classifier">typing.Any</span></dt><dd><p>The value of the shutter in close state.</p>
+</dd>
+<dt><strong>shutter_wait_open</strong><span class="classifier">float, optional</span></dt><dd><p>The time between the shutter open and the start of the light image collection, by default 0.</p>
+</dd>
+<dt><strong>md</strong><span class="classifier">[type], optional</span></dt><dd><p>The dictionary of the metadata to added into the plan, by default None, by default None</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Yields</dt>
+<dd class="field-even"><dl class="simple">
+<dt>Iterator[typing.Generic]</dt><dd><p>The messages of the plan.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><dl class="simple">
+<dt>TomoPlanError</dt><dd><p>Empty detector list.</p>
+</dd>
+<dt>TomoPlanError</dt><dd><p>Not enough motors.</p>
+</dd>
+<dt>TomoPlanError</dt><dd><p>Wrong motor positions format.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="crystalmapping.plans.loop_until">
+<span class="sig-prename descclassname"><span class="pre">crystalmapping.plans.</span></span><span class="sig-name descname"><span class="pre">loop_until</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">motor</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">ophyd.device.Device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">left</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">right</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><span class="pre">float</span></a></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Generic</span><a class="reference internal" href="_modules/crystalmapping/plans.html#loop_until"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.plans.loop_until" title="Permalink to this definition">¶</a></dt>
+<dd><p>Move motor from left to right and right to left repeatedly until t seconds pass</p>
+</dd></dl>
+
+</section>
+<section id="module-crystalmapping.servers">
+<span id="crystalmapping-servers"></span><h2>crystalmapping.servers<a class="headerlink" href="#module-crystalmapping.servers" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="crystalmapping.servers.Commands">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">crystalmapping.servers.</span></span><span class="sig-name descname"><span class="pre">Commands</span></span><a class="reference internal" href="_modules/crystalmapping/servers.html#Commands"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.servers.Commands" title="Permalink to this definition">¶</a></dt>
+<dd><p>A collection of commands.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="crystalmapping.servers.Commands.create_best_effort_config">
+<span class="sig-name descname"><span class="pre">create_best_effort_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg_file</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><span class="pre">None</span></a><a class="reference internal" href="_modules/crystalmapping/servers.html#Commands.create_best_effort_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.servers.Commands.create_best_effort_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the configuration file for best efforts server.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>cfg_file</strong><span class="classifier">str</span></dt><dd><p>The configuration file. It is an .ini file.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="crystalmapping.servers.Commands.create_extremum_config">
+<span class="sig-name descname"><span class="pre">create_extremum_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg_file</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><span class="pre">None</span></a><a class="reference internal" href="_modules/crystalmapping/servers.html#Commands.create_extremum_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.servers.Commands.create_extremum_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the configuration file for extremum server.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>cfg_file</strong><span class="classifier">str</span></dt><dd><p>The configuration file. It is an .ini file.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="crystalmapping.servers.Commands.run_best_effort">
+<span class="sig-name descname"><span class="pre">run_best_effort</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg_file</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">test</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><span class="pre">bool</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><span class="pre">None</span></a><a class="reference internal" href="_modules/crystalmapping/servers.html#Commands.run_best_effort"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.servers.Commands.run_best_effort" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run best effort server.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>cfg_file</strong><span class="classifier">str</span></dt><dd><p>The configuration file. It is an .ini file.</p>
+</dd>
+<dt><strong>test</strong><span class="classifier">bool, optional</span></dt><dd><p>If True, it is a pytest mode, by default False.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="crystalmapping.servers.Commands.run_extremum">
+<span class="sig-name descname"><span class="pre">run_extremum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg_file</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">test</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><span class="pre">bool</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><span class="pre">None</span></a><a class="reference internal" href="_modules/crystalmapping/servers.html#Commands.run_extremum"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.servers.Commands.run_extremum" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run extremum server.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>cfg_file</strong><span class="classifier">str</span></dt><dd><p>The configuration file. It is an .ini file.</p>
+</dd>
+<dt><strong>test</strong><span class="classifier">bool, optional</span></dt><dd><p>If True, it is a pytest mode, by default False.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="crystalmapping.servers.Extremum">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">crystalmapping.servers.</span></span><span class="sig-name descname"><span class="pre">Extremum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">crystalmapping.servers.ExtremumConfig</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/crystalmapping/servers.html#Extremum"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.servers.Extremum" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-crystalmapping.utils">
+<span id="crystalmapping-utils"></span><h2>crystalmapping.utils<a class="headerlink" href="#module-crystalmapping.utils" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="crystalmapping.utils.Calculator">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">crystalmapping.utils.</span></span><span class="sig-name descname"><span class="pre">Calculator</span></span><a class="reference internal" href="_modules/crystalmapping/utils.html#Calculator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.utils.Calculator" title="Permalink to this definition">¶</a></dt>
+<dd><p>The Calculator of the crystal maps.</p>
+<p>Each of the attribute can be the calculated output and the input for the next step of calculation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>frames_arr</strong><span class="classifier">DataArray</span></dt><dd><p>A data array of diffraction data. It is assumed to be a (N, F, Y, X) shape array, where N is the number
+of exposure, F is the number of the frames in one exposure, the Y is the number of pixels in vertical,
+X is the number of pixels in horizontal. It can also be (N, Y, X) shape array if there is only one
+frame in each exposure.</p>
+</dd>
+<dt><strong>dark</strong><span class="classifier">ndarray</span></dt><dd><p>The minimum values on the pixels in whole series of exposures. It is assumed to be the background.</p>
+</dd>
+<dt><strong>light: ndarray</strong></dt><dd><p>The maximum values on the pixels in the whole series of exposures. It is assumed to be a image of all
+the Bragg peaks on the background.</p>
+</dd>
+<dt><strong>peaks: DataFrame</strong></dt><dd><p>A dataframe records all the peak positions.</p>
+</dd>
+<dt><strong>windows: DataFrame</strong></dt><dd><p>A dataframe records all the center positions and half width of the windows.</p>
+</dd>
+<dt><strong>intensity: ndarray</strong></dt><dd><p>The array of the average intensity in each of the windows in the series of exposures. It has the shape (
+W, dim_0, dim_1, …). The W is the number of the windows and the dim_i is the length of the dimension
+i in the grid scan.</p>
+</dd>
+<dt><strong>bkg_intensity</strong><span class="classifier">ndarray</span></dt><dd><p>The integrated background intensity in the windows.</p>
+</dd>
+<dt><strong>coords</strong><span class="classifier">ndarray</span></dt><dd><p>The coordinates of the dim_0, dim_1, … in grid scan.</p>
+</dd>
+<dt><strong>metadata</strong><span class="classifier">dict</span></dt><dd><p>The dictionary to record the metadata. There are two important keys: shape, extents. The shape is the
+number of points in each dimension in the grid scan. It should be a array like (dim_0, dim_1, …). The
+extents are the start and end value for each dimension. It should be array like [(start0, end0),
+(start1, end1), …]. These two keys are used to calculate the coordinates.</p>
+</dd>
+<dt><strong>ai</strong><span class="classifier">AzimuthalIntegrator</span></dt><dd><p>The class to hold the data of the geometry of the experiments. It is used to index the Q values for each
+window.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="crystalmapping.utils.Calculator.assign_q_values">
+<span class="sig-name descname"><span class="pre">assign_q_values</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/crystalmapping/utils.html#Calculator.assign_q_values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.utils.Calculator.assign_q_values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Assign the values to the windows dataframe.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="crystalmapping.utils.Calculator.auto_process">
+<span class="sig-name descname"><span class="pre">auto_process</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_wins</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">hw_wins</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">diameter</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">index_filter</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#slice" title="(in Python v3.9)"><span class="pre">slice</span></a><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><span class="pre">None</span></a><a class="reference internal" href="_modules/crystalmapping/utils.html#Calculator.auto_process"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.utils.Calculator.auto_process" title="Permalink to this definition">¶</a></dt>
+<dd><p>Automatically process the data in the standard protocol.</p>
+<p>The calculation results are saved in attributes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>num_wins</strong><span class="classifier">int</span></dt><dd><p>The number of windows.</p>
+</dd>
+<dt><strong>hw_wins</strong><span class="classifier">int</span></dt><dd><p>The half width of the windows in pixels.</p>
+</dd>
+<dt><strong>diameter</strong><span class="classifier">int</span></dt><dd><p>The diameter of the kernel to use in peak finding in pixels. It must be an odd integer.</p>
+</dd>
+<dt><strong>index_filter</strong><span class="classifier">slice</span></dt><dd><p>The index slice of the data to use in the calculation of the dark and light image.</p>
+</dd>
+<dt><strong>args :</strong></dt><dd><p>The position arguments of the peak finding function <cite>trackpy.locate</cite>.</p>
+</dd>
+<dt><strong>kwargs :</strong></dt><dd><p>The keyword arguments of the peak finding function <cite>trackpy.locate</cite>.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>None.</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="crystalmapping.utils.Calculator.auto_visualize">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">auto_visualize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ds</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">xarray.core.dataset.Dataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><span class="pre">str</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'intensity'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">invert_y</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><span class="pre">bool</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">xarray.plot.facetgrid.FacetGrid</span><a class="reference internal" href="_modules/crystalmapping/utils.html#Calculator.auto_visualize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.utils.Calculator.auto_visualize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Automatically plot the intensity array in the dataset.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="crystalmapping.utils.Calculator.calc_coords">
+<span class="sig-name descname"><span class="pre">calc_coords</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/crystalmapping/utils.html#Calculator.calc_coords"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.utils.Calculator.calc_coords" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the coordinates.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="crystalmapping.utils.Calculator.calc_dark_and_light_from_frames_arr">
+<span class="sig-name descname"><span class="pre">calc_dark_and_light_from_frames_arr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index_range</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#slice" title="(in Python v3.9)"><span class="pre">slice</span></a><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/crystalmapping/utils.html#Calculator.calc_dark_and_light_from_frames_arr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.utils.Calculator.calc_dark_and_light_from_frames_arr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the light and dark frame in a series of frames.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="crystalmapping.utils.Calculator.calc_intensity_in_windows">
+<span class="sig-name descname"><span class="pre">calc_intensity_in_windows</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/crystalmapping/utils.html#Calculator.calc_intensity_in_windows"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.utils.Calculator.calc_intensity_in_windows" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the intensity array as a function of index of frames.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="crystalmapping.utils.Calculator.calc_peaks_from_dk_sub_frame">
+<span class="sig-name descname"><span class="pre">calc_peaks_from_dk_sub_frame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">diameter</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.9)"><span class="pre">tuple</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/crystalmapping/utils.html#Calculator.calc_peaks_from_dk_sub_frame"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.utils.Calculator.calc_peaks_from_dk_sub_frame" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the Bragg peaks on the light frame.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="crystalmapping.utils.Calculator.calc_peaks_from_light_frame">
+<span class="sig-name descname"><span class="pre">calc_peaks_from_light_frame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">diameter</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.9)"><span class="pre">tuple</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/crystalmapping/utils.html#Calculator.calc_peaks_from_light_frame"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.utils.Calculator.calc_peaks_from_light_frame" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the Bragg peaks on the light frame.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="crystalmapping.utils.Calculator.calc_windows_from_peaks">
+<span class="sig-name descname"><span class="pre">calc_windows_from_peaks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/crystalmapping/utils.html#Calculator.calc_windows_from_peaks"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.utils.Calculator.calc_windows_from_peaks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gte the windows for the most brightest Bragg peaks.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="crystalmapping.utils.Calculator.coords_to_dict">
+<span class="sig-name descname"><span class="pre">coords_to_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><span class="pre">dict</span></a><a class="reference internal" href="_modules/crystalmapping/utils.html#Calculator.coords_to_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.utils.Calculator.coords_to_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert the coordinates to dictionary.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="crystalmapping.utils.Calculator.dark_to_xarray">
+<span class="sig-name descname"><span class="pre">dark_to_xarray</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">xarray.core.dataarray.DataArray</span><a class="reference internal" href="_modules/crystalmapping/utils.html#Calculator.dark_to_xarray"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.utils.Calculator.dark_to_xarray" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert the dark image to DataArray.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="crystalmapping.utils.Calculator.get_frame">
+<span class="sig-name descname"><span class="pre">get_frame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">xarray.core.dataarray.DataArray</span><a class="reference internal" href="_modules/crystalmapping/utils.html#Calculator.get_frame"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.utils.Calculator.get_frame" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the frame of at the index.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="crystalmapping.utils.Calculator.intensity_to_xarray">
+<span class="sig-name descname"><span class="pre">intensity_to_xarray</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">xarray.core.dataarray.DataArray</span><a class="reference internal" href="_modules/crystalmapping/utils.html#Calculator.intensity_to_xarray"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.utils.Calculator.intensity_to_xarray" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert the intensity array to DataArray</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="crystalmapping.utils.Calculator.light_to_xarray">
+<span class="sig-name descname"><span class="pre">light_to_xarray</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">xarray.core.dataarray.DataArray</span><a class="reference internal" href="_modules/crystalmapping/utils.html#Calculator.light_to_xarray"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.utils.Calculator.light_to_xarray" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert the light image to DataArray</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="crystalmapping.utils.Calculator.reshape_intensity">
+<span class="sig-name descname"><span class="pre">reshape_intensity</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/crystalmapping/utils.html#Calculator.reshape_intensity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.utils.Calculator.reshape_intensity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reshape the intensity array.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="crystalmapping.utils.Calculator.show_dark">
+<span class="sig-name descname"><span class="pre">show_dark</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">xarray.plot.facetgrid.FacetGrid</span><a class="reference internal" href="_modules/crystalmapping/utils.html#Calculator.show_dark"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.utils.Calculator.show_dark" title="Permalink to this definition">¶</a></dt>
+<dd><p>Show the dark image.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="crystalmapping.utils.Calculator.show_frame">
+<span class="sig-name descname"><span class="pre">show_frame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">xarray.plot.facetgrid.FacetGrid</span><a class="reference internal" href="_modules/crystalmapping/utils.html#Calculator.show_frame"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.utils.Calculator.show_frame" title="Permalink to this definition">¶</a></dt>
+<dd><p>Show the frame at that index.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="crystalmapping.utils.Calculator.show_intensity">
+<span class="sig-name descname"><span class="pre">show_intensity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">xarray.plot.facetgrid.FacetGrid</span><a class="reference internal" href="_modules/crystalmapping/utils.html#Calculator.show_intensity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.utils.Calculator.show_intensity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Show the intensity array.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="crystalmapping.utils.Calculator.show_light">
+<span class="sig-name descname"><span class="pre">show_light</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">xarray.plot.facetgrid.FacetGrid</span><a class="reference internal" href="_modules/crystalmapping/utils.html#Calculator.show_light"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.utils.Calculator.show_light" title="Permalink to this definition">¶</a></dt>
+<dd><p>Show the light image.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="crystalmapping.utils.Calculator.show_light_sub_dark">
+<span class="sig-name descname"><span class="pre">show_light_sub_dark</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">xarray.plot.facetgrid.FacetGrid</span><a class="reference internal" href="_modules/crystalmapping/utils.html#Calculator.show_light_sub_dark"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.utils.Calculator.show_light_sub_dark" title="Permalink to this definition">¶</a></dt>
+<dd><p>Show the dark subtracted light image.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="crystalmapping.utils.Calculator.show_windows">
+<span class="sig-name descname"><span class="pre">show_windows</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">xarray.plot.facetgrid.FacetGrid</span><a class="reference internal" href="_modules/crystalmapping/utils.html#Calculator.show_windows"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.utils.Calculator.show_windows" title="Permalink to this definition">¶</a></dt>
+<dd><p>Show the windows on the dark subtracted light image.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="crystalmapping.utils.Calculator.show_windows_on_frame">
+<span class="sig-name descname"><span class="pre">show_windows_on_frame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">xarray.plot.facetgrid.FacetGrid</span><a class="reference internal" href="_modules/crystalmapping/utils.html#Calculator.show_windows_on_frame"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.utils.Calculator.show_windows_on_frame" title="Permalink to this definition">¶</a></dt>
+<dd><p>Show the windows on the frame at the index.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="crystalmapping.utils.Calculator.squeeze_shape_and_extents">
+<span class="sig-name descname"><span class="pre">squeeze_shape_and_extents</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><span class="pre">None</span></a><a class="reference internal" href="_modules/crystalmapping/utils.html#Calculator.squeeze_shape_and_extents"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.utils.Calculator.squeeze_shape_and_extents" title="Permalink to this definition">¶</a></dt>
+<dd><p>Squeeze the shape and extents so that it only has the dimension with length &gt; 1.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="crystalmapping.utils.Calculator.to_dataset">
+<span class="sig-name descname"><span class="pre">to_dataset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">xarray.core.dataset.Dataset</span><a class="reference internal" href="_modules/crystalmapping/utils.html#Calculator.to_dataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.utils.Calculator.to_dataset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert the calculation results to DataSet.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="crystalmapping.utils.Calculator.windows_to_xarray">
+<span class="sig-name descname"><span class="pre">windows_to_xarray</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">xarray.core.dataarray.DataArray</span><a class="reference internal" href="_modules/crystalmapping/utils.html#Calculator.windows_to_xarray"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.utils.Calculator.windows_to_xarray" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert the windows DataFrame to xarray.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="crystalmapping.utils.CalculatorError">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">crystalmapping.utils.</span></span><span class="sig-name descname"><span class="pre">CalculatorError</span></span><a class="reference internal" href="_modules/crystalmapping/utils.html#CalculatorError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.utils.CalculatorError" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="crystalmapping.utils.annotate_peaks">
+<span class="sig-prename descclassname"><span class="pre">crystalmapping.utils.</span></span><span class="sig-name descname"><span class="pre">annotate_peaks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pandas.core.frame.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">xarray.core.dataarray.DataArray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">matplotlib.axes._axes.Axes</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><span class="pre">float</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">1.6</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><span class="pre">None</span></a><a class="reference internal" href="_modules/crystalmapping/utils.html#annotate_peaks"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.utils.annotate_peaks" title="Permalink to this definition">¶</a></dt>
+<dd><p>A function wrapping the tp.annotate. Use different default setting.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="crystalmapping.utils.assign_Q_to_atlas">
+<span class="sig-prename descclassname"><span class="pre">crystalmapping.utils.</span></span><span class="sig-name descname"><span class="pre">assign_Q_to_atlas</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atlas</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">xarray.core.dataset.Dataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ai</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pyFAI.azimuthalIntegrator.AzimuthalIntegrator</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">xarray.core.dataset.Dataset</span><a class="reference internal" href="_modules/crystalmapping/utils.html#assign_Q_to_atlas"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.utils.assign_Q_to_atlas" title="Permalink to this definition">¶</a></dt>
+<dd><p>Assign Q grid to atlas</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="crystalmapping.utils.auto_plot">
+<span class="sig-prename descclassname"><span class="pre">crystalmapping.utils.</span></span><span class="sig-name descname"><span class="pre">auto_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">da</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">xarray.core.dataarray.DataArray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">invert_y</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><span class="pre">bool</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">xarray.plot.facetgrid.FacetGrid</span><a class="reference internal" href="_modules/crystalmapping/utils.html#auto_plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.utils.auto_plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Automatically detect the data type and plot the data array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>da :</strong></dt><dd><p>The data array containing the intensity.</p>
+</dd>
+<dt><strong>title :</strong></dt><dd><p>Determine title of the axes. It is a format string and a name of the variable. If None, do nothing.</p>
+</dd>
+<dt><strong>invert_y :</strong></dt><dd><p>Invert the y axis.</p>
+</dd>
+<dt><strong>kwargs :</strong></dt><dd><p>The kwargs for the configuration of the plot.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>Usually a FacetGrid object.</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="crystalmapping.utils.average_intensity">
+<span class="sig-prename descclassname"><span class="pre">crystalmapping.utils.</span></span><span class="sig-name descname"><span class="pre">average_intensity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.21)"><span class="pre">numpy.ndarray</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">windows</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pandas.core.frame.DataFrame</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.21)"><span class="pre">numpy.ndarray</span></a><a class="reference internal" href="_modules/crystalmapping/utils.html#average_intensity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.utils.average_intensity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the average intensity in windows. Return an array of average intensity.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="crystalmapping.utils.create_atlas">
+<span class="sig-prename descclassname"><span class="pre">crystalmapping.utils.</span></span><span class="sig-name descname"><span class="pre">create_atlas</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pandas.core.frame.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_frame</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><span class="pre">int</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inverted</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><span class="pre">bool</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">excluded</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#set" title="(in Python v3.9)"><span class="pre">set</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">frozenset({'frame'})</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">xarray.core.dataset.Dataset</span><a class="reference internal" href="_modules/crystalmapping/utils.html#create_atlas"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.utils.create_atlas" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the dataset of the maps of grains.</p>
+<p>The dataset is like below.</p>
+<blockquote>
+<div><p>Dimensions:   (dim_0: 2, dim_1: 2, grain: 2)</p>
+<p>Coordinates:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>dim_0     (dim_0) float64 6.0 0.0</p></li>
+<li><p>dim_1     (dim_1) float64 2.0 0.0</p></li>
+<li><p>grain     (grain) int64 0 1</p></li>
+</ul>
+</div></blockquote>
+<p>Data variables:</p>
+<blockquote>
+<div><p>maps      (grain, dim_0, dim_1) float64 1.0 0.0 0.0 0.0 0.0 0.0 0.0 2.0</p>
+<p>y         (grain) int64 1 2</p>
+<p>x         (grain) int64 1 2</p>
+<p>mass      (grain) int64 1 2</p>
+<p>size      (grain) int64 1 2</p>
+<p>ecc       (grain) int64 1 2</p>
+<p>signal    (grain) int64 1 2</p>
+<p>raw_mass  (grain) int64 1 2</p>
+</div></blockquote>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>df :</strong></dt><dd><p>The dataframe of trajectories. It has columns “mass” and “frame” and attrs “extents”, “shape”, “snaking”.</p>
+</dd>
+<dt><strong>start_frame :</strong></dt><dd><p>The starting number of the frame.</p>
+</dd>
+<dt><strong>inverted :</strong></dt><dd><p>If True, invert all axis so that maps are viewed in sample frame.</p>
+</dd>
+<dt><strong>excluded :</strong></dt><dd><p>The excluded the columns in dataframe.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>ds :</dt><dd><p>A dataset created.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="crystalmapping.utils.create_atlas_dask">
+<span class="sig-prename descclassname"><span class="pre">crystalmapping.utils.</span></span><span class="sig-name descname"><span class="pre">create_atlas_dask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frames</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">xarray.core.dataarray.DataArray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">windows</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pandas.core.frame.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><span class="pre">bool</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">xarray.core.dataarray.DataArray</span><a class="reference internal" href="_modules/crystalmapping/utils.html#create_atlas_dask"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.utils.create_atlas_dask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a list of tasks to compute the grain maps. Each task is one grain map.</p>
+<p>The dataframe has columns “x”, “y”, “dx”, “dy”. Each row is a window on the frames. The window is
+(x - dx, x + dx) in horizontal and (y - dy, y + dy) in vertical. The return is a list of dask arrays.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>windows :</strong></dt><dd><p>The dataframe with columns “x”, “y”, “dx”, “dy”.</p>
+</dd>
+<dt><strong>frames :</strong></dt><dd><p>One frame.</p>
+</dd>
+<dt><strong>verbose :</strong></dt><dd><p>Whether to report status or not.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>tasks :</dt><dd><p>A list of dask arrays.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="crystalmapping.utils.create_dataset">
+<span class="sig-prename descclassname"><span class="pre">crystalmapping.utils.</span></span><span class="sig-name descname"><span class="pre">create_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">maps</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">xarray.core.dataarray.DataArray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">windows</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pandas.core.frame.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><span class="pre">dict</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">inverted</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><span class="pre">bool</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">xarray.core.dataset.Dataset</span><a class="reference internal" href="_modules/crystalmapping/utils.html#create_dataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.utils.create_dataset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the dataset from the results of create_atlas_dask.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="crystalmapping.utils.create_grain_maps">
+<span class="sig-prename descclassname"><span class="pre">crystalmapping.utils.</span></span><span class="sig-name descname"><span class="pre">create_grain_maps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frames</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">xarray.core.dataarray.DataArray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">windows</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pandas.core.frame.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><span class="pre">dict</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">inverted</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><span class="pre">bool</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">xarray.core.dataset.Dataset</span><a class="reference internal" href="_modules/crystalmapping/utils.html#create_grain_maps"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.utils.create_grain_maps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create grain maps from frames.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>frames :</strong></dt><dd><p>The dask array of raw diffraction frames.</p>
+</dd>
+<dt><strong>windows :</strong></dt><dd><p>The data frame of x, y, dx, dy. The x, y positions in pixels and the half width of the window.</p>
+</dd>
+<dt><strong>metadata :</strong></dt><dd><p>The start document of the run.</p>
+</dd>
+<dt><strong>inverted :</strong></dt><dd><p>Use x[::-1] and y[::-1] in grain maps.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>ds :</dt><dd><p>The dataset of grain maps.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="crystalmapping.utils.draw_windows">
+<span class="sig-prename descclassname"><span class="pre">crystalmapping.utils.</span></span><span class="sig-name descname"><span class="pre">draw_windows</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pandas.core.frame.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">matplotlib.axes._axes.Axes</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><span class="pre">None</span></a><a class="reference internal" href="_modules/crystalmapping/utils.html#draw_windows"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.utils.draw_windows" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draw windows on the axes.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="crystalmapping.utils.get_coords2">
+<span class="sig-prename descclassname"><span class="pre">crystalmapping.utils.</span></span><span class="sig-name descname"><span class="pre">get_coords2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start_doc</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><span class="pre">dict</span></a></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.21)"><span class="pre">numpy.ndarray</span></a><span class="p"><span class="pre">]</span></span><a class="reference internal" href="_modules/crystalmapping/utils.html#get_coords2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.utils.get_coords2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get coordinates.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="crystalmapping.utils.get_vlim">
+<span class="sig-prename descclassname"><span class="pre">crystalmapping.utils.</span></span><span class="sig-name descname"><span class="pre">get_vlim</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xarr</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">xarray.core.dataarray.DataArray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><span class="pre">float</span></a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><span class="pre">dict</span></a><a class="reference internal" href="_modules/crystalmapping/utils.html#get_vlim"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.utils.get_vlim" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get vmin, vmax using mean and std.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="crystalmapping.utils.invert_yaxis">
+<span class="sig-prename descclassname"><span class="pre">crystalmapping.utils.</span></span><span class="sig-name descname"><span class="pre">invert_yaxis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axes</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">matplotlib.axes._axes.Axes</span><span class="p"><span class="pre">,</span> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">matplotlib.axes._axes.Axes</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><span class="pre">None</span></a><a class="reference internal" href="_modules/crystalmapping/utils.html#invert_yaxis"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.utils.invert_yaxis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change all axes to be equal aspect.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="crystalmapping.utils.limit_3std">
+<span class="sig-prename descclassname"><span class="pre">crystalmapping.utils.</span></span><span class="sig-name descname"><span class="pre">limit_3std</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">da</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">xarray.core.dataarray.DataArray</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><a class="reference internal" href="_modules/crystalmapping/utils.html#limit_3std"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.utils.limit_3std" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the mean - 3 * std and mean + 3 * std of the data array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>da</strong></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="crystalmapping.utils.min_and_max_along_time">
+<span class="sig-prename descclassname"><span class="pre">crystalmapping.utils.</span></span><span class="sig-name descname"><span class="pre">min_and_max_along_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">xarray.core.dataarray.DataArray</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">xarray.core.dataarray.DataArray</span><a class="reference internal" href="_modules/crystalmapping/utils.html#min_and_max_along_time"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.utils.min_and_max_along_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract the minimum and maximum values of each pixel in a series of mean frames. Return a data array.
+First is the min array and the second is the max array.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="crystalmapping.utils.min_and_max_along_time2">
+<span class="sig-prename descclassname"><span class="pre">crystalmapping.utils.</span></span><span class="sig-name descname"><span class="pre">min_and_max_along_time2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">xarray.core.dataarray.DataArray</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.21)"><span class="pre">numpy.ndarray</span></a><span class="p"><span class="pre">,</span> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.21)"><span class="pre">numpy.ndarray</span></a><span class="p"><span class="pre">]</span></span><a class="reference internal" href="_modules/crystalmapping/utils.html#min_and_max_along_time2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.utils.min_and_max_along_time2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract the minimum and maximum values of each pixel in a series of mean frames. Return a data array.
+First is the min array and the second is the max array.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="crystalmapping.utils.pixel_to_Q">
+<span class="sig-prename descclassname"><span class="pre">crystalmapping.utils.</span></span><span class="sig-name descname"><span class="pre">pixel_to_Q</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d1</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.21)"><span class="pre">numpy.ndarray</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">d2</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.21)"><span class="pre">numpy.ndarray</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">ai</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pyFAI.azimuthalIntegrator.AzimuthalIntegrator</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">xarray.core.dataarray.DataArray</span><a class="reference internal" href="_modules/crystalmapping/utils.html#pixel_to_Q"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.utils.pixel_to_Q" title="Permalink to this definition">¶</a></dt>
+<dd><p>Map pixel position (d1, d2) to Q in nm-1.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="crystalmapping.utils.plot_along_grains">
+<span class="sig-prename descclassname"><span class="pre">crystalmapping.utils.</span></span><span class="sig-name descname"><span class="pre">plot_along_grains</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">grain_maps</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">xarray.core.dataarray.DataArray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">col</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><span class="pre">str</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'grain'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">xarray.plot.facetgrid.FacetGrid</span><a class="reference internal" href="_modules/crystalmapping/utils.html#plot_along_grains"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.utils.plot_along_grains" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the grain maps from the grain maps.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="crystalmapping.utils.plot_crystal_maps">
+<span class="sig-prename descclassname"><span class="pre">crystalmapping.utils.</span></span><span class="sig-name descname"><span class="pre">plot_crystal_maps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">da</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">xarray.core.dataarray.DataArray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit_func</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">invert_y</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><span class="pre">bool</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">xarray.plot.facetgrid.FacetGrid</span><a class="reference internal" href="_modules/crystalmapping/utils.html#plot_crystal_maps"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.utils.plot_crystal_maps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the crystal maps.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>da</strong></dt><dd></dd>
+<dt><strong>limit_func</strong></dt><dd></dd>
+<dt><strong>invert_y</strong></dt><dd></dd>
+<dt><strong>kwargs</strong></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="crystalmapping.utils.plot_grain_maps">
+<span class="sig-prename descclassname"><span class="pre">crystalmapping.utils.</span></span><span class="sig-name descname"><span class="pre">plot_grain_maps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atlas</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">xarray.core.dataset.Dataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><span class="pre">str</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'maps'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">col</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><span class="pre">str</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'grain'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">xarray.plot.facetgrid.FacetGrid</span><a class="reference internal" href="_modules/crystalmapping/utils.html#plot_grain_maps"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.utils.plot_grain_maps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the grain maps from the atlas, the output from <cite>create_atlas</cite>.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="crystalmapping.utils.plot_real_aspect">
+<span class="sig-prename descclassname"><span class="pre">crystalmapping.utils.</span></span><span class="sig-name descname"><span class="pre">plot_real_aspect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xarr</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">xarray.core.dataarray.DataArray</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><span class="pre">float</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">1.6</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">xarray.plot.facetgrid.FacetGrid</span><a class="reference internal" href="_modules/crystalmapping/utils.html#plot_real_aspect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.utils.plot_real_aspect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Visualize two dimensional arr as a color map. The color ranges from median - alpha * std to median +
+alpha * std.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="crystalmapping.utils.plot_rocking_curves">
+<span class="sig-prename descclassname"><span class="pre">crystalmapping.utils.</span></span><span class="sig-name descname"><span class="pre">plot_rocking_curves</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">da</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">xarray.core.dataarray.DataArray</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">xarray.plot.facetgrid.FacetGrid</span><a class="reference internal" href="_modules/crystalmapping/utils.html#plot_rocking_curves"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.utils.plot_rocking_curves" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the rocking curves.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>da</strong></dt><dd></dd>
+<dt><strong>kwargs</strong></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="crystalmapping.utils.reformat_data">
+<span class="sig-prename descclassname"><span class="pre">crystalmapping.utils.</span></span><span class="sig-name descname"><span class="pre">reformat_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ds</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">xarray.core.dataset.Dataset</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">xarray.core.dataset.Dataset</span><a class="reference internal" href="_modules/crystalmapping/utils.html#reformat_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.utils.reformat_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reformat the data loaded from the databroker.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="crystalmapping.utils.reshape">
+<span class="sig-prename descclassname"><span class="pre">crystalmapping.utils.</span></span><span class="sig-name descname"><span class="pre">reshape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">xarray.core.dataset.Dataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">inverted</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><span class="pre">bool</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">xarray.core.dataarray.DataArray</span><a class="reference internal" href="_modules/crystalmapping/utils.html#reshape"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.utils.reshape" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reshape the xarray dataset[name] into two dimensional array. Return a reshape data array with coordinates.</p>
+<p>Use <cite>shape</cite>, <cite>snaking</cite>, <cite>extents</cite> in the dataset.attrs. The axis axis will be converted to the relative
+position to samples so that the coordinate is the negative motor position.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="crystalmapping.utils.reshape_to_xarray">
+<span class="sig-prename descclassname"><span class="pre">crystalmapping.utils.</span></span><span class="sig-name descname"><span class="pre">reshape_to_xarray</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arr</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">xarray.core.dataarray.DataArray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><span class="pre">dict</span></a></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">xarray.core.dataarray.DataArray</span><a class="reference internal" href="_modules/crystalmapping/utils.html#reshape_to_xarray"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.utils.reshape_to_xarray" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reshape a 1D data array to an 2D data array according to the metadata about the bluesky plan.
+The coordinates will also be reshaped.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="crystalmapping.utils.reshape_to_xarray2">
+<span class="sig-prename descclassname"><span class="pre">crystalmapping.utils.</span></span><span class="sig-name descname"><span class="pre">reshape_to_xarray2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arr</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">xarray.core.dataarray.DataArray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><span class="pre">dict</span></a></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">xarray.core.dataarray.DataArray</span><a class="reference internal" href="_modules/crystalmapping/utils.html#reshape_to_xarray2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.utils.reshape_to_xarray2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reshape a 1D data array to an 2D data array according to the metadata about the bluesky plan.
+The coordinates will also be reshaped.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="crystalmapping.utils.select_frames">
+<span class="sig-prename descclassname"><span class="pre">crystalmapping.utils.</span></span><span class="sig-name descname"><span class="pre">select_frames</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_sum_data</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">xarray.core.dataarray.DataArray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><span class="pre">dict</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_row</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><span class="pre">int</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_row</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><span class="pre">None</span></a><a class="reference internal" href="_modules/crystalmapping/utils.html#select_frames"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.utils.select_frames" title="Permalink to this definition">¶</a></dt>
+<dd><p>Select the frames according to the summation of the intensity on the image.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="crystalmapping.utils.set_real_aspect">
+<span class="sig-prename descclassname"><span class="pre">crystalmapping.utils.</span></span><span class="sig-name descname"><span class="pre">set_real_aspect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axes</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">matplotlib.axes._axes.Axes</span><span class="p"><span class="pre">,</span> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">matplotlib.axes._axes.Axes</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><span class="pre">None</span></a><a class="reference internal" href="_modules/crystalmapping/utils.html#set_real_aspect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.utils.set_real_aspect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change all axes to be equal aspect.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="crystalmapping.utils.track_peaks">
+<span class="sig-prename descclassname"><span class="pre">crystalmapping.utils.</span></span><span class="sig-name descname"><span class="pre">track_peaks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frames</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">xarray.core.dataarray.DataArray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">windows</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pandas.core.frame.DataFrame</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">xarray.core.dataarray.DataArray</span><a class="reference internal" href="_modules/crystalmapping/utils.html#track_peaks"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.utils.track_peaks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a list of tasks to compute the grain maps. Each task is one grain map.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="crystalmapping.utils.track_peaks2">
+<span class="sig-prename descclassname"><span class="pre">crystalmapping.utils.</span></span><span class="sig-name descname"><span class="pre">track_peaks2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frames</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">xarray.core.dataarray.DataArray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">windows</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pandas.core.frame.DataFrame</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.21)"><span class="pre">numpy.ndarray</span></a><a class="reference internal" href="_modules/crystalmapping/utils.html#track_peaks2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.utils.track_peaks2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a list of tasks to compute the grain maps. Each task is one grain map.</p>
+</dd></dl>
+
+</section>
+<section id="module-crystalmapping.callbacks">
+<span id="crystalmapping-callbacks"></span><h2>crystalmapping.callbacks<a class="headerlink" href="#module-crystalmapping.callbacks" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="crystalmapping.callbacks.DataFrameDumper">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">crystalmapping.callbacks.</span></span><span class="sig-name descname"><span class="pre">DataFrameDumper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">databroker.v1.Broker</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/crystalmapping/callbacks.html#DataFrameDumper"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.callbacks.DataFrameDumper" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dump the dataframe to the database using databroker.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="crystalmapping.callbacks.DataFrameDumper.dump_df">
+<span class="sig-name descname"><span class="pre">dump_df</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pandas.core.frame.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><span class="pre">dict</span></a><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/crystalmapping/callbacks.html#DataFrameDumper.dump_df"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.callbacks.DataFrameDumper.dump_df" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dump the data frame into the database with the metadata.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="crystalmapping.callbacks.ImageProcessor">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">crystalmapping.callbacks.</span></span><span class="sig-name descname"><span class="pre">ImageProcessor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_key</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">subtrahend</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.21)"><span class="pre">numpy.ndarray</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/crystalmapping/callbacks.html#ImageProcessor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.callbacks.ImageProcessor" title="Permalink to this definition">¶</a></dt>
+<dd><p>A callback to average frames of images, subtract it by another image, and emit the document.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="crystalmapping.callbacks.ImageProcessor.event">
+<span class="sig-name descname"><span class="pre">event</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">doc</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/crystalmapping/callbacks.html#ImageProcessor.event"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.callbacks.ImageProcessor.event" title="Permalink to this definition">¶</a></dt>
+<dd><p>Receive an event document from the raw stream.</p>
+<p>This should be reimplemented by a subclass.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>doc</strong><span class="classifier">event</span></dt><dd></dd>
+<dt><strong>kwargs:</strong></dt><dd><p>All keyword arguments are passed to <code class="xref py py-meth docutils literal notranslate"><span class="pre">process_event()</span></code></p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="crystalmapping.callbacks.ImageProcessor.start">
+<span class="sig-name descname"><span class="pre">start</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">doc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_md</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/crystalmapping/callbacks.html#ImageProcessor.start"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.callbacks.ImageProcessor.start" title="Permalink to this definition">¶</a></dt>
+<dd><p>Receive a raw start document, re-emit it for the modified stream</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="crystalmapping.callbacks.PeakTracker">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">crystalmapping.callbacks.</span></span><span class="sig-name descname"><span class="pre">PeakTracker</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_key</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">diameter</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.9)"><span class="pre">tuple</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/crystalmapping/callbacks.html#PeakTracker"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.callbacks.PeakTracker" title="Permalink to this definition">¶</a></dt>
+<dd><p>Track the peaks on a series of images and summarize their position and intensity in a dataframe.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="crystalmapping.callbacks.PeakTracker.event">
+<span class="sig-name descname"><span class="pre">event</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">doc</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/crystalmapping/callbacks.html#PeakTracker.event"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.callbacks.PeakTracker.event" title="Permalink to this definition">¶</a></dt>
+<dd><p>Receive an event document from the raw stream.</p>
+<p>This should be reimplemented by a subclass.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>doc</strong><span class="classifier">event</span></dt><dd></dd>
+<dt><strong>kwargs:</strong></dt><dd><p>All keyword arguments are passed to <code class="xref py py-meth docutils literal notranslate"><span class="pre">process_event()</span></code></p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="crystalmapping.callbacks.PeakTracker.start">
+<span class="sig-name descname"><span class="pre">start</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">doc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_md</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/crystalmapping/callbacks.html#PeakTracker.start"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.callbacks.PeakTracker.start" title="Permalink to this definition">¶</a></dt>
+<dd><p>Receive a raw start document, re-emit it for the modified stream</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="crystalmapping.callbacks.TrackLinker">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">crystalmapping.callbacks.</span></span><span class="sig-name descname"><span class="pre">TrackLinker</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">db</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">databroker.v1.Broker</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">search_range</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.9)"><span class="pre">tuple</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/crystalmapping/callbacks.html#TrackLinker"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.callbacks.TrackLinker" title="Permalink to this definition">¶</a></dt>
+<dd><p>Track the peaks in frame and link them in trajectories.</p>
+<p>When a stop is received, the data will be pulled from the databroker and processed. Then, the dataframe will
+be emitted row by row.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="crystalmapping.callbacks.TrackLinker.event">
+<span class="sig-name descname"><span class="pre">event</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">doc</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/crystalmapping/callbacks.html#TrackLinker.event"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.callbacks.TrackLinker.event" title="Permalink to this definition">¶</a></dt>
+<dd><p>Receive an event document from the raw stream.</p>
+<p>This should be reimplemented by a subclass.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>doc</strong><span class="classifier">event</span></dt><dd></dd>
+<dt><strong>kwargs:</strong></dt><dd><p>All keyword arguments are passed to <code class="xref py py-meth docutils literal notranslate"><span class="pre">process_event()</span></code></p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="crystalmapping.callbacks.TrackLinker.start">
+<span class="sig-name descname"><span class="pre">start</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">doc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_md</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/crystalmapping/callbacks.html#TrackLinker.start"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.callbacks.TrackLinker.start" title="Permalink to this definition">¶</a></dt>
+<dd><p>Receive a raw start document, re-emit it for the modified stream</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="crystalmapping.callbacks.TrackLinker.stop">
+<span class="sig-name descname"><span class="pre">stop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">doc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_md</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/crystalmapping/callbacks.html#TrackLinker.stop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.callbacks.TrackLinker.stop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Receive a raw stop document, re-emit it for the modified stream</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="crystalmapping.callbacks.gen_processed_images">
+<span class="sig-prename descclassname"><span class="pre">crystalmapping.callbacks.</span></span><span class="sig-name descname"><span class="pre">gen_processed_images</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">images</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)"><span class="pre">list</span></a><span class="p"><span class="pre">,</span> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.21)"><span class="pre">numpy.ndarray</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subtrahend</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)"><span class="pre">list</span></a><span class="p"><span class="pre">,</span> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.21)"><span class="pre">numpy.ndarray</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Generator</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.21)"><span class="pre">numpy.ndarray</span></a><span class="p"><span class="pre">,</span> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><span class="pre">None</span></a><span class="p"><span class="pre">,</span> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span><a class="reference internal" href="_modules/crystalmapping/callbacks.html#gen_processed_images"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.callbacks.gen_processed_images" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate processed image from a series of images.</p>
+<p>The process procedure is (1) turn ot numpy array, (2) average the frames to a two dimensional image, (3)
+subtract the image and fill zero in negative pixels.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>images :</strong></dt><dd><p>A iterable of images. The dimensions of each image is no less than 2.</p>
+</dd>
+<dt><strong>subtrahend :</strong></dt><dd><p>The subtrahend image. The dimensions of each image is no less than 2.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Yields</dt>
+<dd class="field-even"><dl class="simple">
+<dt>processed_image :</dt><dd><p>A two dimensional image.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="crystalmapping.callbacks.get_dataframe">
+<span class="sig-prename descclassname"><span class="pre">crystalmapping.callbacks.</span></span><span class="sig-name descname"><span class="pre">get_dataframe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">run</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">databroker.v1.Header</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">pandas.core.frame.DataFrame</span><a class="reference internal" href="_modules/crystalmapping/callbacks.html#get_dataframe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.callbacks.get_dataframe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the dataframe from the stream. Drop the time column.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="crystalmapping.callbacks.get_mean_frame">
+<span class="sig-prename descclassname"><span class="pre">crystalmapping.callbacks.</span></span><span class="sig-name descname"><span class="pre">get_mean_frame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frames</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.21)"><span class="pre">numpy.ndarray</span></a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.21)"><span class="pre">numpy.ndarray</span></a><a class="reference internal" href="_modules/crystalmapping/callbacks.html#get_mean_frame"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.callbacks.get_mean_frame" title="Permalink to this definition">¶</a></dt>
+<dd><p>Average the frames to a two dimensional image.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="crystalmapping.callbacks.subtract_image">
+<span class="sig-prename descclassname"><span class="pre">crystalmapping.callbacks.</span></span><span class="sig-name descname"><span class="pre">subtract_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">minuend</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.21)"><span class="pre">numpy.ndarray</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">subtrahend</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.21)"><span class="pre">numpy.ndarray</span></a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.21)"><span class="pre">numpy.ndarray</span></a><a class="reference internal" href="_modules/crystalmapping/callbacks.html#subtract_image"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#crystalmapping.callbacks.subtract_image" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subtract the image and fill zero in negative pixels.</p>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="min_versions.html" class="btn btn-neutral float-right" title="Minimum Version of Python and NumPy" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="new_algorithm.html" class="btn btn-neutral float-left" title="Use new algorithm to run the batch processing" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2021, Songsheng Tao
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

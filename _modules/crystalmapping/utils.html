@@ -1,0 +1,1206 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>crystalmapping.utils &mdash; crystalmapping 0.0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/clipboard.min.js"></script>
+        <script src="../../_static/copybutton.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/plot_directive.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> crystalmapping
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../experiment.html">Run experiments at NSLS-II</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../old_algorithm.html">Use the old peak tracking algorithm in streaming data processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../new_algorithm.html">Use new algorithm to run the batch processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../apis.html">API Documents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../min_versions.html">Minimum Version of Python and NumPy</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">crystalmapping</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>crystalmapping.utils</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for crystalmapping.utils</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">typing</span>
+
+<span class="kn">import</span> <span class="nn">fabio</span>
+<span class="kn">import</span> <span class="nn">matplotlib.patches</span> <span class="k">as</span> <span class="nn">patches</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">tqdm</span>
+<span class="kn">import</span> <span class="nn">trackpy</span> <span class="k">as</span> <span class="nn">tp</span>
+<span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
+<span class="kn">from</span> <span class="nn">pyFAI.azimuthalIntegrator</span> <span class="kn">import</span> <span class="n">AzimuthalIntegrator</span>
+<span class="kn">from</span> <span class="nn">xarray.plot</span> <span class="kn">import</span> <span class="n">FacetGrid</span>
+
+<span class="n">_VERBOSE</span> <span class="o">=</span> <span class="mi">1</span>
+
+
+<span class="k">def</span> <span class="nf">set_verbose</span><span class="p">(</span><span class="n">level</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">global</span> <span class="n">_VERBOSE</span>
+    <span class="n">_VERBOSE</span> <span class="o">=</span> <span class="n">level</span>
+
+
+<span class="k">def</span> <span class="nf">my_print</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">_VERBOSE</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="reshape"><a class="viewcode-back" href="../../apis.html#crystalmapping.utils.reshape">[docs]</a><span class="k">def</span> <span class="nf">reshape</span><span class="p">(</span><span class="n">dataset</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">inverted</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Reshape the xarray dataset[name] into two dimensional array. Return a reshape data array with coordinates.</span>
+
+<span class="sd">    Use `shape`, `snaking`, `extents` in the dataset.attrs. The axis axis will be converted to the relative</span>
+<span class="sd">    position to samples so that the coordinate is the negative motor position.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">reshaped</span> <span class="o">=</span> <span class="n">_reshape</span><span class="p">(</span><span class="n">dataset</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">dataset</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;shape&quot;</span><span class="p">],</span> <span class="n">dataset</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;snaking&quot;</span><span class="p">])</span>
+    <span class="n">coords</span> <span class="o">=</span> <span class="n">_get_coords</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">attrs</span><span class="p">,</span> <span class="n">inverted</span><span class="o">=</span><span class="n">inverted</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="n">reshaped</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="n">coords</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">coords</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span></div>
+
+
+<span class="k">def</span> <span class="nf">_reshape</span><span class="p">(</span><span class="n">arr</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">shape</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">snaking</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">List</span><span class="p">[</span><span class="nb">bool</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="n">reshaped</span> <span class="o">=</span> <span class="n">arr</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">snaking</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">snaking</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="n">new_reshaped</span> <span class="o">=</span> <span class="n">reshaped</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">reshaped</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">new_reshaped</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">row</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">reshaped</span> <span class="o">=</span> <span class="n">new_reshaped</span>
+    <span class="k">return</span> <span class="n">reshaped</span>
+
+
+<div class="viewcode-block" id="plot_real_aspect"><a class="viewcode-back" href="../../apis.html#crystalmapping.utils.plot_real_aspect">[docs]</a><span class="k">def</span> <span class="nf">plot_real_aspect</span><span class="p">(</span><span class="n">xarr</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.6</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">FacetGrid</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Visualize two dimensional arr as a color map. The color ranges from median - alpha * std to median +</span>
+<span class="sd">    alpha * std.&quot;&quot;&quot;</span>
+    <span class="n">facet</span> <span class="o">=</span> <span class="n">xarr</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="o">**</span><span class="n">get_vlim</span><span class="p">(</span><span class="n">xarr</span><span class="p">,</span> <span class="n">alpha</span><span class="p">))</span>
+    <span class="n">set_real_aspect</span><span class="p">(</span><span class="n">facet</span><span class="o">.</span><span class="n">axes</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">facet</span></div>
+
+
+<div class="viewcode-block" id="get_vlim"><a class="viewcode-back" href="../../apis.html#crystalmapping.utils.get_vlim">[docs]</a><span class="k">def</span> <span class="nf">get_vlim</span><span class="p">(</span><span class="n">xarr</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span> <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Get vmin, vmax using mean and std.&quot;&quot;&quot;</span>
+    <span class="n">mean</span> <span class="o">=</span> <span class="n">xarr</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+    <span class="n">std</span> <span class="o">=</span> <span class="n">xarr</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;vmin&quot;</span><span class="p">:</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="n">mean</span> <span class="o">-</span> <span class="n">alpha</span> <span class="o">*</span> <span class="n">std</span><span class="p">),</span> <span class="s2">&quot;vmax&quot;</span><span class="p">:</span> <span class="n">mean</span> <span class="o">+</span> <span class="n">alpha</span> <span class="o">*</span> <span class="n">std</span><span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="annotate_peaks"><a class="viewcode-back" href="../../apis.html#crystalmapping.utils.annotate_peaks">[docs]</a><span class="k">def</span> <span class="nf">annotate_peaks</span><span class="p">(</span><span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span> <span class="n">ax</span><span class="p">:</span> <span class="n">plt</span><span class="o">.</span><span class="n">Axes</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.6</span><span class="p">,</span>
+                   <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;A function wrapping the tp.annotate. Use different default setting.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">ax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+        <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
+    <span class="n">imshow_style</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="o">**</span><span class="n">get_vlim</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">),</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;viridis&quot;</span><span class="p">)</span>
+    <span class="n">imshow_style</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">tp</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">image</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">imshow_style</span><span class="o">=</span><span class="n">imshow_style</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="o">*</span><span class="n">ax</span><span class="o">.</span><span class="n">get_ylim</span><span class="p">()[::</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="create_atlas"><a class="viewcode-back" href="../../apis.html#crystalmapping.utils.create_atlas">[docs]</a><span class="k">def</span> <span class="nf">create_atlas</span><span class="p">(</span><span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">start_frame</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">inverted</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+                 <span class="n">excluded</span><span class="p">:</span> <span class="nb">set</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">([</span><span class="s2">&quot;frame&quot;</span><span class="p">]))</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Create the dataset of the maps of grains.</span>
+
+<span class="sd">    The dataset is like below.</span>
+
+<span class="sd">        Dimensions:   (dim_0: 2, dim_1: 2, grain: 2)</span>
+
+<span class="sd">        Coordinates:</span>
+
+<span class="sd">          * dim_0     (dim_0) float64 6.0 0.0</span>
+
+<span class="sd">          * dim_1     (dim_1) float64 2.0 0.0</span>
+
+<span class="sd">          * grain     (grain) int64 0 1</span>
+
+<span class="sd">        Data variables:</span>
+
+<span class="sd">            maps      (grain, dim_0, dim_1) float64 1.0 0.0 0.0 0.0 0.0 0.0 0.0 2.0</span>
+
+<span class="sd">            y         (grain) int64 1 2</span>
+
+<span class="sd">            x         (grain) int64 1 2</span>
+
+<span class="sd">            mass      (grain) int64 1 2</span>
+
+<span class="sd">            size      (grain) int64 1 2</span>
+
+<span class="sd">            ecc       (grain) int64 1 2</span>
+
+<span class="sd">            signal    (grain) int64 1 2</span>
+
+<span class="sd">            raw_mass  (grain) int64 1 2</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    df :</span>
+<span class="sd">        The dataframe of trajectories. It has columns &quot;mass&quot; and &quot;frame&quot; and attrs &quot;extents&quot;, &quot;shape&quot;, &quot;snaking&quot;.</span>
+<span class="sd">    start_frame :</span>
+<span class="sd">        The starting number of the frame.</span>
+<span class="sd">    inverted :</span>
+<span class="sd">        If True, invert all axis so that maps are viewed in sample frame.</span>
+<span class="sd">    excluded :</span>
+<span class="sd">        The excluded the columns in dataframe.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ds :</span>
+<span class="sd">        A dataset created.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">all_data</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="n">groups</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;particle&quot;</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="c1"># get a stack of maps</span>
+    <span class="n">data_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">names</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">groups</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">_fill_in_shape</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="n">start_frame</span><span class="p">)</span>
+        <span class="n">data_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+    <span class="n">coords</span> <span class="o">=</span> <span class="n">_get_coords</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">attrs</span><span class="p">,</span> <span class="n">inverted</span><span class="p">)</span>
+    <span class="n">dims</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;grain&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">coords</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+    <span class="n">all_data</span><span class="p">[</span><span class="s2">&quot;maps&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">dims</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">data_list</span><span class="p">))</span>
+    <span class="k">del</span> <span class="n">data_list</span>
+    <span class="c1"># get additional data</span>
+    <span class="n">mean_df</span> <span class="o">=</span> <span class="n">groups</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">lst</span> <span class="ow">in</span> <span class="n">mean_df</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(</span><span class="s2">&quot;list&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">excluded</span><span class="p">:</span>
+            <span class="n">all_data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">([</span><span class="s2">&quot;grain&quot;</span><span class="p">],</span> <span class="n">lst</span><span class="p">)</span>
+    <span class="c1"># add grain to coords</span>
+    <span class="n">coords</span><span class="p">[</span><span class="s2">&quot;grain&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">names</span>
+    <span class="k">return</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">all_data</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="n">coords</span><span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">_fill_in_shape</span><span class="p">(</span><span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">start_frame</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Create a map.&quot;&quot;&quot;</span>
+    <span class="n">start_doc</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">attrs</span>
+    <span class="n">shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">start_doc</span><span class="p">[</span><span class="s2">&quot;shape&quot;</span><span class="p">])</span>
+    <span class="n">snaking_tup</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">start_doc</span><span class="p">[</span><span class="s2">&quot;snaking&quot;</span><span class="p">])</span>
+    <span class="n">snaking</span> <span class="o">=</span> <span class="n">snaking_tup</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">snaking_tup</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="kc">False</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">itertuples</span><span class="p">():</span>
+        <span class="n">seq_num</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">frame</span><span class="p">)</span> <span class="o">-</span> <span class="n">start_frame</span>
+        <span class="k">if</span> <span class="n">seq_num</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Frame number smaller than the starting number: </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">frame</span><span class="p">),</span> <span class="n">start_frame</span><span class="p">))</span>
+        <span class="n">pos</span> <span class="o">=</span> <span class="n">_get_pos</span><span class="p">(</span><span class="n">seq_num</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="n">snaking</span><span class="p">)</span>
+        <span class="n">data</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span> <span class="o">=</span> <span class="n">row</span><span class="o">.</span><span class="n">mass</span>
+    <span class="k">return</span> <span class="n">data</span>
+
+
+<span class="k">def</span> <span class="nf">_get_pos</span><span class="p">(</span><span class="n">seq_num</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">raster_shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">,</span> <span class="n">snaking</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Get the index in the matrix.&quot;&quot;&quot;</span>
+    <span class="n">pos</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unravel_index</span><span class="p">(</span><span class="n">seq_num</span><span class="p">,</span> <span class="n">raster_shape</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">snaking</span> <span class="ow">and</span> <span class="p">(</span><span class="n">pos</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">%</span> <span class="mi">2</span><span class="p">):</span>
+        <span class="n">pos</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">raster_shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">pos</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_get_coords</span><span class="p">(</span><span class="n">start_doc</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">inverted</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Get coordinates.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="s2">&quot;shape&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">start_doc</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;Missing key &#39;</span><span class="si">{}</span><span class="s2">&#39; in the metadata.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;shape&quot;</span><span class="p">))</span>
+    <span class="k">if</span> <span class="s2">&quot;extents&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">start_doc</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;Missing key &#39;</span><span class="si">{}</span><span class="s2">&#39; in the metadata&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;extents&quot;</span><span class="p">))</span>
+    <span class="n">shape</span> <span class="o">=</span> <span class="n">start_doc</span><span class="p">[</span><span class="s2">&quot;shape&quot;</span><span class="p">]</span>
+    <span class="n">extents</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">extent</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">extent</span><span class="p">)</span> <span class="k">for</span> <span class="n">extent</span> <span class="ow">in</span> <span class="n">start_doc</span><span class="p">[</span><span class="s2">&quot;extents&quot;</span><span class="p">]]</span>
+    <span class="k">if</span> <span class="n">inverted</span><span class="p">:</span>
+        <span class="n">extents</span> <span class="o">=</span> <span class="p">[</span><span class="n">extent</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">extent</span> <span class="ow">in</span> <span class="n">extents</span><span class="p">]</span>
+    <span class="n">coords</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">*</span><span class="n">extent</span><span class="p">,</span> <span class="n">num</span><span class="p">)</span> <span class="k">for</span> <span class="n">extent</span><span class="p">,</span> <span class="n">num</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">extents</span><span class="p">,</span> <span class="n">shape</span><span class="p">)]</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;dim_</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">):</span> <span class="n">data</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">coords</span><span class="p">)}</span>
+
+
+<div class="viewcode-block" id="plot_grain_maps"><a class="viewcode-back" href="../../apis.html#crystalmapping.utils.plot_grain_maps">[docs]</a><span class="k">def</span> <span class="nf">plot_grain_maps</span><span class="p">(</span><span class="n">atlas</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;maps&quot;</span><span class="p">,</span> <span class="n">col</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;grain&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">FacetGrid</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Plot the grain maps from the atlas, the output from `create_atlas`.&quot;&quot;&quot;</span>
+    <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;col&quot;</span><span class="p">,</span> <span class="n">col</span><span class="p">)</span>
+    <span class="n">facet</span> <span class="o">=</span> <span class="n">atlas</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">set_real_aspect</span><span class="p">(</span><span class="n">facet</span><span class="o">.</span><span class="n">axes</span><span class="p">)</span>
+    <span class="c1"># automatically adjust size</span>
+    <span class="n">ratio</span> <span class="o">=</span> <span class="n">facet</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">flatten</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_data_ratio</span><span class="p">()</span>
+    <span class="n">num</span> <span class="o">=</span> <span class="n">atlas</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">sizes</span><span class="p">[</span><span class="n">col</span><span class="p">]</span>
+    <span class="n">col_wrap</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;col_wrap&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">facet</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">set_size_inches</span><span class="p">((</span><span class="mi">1</span> <span class="o">*</span> <span class="n">num</span> <span class="o">/</span> <span class="n">col_wrap</span><span class="p">,</span> <span class="mi">1</span> <span class="o">*</span> <span class="n">ratio</span> <span class="o">*</span> <span class="n">col_wrap</span><span class="p">))</span>
+    <span class="n">facet</span><span class="o">.</span><span class="n">set_titles</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{value}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">facet</span></div>
+
+
+<div class="viewcode-block" id="plot_along_grains"><a class="viewcode-back" href="../../apis.html#crystalmapping.utils.plot_along_grains">[docs]</a><span class="k">def</span> <span class="nf">plot_along_grains</span><span class="p">(</span><span class="n">grain_maps</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span> <span class="n">col</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;grain&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">FacetGrid</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Plot the grain maps from the grain maps.&quot;&quot;&quot;</span>
+    <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;col&quot;</span><span class="p">,</span> <span class="n">col</span><span class="p">)</span>
+    <span class="n">facet</span> <span class="o">=</span> <span class="n">grain_maps</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">set_real_aspect</span><span class="p">(</span><span class="n">facet</span><span class="o">.</span><span class="n">axes</span><span class="p">)</span>
+    <span class="c1"># automatically adjust size</span>
+    <span class="n">ratio</span> <span class="o">=</span> <span class="n">facet</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">flatten</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_data_ratio</span><span class="p">()</span>
+    <span class="n">num</span> <span class="o">=</span> <span class="n">grain_maps</span><span class="o">.</span><span class="n">sizes</span><span class="p">[</span><span class="n">col</span><span class="p">]</span>
+    <span class="n">col_wrap</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;col_wrap&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">facet</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">set_size_inches</span><span class="p">((</span><span class="mi">1</span> <span class="o">*</span> <span class="n">num</span> <span class="o">/</span> <span class="n">col_wrap</span><span class="p">,</span> <span class="mi">1</span> <span class="o">*</span> <span class="n">ratio</span> <span class="o">*</span> <span class="n">col_wrap</span><span class="p">))</span>
+    <span class="n">facet</span><span class="o">.</span><span class="n">set_titles</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{value}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">facet</span></div>
+
+
+<div class="viewcode-block" id="set_real_aspect"><a class="viewcode-back" href="../../apis.html#crystalmapping.utils.set_real_aspect">[docs]</a><span class="k">def</span> <span class="nf">set_real_aspect</span><span class="p">(</span><span class="n">axes</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="n">plt</span><span class="o">.</span><span class="n">Axes</span><span class="p">,</span> <span class="n">typing</span><span class="o">.</span><span class="n">Iterable</span><span class="p">[</span><span class="n">plt</span><span class="o">.</span><span class="n">Axes</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Change all axes to be equal aspect.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">axes</span><span class="p">,</span> <span class="n">typing</span><span class="o">.</span><span class="n">Iterable</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="n">axes</span><span class="p">:</span>
+            <span class="n">set_real_aspect</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">axes</span><span class="o">.</span><span class="n">set_aspect</span><span class="p">(</span><span class="n">aspect</span><span class="o">=</span><span class="s2">&quot;equal&quot;</span><span class="p">,</span> <span class="n">adjustable</span><span class="o">=</span><span class="s2">&quot;box&quot;</span><span class="p">)</span>
+    <span class="k">return</span></div>
+
+
+<div class="viewcode-block" id="invert_yaxis"><a class="viewcode-back" href="../../apis.html#crystalmapping.utils.invert_yaxis">[docs]</a><span class="k">def</span> <span class="nf">invert_yaxis</span><span class="p">(</span><span class="n">axes</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="n">plt</span><span class="o">.</span><span class="n">Axes</span><span class="p">,</span> <span class="n">typing</span><span class="o">.</span><span class="n">Iterable</span><span class="p">[</span><span class="n">plt</span><span class="o">.</span><span class="n">Axes</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Change all axes to be equal aspect.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">axes</span><span class="p">,</span> <span class="n">typing</span><span class="o">.</span><span class="n">Iterable</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="n">axes</span><span class="p">:</span>
+            <span class="n">invert_yaxis</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">axes</span><span class="o">.</span><span class="n">invert_yaxis</span><span class="p">()</span>
+    <span class="k">return</span></div>
+
+
+<div class="viewcode-block" id="pixel_to_Q"><a class="viewcode-back" href="../../apis.html#crystalmapping.utils.pixel_to_Q">[docs]</a><span class="k">def</span> <span class="nf">pixel_to_Q</span><span class="p">(</span><span class="n">d1</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">d2</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">ai</span><span class="p">:</span> <span class="n">AzimuthalIntegrator</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Map pixel position (d1, d2) to Q in nm-1.&quot;&quot;&quot;</span>
+    <span class="n">arr</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="n">ai</span><span class="o">.</span><span class="n">qCornerFunct</span><span class="p">(</span><span class="n">d1</span><span class="p">,</span> <span class="n">d2</span><span class="p">))</span>
+    <span class="n">arr</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;standard_name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Q&quot;</span>
+    <span class="n">arr</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;units&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;nm$^{-1}$&quot;</span>
+    <span class="k">return</span> <span class="n">arr</span></div>
+
+
+<div class="viewcode-block" id="assign_Q_to_atlas"><a class="viewcode-back" href="../../apis.html#crystalmapping.utils.assign_Q_to_atlas">[docs]</a><span class="k">def</span> <span class="nf">assign_Q_to_atlas</span><span class="p">(</span><span class="n">atlas</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">,</span> <span class="n">ai</span><span class="p">:</span> <span class="n">AzimuthalIntegrator</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Assign Q grid to atlas&quot;&quot;&quot;</span>
+    <span class="n">q</span> <span class="o">=</span> <span class="n">pixel_to_Q</span><span class="p">(</span><span class="n">atlas</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">atlas</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">ai</span><span class="p">)</span>
+    <span class="n">dims</span> <span class="o">=</span> <span class="n">atlas</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">dims</span>
+    <span class="k">return</span> <span class="n">atlas</span><span class="o">.</span><span class="n">assign</span><span class="p">({</span><span class="s2">&quot;Q&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">dims</span><span class="p">,</span> <span class="n">q</span><span class="p">)})</span></div>
+
+
+<div class="viewcode-block" id="create_atlas_dask"><a class="viewcode-back" href="../../apis.html#crystalmapping.utils.create_atlas_dask">[docs]</a><span class="k">def</span> <span class="nf">create_atlas_dask</span><span class="p">(</span><span class="n">frames</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span> <span class="n">windows</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Create a list of tasks to compute the grain maps. Each task is one grain map.</span>
+
+<span class="sd">    The dataframe has columns &quot;x&quot;, &quot;y&quot;, &quot;dx&quot;, &quot;dy&quot;. Each row is a window on the frames. The window is</span>
+<span class="sd">    (x - dx, x + dx) in horizontal and (y - dy, y + dy) in vertical. The return is a list of dask arrays.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    windows :</span>
+<span class="sd">        The dataframe with columns &quot;x&quot;, &quot;y&quot;, &quot;dx&quot;, &quot;dy&quot;.</span>
+<span class="sd">    frames :</span>
+<span class="sd">        One frame.</span>
+<span class="sd">    verbose :</span>
+<span class="sd">        Whether to report status or not.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    tasks :</span>
+<span class="sd">        A list of dask arrays.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># make the numbers ints</span>
+    <span class="n">windows</span> <span class="o">=</span> <span class="n">windows</span><span class="p">[[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;dx&quot;</span><span class="p">,</span> <span class="s2">&quot;dy&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">)</span><span class="o">.</span><span class="n">applymap</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+    <span class="c1"># get limits</span>
+    <span class="n">nf</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">ny</span><span class="p">,</span> <span class="n">nx</span> <span class="o">=</span> <span class="n">frames</span><span class="o">.</span><span class="n">shape</span>
+    <span class="c1"># create tasks</span>
+    <span class="n">maps</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">frame</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">frames</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;process frame </span><span class="si">{}</span><span class="s2">/</span><span class="si">{}</span><span class="s2">.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">nf</span><span class="p">),</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\r</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">frame</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+        <span class="n">mean_frames</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">windows</span><span class="o">.</span><span class="n">itertuples</span><span class="p">():</span>
+            <span class="n">slice_y</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="n">row</span><span class="o">.</span><span class="n">dy</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="nb">min</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">y</span> <span class="o">+</span> <span class="n">row</span><span class="o">.</span><span class="n">dy</span><span class="p">,</span> <span class="n">ny</span><span class="p">))</span>
+            <span class="n">slice_x</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">x</span> <span class="o">-</span> <span class="n">row</span><span class="o">.</span><span class="n">dx</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="nb">min</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">x</span> <span class="o">+</span> <span class="n">row</span><span class="o">.</span><span class="n">dx</span><span class="p">,</span> <span class="n">nx</span><span class="p">))</span>
+            <span class="n">mean_frame</span> <span class="o">=</span> <span class="n">frame</span><span class="p">[:,</span> <span class="n">slice_y</span><span class="p">,</span> <span class="n">slice_x</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+            <span class="n">mean_frames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mean_frame</span><span class="p">)</span>
+        <span class="n">maps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">xr</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">mean_frames</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="s2">&quot;grain&quot;</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">xr</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">maps</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="s2">&quot;time&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="create_dataset"><a class="viewcode-back" href="../../apis.html#crystalmapping.utils.create_dataset">[docs]</a><span class="k">def</span> <span class="nf">create_dataset</span><span class="p">(</span><span class="n">maps</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span> <span class="n">windows</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">metadata</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">inverted</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Create the dataset from the results of create_atlas_dask.&quot;&quot;&quot;</span>
+    <span class="n">ds</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span> <span class="o">=</span> <span class="n">windows</span><span class="o">.</span><span class="n">to_xarray</span><span class="p">()</span>
+    <span class="n">old_dims</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">dims</span><span class="p">)</span>
+    <span class="n">new_values</span> <span class="o">=</span> <span class="n">reshape_to_matrix</span><span class="p">(</span><span class="n">maps</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">metadata</span><span class="p">)</span>
+    <span class="n">new_coords</span> <span class="o">=</span> <span class="n">_get_coords</span><span class="p">(</span><span class="n">metadata</span><span class="p">,</span> <span class="n">inverted</span><span class="o">=</span><span class="n">inverted</span><span class="p">)</span>
+    <span class="n">new_dims</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">new_coords</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">+</span> <span class="n">old_dims</span>
+    <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">assign_coords</span><span class="p">(</span><span class="n">new_coords</span><span class="p">)</span>
+    <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">assign</span><span class="p">({</span><span class="s2">&quot;maps&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">new_dims</span><span class="p">,</span> <span class="n">new_values</span><span class="p">)})</span>
+    <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">rename</span><span class="p">({</span><span class="n">old_dims</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span> <span class="s2">&quot;grain&quot;</span><span class="p">})</span>
+    <span class="k">return</span> <span class="n">ds</span></div>
+
+
+<span class="k">def</span> <span class="nf">reshape_to_matrix</span><span class="p">(</span><span class="n">arr</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">metadata</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="k">if</span> <span class="s2">&quot;shape&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">metadata</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;Missing key &#39;</span><span class="si">{}</span><span class="s2">&#39; in metadata.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;shape&quot;</span><span class="p">))</span>
+    <span class="n">reshaped</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">apply_along_axis</span><span class="p">(</span>
+        <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">_reshape</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;shape&quot;</span><span class="p">],</span> <span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;snaking&quot;</span><span class="p">,</span> <span class="p">[])),</span>
+        <span class="mi">0</span><span class="p">,</span>
+        <span class="n">arr</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">reshaped</span>
+
+
+<div class="viewcode-block" id="min_and_max_along_time"><a class="viewcode-back" href="../../apis.html#crystalmapping.utils.min_and_max_along_time">[docs]</a><span class="k">def</span> <span class="nf">min_and_max_along_time</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Extract the minimum and maximum values of each pixel in a series of mean frames. Return a data array.</span>
+<span class="sd">    First is the min array and the second is the max array.&quot;&quot;&quot;</span>
+    <span class="n">min_arr</span> <span class="o">=</span> <span class="n">max_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">num</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">my_print</span><span class="p">(</span><span class="s2">&quot;Process frame: </span><span class="si">{}</span><span class="s2"> / </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">num</span><span class="p">),</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\r</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)):</span>
+        <span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">min_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fmin</span><span class="p">(</span><span class="n">min_arr</span><span class="p">,</span> <span class="n">arr</span><span class="p">)</span>
+        <span class="n">max_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fmax</span><span class="p">(</span><span class="n">max_arr</span><span class="p">,</span> <span class="n">arr</span><span class="p">)</span>
+        <span class="n">my_print</span><span class="p">(</span><span class="s2">&quot;Process frame: </span><span class="si">{}</span><span class="s2"> / </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">num</span><span class="p">),</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\r</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">min_arr</span><span class="p">,</span> <span class="n">max_arr</span><span class="p">]),</span> <span class="n">coords</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;dim_0&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;dark&quot;</span><span class="p">,</span> <span class="s2">&quot;light&quot;</span><span class="p">]})</span></div>
+
+
+<div class="viewcode-block" id="reshape_to_xarray"><a class="viewcode-back" href="../../apis.html#crystalmapping.utils.reshape_to_xarray">[docs]</a><span class="k">def</span> <span class="nf">reshape_to_xarray</span><span class="p">(</span><span class="n">arr</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span> <span class="n">metadata</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Reshape a 1D data array to an 2D data array according to the metadata about the bluesky plan.</span>
+<span class="sd">    The coordinates will also be reshaped.&quot;&quot;&quot;</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">reshape_to_matrix</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">metadata</span><span class="p">)</span>
+    <span class="n">coords</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="n">reshape_to_matrix</span><span class="p">(</span><span class="n">coord</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">metadata</span><span class="p">))</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">coord</span> <span class="ow">in</span> <span class="n">arr</span><span class="o">.</span><span class="n">coords</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+    <span class="k">return</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="n">coords</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="reformat_data"><a class="viewcode-back" href="../../apis.html#crystalmapping.utils.reformat_data">[docs]</a><span class="k">def</span> <span class="nf">reformat_data</span><span class="p">(</span><span class="n">ds</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Reformat the data loaded from the databroker.&quot;&quot;&quot;</span>
+    <span class="n">frames</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">ds</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">ds</span><span class="o">.</span><span class="n">rename_dims</span><span class="p">({</span><span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="s2">&quot;frame&quot;</span><span class="p">})</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">drop_vars</span><span class="p">(</span><span class="s2">&quot;time_&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">assign_coords</span><span class="p">(</span>
+        <span class="p">{</span><span class="s2">&quot;frame&quot;</span><span class="p">:</span> <span class="n">frames</span><span class="p">})</span></div>
+
+
+<div class="viewcode-block" id="draw_windows"><a class="viewcode-back" href="../../apis.html#crystalmapping.utils.draw_windows">[docs]</a><span class="k">def</span> <span class="nf">draw_windows</span><span class="p">(</span><span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">ax</span><span class="p">:</span> <span class="n">plt</span><span class="o">.</span><span class="n">Axes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Draw windows on the axes.&quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">itertuples</span><span class="p">():</span>
+        <span class="n">xy</span> <span class="o">=</span> <span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">x</span> <span class="o">-</span> <span class="n">row</span><span class="o">.</span><span class="n">dx</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">row</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="n">row</span><span class="o">.</span><span class="n">dy</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">)</span>
+        <span class="n">width</span> <span class="o">=</span> <span class="n">row</span><span class="o">.</span><span class="n">dx</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">height</span> <span class="o">=</span> <span class="n">row</span><span class="o">.</span><span class="n">dy</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">patch</span> <span class="o">=</span> <span class="n">patches</span><span class="o">.</span><span class="n">Rectangle</span><span class="p">(</span><span class="n">xy</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="n">height</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">fill</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">add_patch</span><span class="p">(</span><span class="n">patch</span><span class="p">)</span>
+    <span class="k">return</span></div>
+
+
+<span class="k">def</span> <span class="nf">create_windows_from_size</span><span class="p">(</span><span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">multiplier</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+    <span class="n">df2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+    <span class="n">df2</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">)</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">df2</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">)</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">df2</span><span class="p">[</span><span class="s2">&quot;dx&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df2</span><span class="p">[</span><span class="s2">&quot;dy&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;size&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">multiplier</span><span class="p">)</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">)</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">df2</span>
+
+
+<span class="k">def</span> <span class="nf">create_windows_from_width</span><span class="p">(</span><span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">width</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+    <span class="n">df2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+    <span class="n">df2</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">)</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">df2</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">)</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">df2</span><span class="p">[</span><span class="s2">&quot;dx&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df2</span><span class="p">[</span><span class="s2">&quot;dy&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">width</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">df2</span>
+
+
+<div class="viewcode-block" id="track_peaks"><a class="viewcode-back" href="../../apis.html#crystalmapping.utils.track_peaks">[docs]</a><span class="k">def</span> <span class="nf">track_peaks</span><span class="p">(</span><span class="n">frames</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span> <span class="n">windows</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Create a list of tasks to compute the grain maps. Each task is one grain map.&quot;&quot;&quot;</span>
+    <span class="c1"># get limits</span>
+    <span class="n">nf</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">ny</span><span class="p">,</span> <span class="n">nx</span> <span class="o">=</span> <span class="n">frames</span><span class="o">.</span><span class="n">shape</span>
+    <span class="c1"># create tasks</span>
+    <span class="n">maps</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">frame</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">frames</span><span class="p">):</span>
+        <span class="n">my_print</span><span class="p">(</span><span class="s2">&quot;Process frame </span><span class="si">{}</span><span class="s2"> / </span><span class="si">{}</span><span class="s2">.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">nf</span><span class="p">),</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\r</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">frame</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+        <span class="n">mean_frames</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">windows</span><span class="o">.</span><span class="n">itertuples</span><span class="p">():</span>
+            <span class="n">slice_y</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="n">row</span><span class="o">.</span><span class="n">dy</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="nb">min</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">y</span> <span class="o">+</span> <span class="n">row</span><span class="o">.</span><span class="n">dy</span><span class="p">,</span> <span class="n">ny</span><span class="p">))</span>
+            <span class="n">slice_x</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">x</span> <span class="o">-</span> <span class="n">row</span><span class="o">.</span><span class="n">dx</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="nb">min</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">x</span> <span class="o">+</span> <span class="n">row</span><span class="o">.</span><span class="n">dx</span><span class="p">,</span> <span class="n">nx</span><span class="p">))</span>
+            <span class="n">mean_frame</span> <span class="o">=</span> <span class="n">frame</span><span class="p">[:,</span> <span class="n">slice_y</span><span class="p">,</span> <span class="n">slice_x</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+            <span class="n">mean_frames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mean_frame</span><span class="p">)</span>
+        <span class="n">maps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">xr</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">mean_frames</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="s2">&quot;grain&quot;</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">xr</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">maps</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="s2">&quot;time&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="create_grain_maps"><a class="viewcode-back" href="../../apis.html#crystalmapping.utils.create_grain_maps">[docs]</a><span class="k">def</span> <span class="nf">create_grain_maps</span><span class="p">(</span><span class="n">frames</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span> <span class="n">windows</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">metadata</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+                      <span class="n">inverted</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Create grain maps from frames.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    frames :</span>
+<span class="sd">        The dask array of raw diffraction frames.</span>
+<span class="sd">    windows :</span>
+<span class="sd">        The data frame of x, y, dx, dy. The x, y positions in pixels and the half width of the window.</span>
+<span class="sd">    metadata :</span>
+<span class="sd">        The start document of the run.</span>
+<span class="sd">    inverted :</span>
+<span class="sd">        Use x[::-1] and y[::-1] in grain maps.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ds :</span>
+<span class="sd">        The dataset of grain maps.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">maps</span> <span class="o">=</span> <span class="n">track_peaks</span><span class="p">(</span><span class="n">frames</span><span class="p">,</span> <span class="n">windows</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">create_dataset</span><span class="p">(</span><span class="n">maps</span><span class="p">,</span> <span class="n">windows</span><span class="p">,</span> <span class="n">metadata</span><span class="p">,</span> <span class="n">inverted</span><span class="o">=</span><span class="n">inverted</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="select_frames"><a class="viewcode-back" href="../../apis.html#crystalmapping.utils.select_frames">[docs]</a><span class="k">def</span> <span class="nf">select_frames</span><span class="p">(</span>
+    <span class="n">image_sum_data</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span> <span class="n">metadata</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">start_row</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">end_row</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Select the frames according to the summation of the intensity on the image.&quot;&quot;&quot;</span>
+    <span class="n">image_sum_matrix</span> <span class="o">=</span> <span class="n">reshape_to_xarray</span><span class="p">(</span><span class="n">image_sum_data</span><span class="p">,</span> <span class="n">metadata</span><span class="p">)</span>
+    <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;size&quot;</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">end_row</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">end_row</span> <span class="o">=</span> <span class="n">image_sum_matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">image_sum_matrix</span> <span class="o">=</span> <span class="n">image_sum_matrix</span><span class="p">[</span><span class="n">start_row</span><span class="p">:</span><span class="n">end_row</span><span class="p">]</span>
+    <span class="n">facet</span> <span class="o">=</span> <span class="n">image_sum_matrix</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="n">image_sum_matrix</span><span class="o">.</span><span class="n">frame</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">start_index</span><span class="p">,</span> <span class="n">end_index</span> <span class="o">=</span> <span class="n">index</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">index</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+    <span class="n">facet</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;From frame </span><span class="si">{}</span><span class="s2"> to frame </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">start_index</span><span class="p">,</span> <span class="n">end_index</span><span class="p">))</span>
+    <span class="n">set_real_aspect</span><span class="p">(</span><span class="n">facet</span><span class="o">.</span><span class="n">axes</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="average_intensity"><a class="viewcode-back" href="../../apis.html#crystalmapping.utils.average_intensity">[docs]</a><span class="k">def</span> <span class="nf">average_intensity</span><span class="p">(</span><span class="n">frame</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">windows</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Calculate the average intensity in windows. Return an array of average intensity.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">frame</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">CalculatorError</span><span class="p">(</span><span class="s2">&quot;frame must have no less than 2 dimensions.&quot;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">frame</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="mi">2</span>
+        <span class="n">frame</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">)))</span>
+    <span class="n">ny</span><span class="p">,</span> <span class="n">nx</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">shape</span>
+    <span class="c1"># create tasks</span>
+    <span class="n">I_in_windows</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">windows</span><span class="o">.</span><span class="n">itertuples</span><span class="p">():</span>
+        <span class="n">slice_y</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="n">row</span><span class="o">.</span><span class="n">dy</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="nb">min</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">y</span> <span class="o">+</span> <span class="n">row</span><span class="o">.</span><span class="n">dy</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">ny</span><span class="p">))</span>
+        <span class="n">slice_x</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">x</span> <span class="o">-</span> <span class="n">row</span><span class="o">.</span><span class="n">dx</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="nb">min</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">x</span> <span class="o">+</span> <span class="n">row</span><span class="o">.</span><span class="n">dx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">nx</span><span class="p">))</span>
+        <span class="n">I_in_window</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">frame</span><span class="p">[</span><span class="n">slice_y</span><span class="p">,</span> <span class="n">slice_x</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">frame</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="n">I_in_windows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">I_in_window</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">I_in_windows</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="track_peaks2"><a class="viewcode-back" href="../../apis.html#crystalmapping.utils.track_peaks2">[docs]</a><span class="k">def</span> <span class="nf">track_peaks2</span><span class="p">(</span><span class="n">frames</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span> <span class="n">windows</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Create a list of tasks to compute the grain maps. Each task is one grain map.&quot;&quot;&quot;</span>
+    <span class="c1"># create intensity vs time for each grain</span>
+    <span class="k">global</span> <span class="n">_VERBOSE</span>
+    <span class="n">intensities</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">frames</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">iter_range</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">_VERBOSE</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">iter_range</span> <span class="o">=</span> <span class="n">tqdm</span><span class="o">.</span><span class="n">tqdm</span><span class="p">(</span><span class="n">iter_range</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">iter_range</span><span class="p">:</span>
+        <span class="n">intensity</span> <span class="o">=</span> <span class="n">average_intensity</span><span class="p">(</span><span class="n">frames</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">windows</span><span class="p">)</span>
+        <span class="n">intensities</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">intensity</span><span class="p">)</span>
+    <span class="c1"># axis: grain, frame</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">intensities</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span></div>
+
+
+<span class="k">def</span> <span class="nf">summary_in_a_dataset</span><span class="p">(</span><span class="n">arr</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span> <span class="n">windows</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+    <span class="c1"># attach the arr to the data set</span>
+    <span class="n">ds</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span> <span class="o">=</span> <span class="n">windows</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">to_xarray</span><span class="p">()</span>
+    <span class="n">dims</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">dims</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+    <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">rename</span><span class="p">({</span><span class="n">dims</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span> <span class="s2">&quot;grain&quot;</span><span class="p">})</span><span class="o">.</span><span class="n">assign</span><span class="p">({</span><span class="s2">&quot;maps&quot;</span><span class="p">:</span> <span class="n">arr</span><span class="p">})</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="s2">&quot;grain&quot;</span><span class="p">,</span> <span class="s2">&quot;frame&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">ds</span>
+
+
+<span class="k">def</span> <span class="nf">reshape_to_ndarray</span><span class="p">(</span><span class="n">arr</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">metadata</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="k">if</span> <span class="s2">&quot;shape&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">metadata</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">CalculatorError</span><span class="p">(</span><span class="s2">&quot;Missing key &#39;</span><span class="si">{}</span><span class="s2">&#39; in metadata.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;shape&quot;</span><span class="p">))</span>
+    <span class="n">shape</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">shape</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">shape</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;shape&quot;</span><span class="p">])</span>
+    <span class="n">arr</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">arr</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+    <span class="c1"># if snaking the row</span>
+    <span class="k">if</span> <span class="s2">&quot;snaking&quot;</span> <span class="ow">in</span> <span class="n">metadata</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;snaking&quot;</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;snaking&quot;</span><span class="p">][</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;shape&quot;</span><span class="p">])</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">CalculatorError</span><span class="p">(</span><span class="s2">&quot;snaking only works for the 2 dimension array.&quot;</span><span class="p">)</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="n">arr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">arr</span><span class="p">[:,</span> <span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">arr</span><span class="p">[:,</span> <span class="n">i</span><span class="p">,</span> <span class="p">::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">arr</span>
+
+
+<div class="viewcode-block" id="reshape_to_xarray2"><a class="viewcode-back" href="../../apis.html#crystalmapping.utils.reshape_to_xarray2">[docs]</a><span class="k">def</span> <span class="nf">reshape_to_xarray2</span><span class="p">(</span><span class="n">arr</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span> <span class="n">metadata</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Reshape a 1D data array to an 2D data array according to the metadata about the bluesky plan.</span>
+<span class="sd">    The coordinates will also be reshaped.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="s2">&quot;shape&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">metadata</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;Missing &#39;shape&#39; in metadata.&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">arr</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The arr must have 2 dimensions. This has </span><span class="si">{}</span><span class="s2">.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">ndim</span><span class="p">))</span>
+    <span class="n">shape</span> <span class="o">=</span> <span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;shape&quot;</span><span class="p">]</span>
+    <span class="n">dims</span> <span class="o">=</span> <span class="p">[</span><span class="n">arr</span><span class="o">.</span><span class="n">dims</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+    <span class="n">dims</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s2">&quot;dim_</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;shape&quot;</span><span class="p">]))])</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="n">reshape_to_ndarray</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">metadata</span><span class="p">),</span> <span class="n">dims</span><span class="o">=</span><span class="n">dims</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s2">&quot;extents&quot;</span> <span class="ow">in</span> <span class="n">metadata</span><span class="p">:</span>
+        <span class="n">extents</span> <span class="o">=</span> <span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;extents&quot;</span><span class="p">]</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;dim_</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">*</span><span class="n">extent</span><span class="p">,</span> <span class="n">num</span><span class="p">)</span>
+                  <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">extent</span><span class="p">,</span> <span class="n">num</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">extents</span><span class="p">,</span> <span class="n">shape</span><span class="p">))}</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">assign_coords</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">data</span></div>
+
+
+<span class="k">def</span> <span class="nf">create_windows_from_width2</span><span class="p">(</span><span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">width</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+    <span class="n">width</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">width</span><span class="p">)</span>
+    <span class="n">df2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+    <span class="n">df2</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">)</span>
+    <span class="n">df2</span><span class="p">[</span><span class="s2">&quot;dy&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">width</span>
+    <span class="n">df2</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">)</span>
+    <span class="n">df2</span><span class="p">[</span><span class="s2">&quot;dx&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">width</span>
+    <span class="k">return</span> <span class="n">df2</span>
+
+
+<div class="viewcode-block" id="min_and_max_along_time2"><a class="viewcode-back" href="../../apis.html#crystalmapping.utils.min_and_max_along_time2">[docs]</a><span class="k">def</span> <span class="nf">min_and_max_along_time2</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Extract the minimum and maximum values of each pixel in a series of mean frames. Return a data array.</span>
+<span class="sd">    First is the min array and the second is the max array.&quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">_VERBOSE</span>
+    <span class="n">min_arr</span> <span class="o">=</span> <span class="n">max_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">iter_range</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">_VERBOSE</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">iter_range</span> <span class="o">=</span> <span class="n">tqdm</span><span class="o">.</span><span class="n">tqdm</span><span class="p">(</span><span class="n">iter_range</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">iter_range</span><span class="p">:</span>
+        <span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">min_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fmin</span><span class="p">(</span><span class="n">min_arr</span><span class="p">,</span> <span class="n">arr</span><span class="p">)</span>
+        <span class="n">max_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fmax</span><span class="p">(</span><span class="n">max_arr</span><span class="p">,</span> <span class="n">arr</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">min_arr</span><span class="p">,</span> <span class="n">max_arr</span></div>
+
+
+<div class="viewcode-block" id="get_coords2"><a class="viewcode-back" href="../../apis.html#crystalmapping.utils.get_coords2">[docs]</a><span class="k">def</span> <span class="nf">get_coords2</span><span class="p">(</span><span class="n">start_doc</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Get coordinates.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="s2">&quot;shape&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">start_doc</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;Missing key &#39;</span><span class="si">{}</span><span class="s2">&#39; in the metadata.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;shape&quot;</span><span class="p">))</span>
+    <span class="k">if</span> <span class="s2">&quot;extents&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">start_doc</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;Missing key &#39;</span><span class="si">{}</span><span class="s2">&#39; in the metadata&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;extents&quot;</span><span class="p">))</span>
+    <span class="n">shape</span> <span class="o">=</span> <span class="n">start_doc</span><span class="p">[</span><span class="s2">&quot;shape&quot;</span><span class="p">]</span>
+    <span class="n">extents</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">extent</span><span class="p">)</span> <span class="k">for</span> <span class="n">extent</span> <span class="ow">in</span> <span class="n">start_doc</span><span class="p">[</span><span class="s2">&quot;extents&quot;</span><span class="p">]]</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">*</span><span class="n">extent</span><span class="p">,</span> <span class="n">num</span><span class="p">)</span> <span class="k">for</span> <span class="n">extent</span><span class="p">,</span> <span class="n">num</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">extents</span><span class="p">,</span> <span class="n">shape</span><span class="p">)]</span></div>
+
+
+<span class="k">def</span> <span class="nf">show_npy_array</span><span class="p">(</span><span class="n">template</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+    <span class="n">arr</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">))</span>
+    <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span>
+    <span class="n">arr</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="n">set_real_aspect</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+    <span class="k">return</span>
+
+
+<span class="k">def</span> <span class="nf">show_tiff_array</span><span class="p">(</span><span class="n">template</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+    <span class="n">arr</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="n">fabio</span><span class="o">.</span><span class="n">openimage</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">f</span><span class="p">)</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span>
+    <span class="n">arr</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="n">set_real_aspect</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+    <span class="k">return</span>
+
+
+<div class="viewcode-block" id="limit_3std"><a class="viewcode-back" href="../../apis.html#crystalmapping.utils.limit_3std">[docs]</a><span class="k">def</span> <span class="nf">limit_3std</span><span class="p">(</span><span class="n">da</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Return the mean - 3 * std and mean + 3 * std of the data array.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    da</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">m</span><span class="p">,</span> <span class="n">s</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="n">da</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">m</span> <span class="o">-</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">s</span><span class="p">,</span> <span class="n">m</span> <span class="o">+</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">s</span></div>
+
+
+<div class="viewcode-block" id="plot_crystal_maps"><a class="viewcode-back" href="../../apis.html#crystalmapping.utils.plot_crystal_maps">[docs]</a><span class="k">def</span> <span class="nf">plot_crystal_maps</span><span class="p">(</span>
+    <span class="n">da</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span>
+    <span class="n">limit_func</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Callable</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">invert_y</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FacetGrid</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Plot the crystal maps.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    da</span>
+<span class="sd">    limit_func</span>
+<span class="sd">    invert_y</span>
+<span class="sd">    kwargs</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">limit_func</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">limit_func</span> <span class="o">=</span> <span class="n">limit_3std</span>
+    <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;col&quot;</span><span class="p">,</span> <span class="s2">&quot;grain&quot;</span><span class="p">)</span>
+    <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;col_wrap&quot;</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
+    <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;sharex&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;sharey&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;add_colorbar&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span> <span class="o">=</span> <span class="n">limit_func</span><span class="p">(</span><span class="n">da</span><span class="p">)</span>
+    <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;vmax&quot;</span><span class="p">,</span> <span class="n">vmax</span><span class="p">)</span>
+    <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;vmin&quot;</span><span class="p">,</span> <span class="n">vmin</span><span class="p">)</span>
+    <span class="n">facet</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">set_real_aspect</span><span class="p">(</span><span class="n">facet</span><span class="o">.</span><span class="n">axes</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">invert_y</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;sharey&quot;</span><span class="p">):</span>
+            <span class="c1"># if y is shared, only the first one need to be inverted</span>
+            <span class="n">invert_yaxis</span><span class="p">(</span><span class="n">facet</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">flatten</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">invert_yaxis</span><span class="p">(</span><span class="n">facet</span><span class="o">.</span><span class="n">axes</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">facet</span></div>
+
+
+<div class="viewcode-block" id="plot_rocking_curves"><a class="viewcode-back" href="../../apis.html#crystalmapping.utils.plot_rocking_curves">[docs]</a><span class="k">def</span> <span class="nf">plot_rocking_curves</span><span class="p">(</span><span class="n">da</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FacetGrid</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Plot the rocking curves.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    da</span>
+<span class="sd">    kwargs</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;col&quot;</span><span class="p">,</span> <span class="s2">&quot;grain&quot;</span><span class="p">)</span>
+    <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;col_wrap&quot;</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+    <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;sharex&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;sharey&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">da</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="auto_plot"><a class="viewcode-back" href="../../apis.html#crystalmapping.utils.auto_plot">[docs]</a><span class="k">def</span> <span class="nf">auto_plot</span><span class="p">(</span>
+    <span class="n">da</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span>
+    <span class="n">title</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">invert_y</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FacetGrid</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Automatically detect the data type and plot the data array.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    da :</span>
+<span class="sd">        The data array containing the intensity.</span>
+<span class="sd">    title :</span>
+<span class="sd">        Determine title of the axes. It is a format string and a name of the variable. If None, do nothing.</span>
+<span class="sd">    invert_y :</span>
+<span class="sd">        Invert the y axis.</span>
+<span class="sd">    kwargs :</span>
+<span class="sd">        The kwargs for the configuration of the plot.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Usually a FacetGrid object.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">da</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">facet</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">da</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">facet</span> <span class="o">=</span> <span class="n">plot_rocking_curves</span><span class="p">(</span><span class="n">da</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">da</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="n">facet</span> <span class="o">=</span> <span class="n">plot_crystal_maps</span><span class="p">(</span><span class="n">da</span><span class="p">,</span> <span class="n">invert_y</span><span class="o">=</span><span class="n">invert_y</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;col&quot;</span><span class="p">,</span> <span class="s2">&quot;grain&quot;</span><span class="p">)</span>
+        <span class="n">facet</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">title</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">v_name</span><span class="p">,</span> <span class="n">f_title</span> <span class="o">=</span> <span class="n">title</span>
+        <span class="n">vals</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">da</span><span class="p">[</span><span class="n">v_name</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+        <span class="n">axes</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">List</span><span class="p">[</span><span class="n">plt</span><span class="o">.</span><span class="n">Axes</span><span class="p">]</span> <span class="o">=</span> <span class="n">facet</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">ax</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">axes</span><span class="p">,</span> <span class="n">vals</span><span class="p">):</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">f_title</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">val</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">facet</span></div>
+
+
+<span class="k">def</span> <span class="nf">auto_plot_dataset</span><span class="p">(</span>
+    <span class="n">ds</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">,</span>
+    <span class="n">key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;intensity&quot;</span><span class="p">,</span>
+    <span class="n">title</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">invert_y</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span>
+<span class="p">):</span>
+    <span class="n">facet</span> <span class="o">=</span> <span class="n">auto_plot</span><span class="p">(</span><span class="n">ds</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">title</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">invert_y</span><span class="o">=</span><span class="n">invert_y</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">title</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">v_name</span><span class="p">,</span> <span class="n">f_title</span> <span class="o">=</span> <span class="n">title</span>
+        <span class="n">vals</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[</span><span class="n">v_name</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+        <span class="n">axes</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">List</span><span class="p">[</span><span class="n">plt</span><span class="o">.</span><span class="n">Axes</span><span class="p">]</span> <span class="o">=</span> <span class="n">facet</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">ax</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">axes</span><span class="p">,</span> <span class="n">vals</span><span class="p">):</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">f_title</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">val</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">facet</span>
+
+
+<span class="k">def</span> <span class="nf">set_vlim</span><span class="p">(</span><span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">da</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span> <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">low_lim</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">,</span>
+             <span class="n">high_lim</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">))</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">mean</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+    <span class="n">std</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+    <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;vmin&quot;</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="n">low_lim</span><span class="p">,</span> <span class="n">mean</span> <span class="o">-</span> <span class="n">std</span> <span class="o">*</span> <span class="n">alpha</span><span class="p">))</span>
+    <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;vmax&quot;</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="n">high_lim</span><span class="p">,</span> <span class="n">mean</span> <span class="o">+</span> <span class="n">std</span> <span class="o">*</span> <span class="n">alpha</span><span class="p">))</span>
+    <span class="k">return</span>
+
+
+<div class="viewcode-block" id="CalculatorError"><a class="viewcode-back" href="../../apis.html#crystalmapping.utils.CalculatorError">[docs]</a><span class="k">class</span> <span class="nc">CalculatorError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="Calculator"><a class="viewcode-back" href="../../apis.html#crystalmapping.utils.Calculator">[docs]</a><span class="k">class</span> <span class="nc">Calculator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;The Calculator of the crystal maps.</span>
+
+<span class="sd">    Each of the attribute can be the calculated output and the input for the next step of calculation.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    frames_arr : DataArray</span>
+<span class="sd">        A data array of diffraction data. It is assumed to be a (N, F, Y, X) shape array, where N is the number</span>
+<span class="sd">        of exposure, F is the number of the frames in one exposure, the Y is the number of pixels in vertical,</span>
+<span class="sd">        X is the number of pixels in horizontal. It can also be (N, Y, X) shape array if there is only one</span>
+<span class="sd">        frame in each exposure.</span>
+<span class="sd">    dark : ndarray</span>
+<span class="sd">        The minimum values on the pixels in whole series of exposures. It is assumed to be the background.</span>
+<span class="sd">    light: ndarray</span>
+<span class="sd">        The maximum values on the pixels in the whole series of exposures. It is assumed to be a image of all</span>
+<span class="sd">        the Bragg peaks on the background.</span>
+<span class="sd">    peaks: DataFrame</span>
+<span class="sd">        A dataframe records all the peak positions.</span>
+<span class="sd">    windows: DataFrame</span>
+<span class="sd">        A dataframe records all the center positions and half width of the windows.</span>
+<span class="sd">    intensity: ndarray</span>
+<span class="sd">        The array of the average intensity in each of the windows in the series of exposures. It has the shape (</span>
+<span class="sd">        W, dim_0, dim_1, ...). The W is the number of the windows and the dim_i is the length of the dimension</span>
+<span class="sd">        i in the grid scan.</span>
+<span class="sd">    bkg_intensity : ndarray</span>
+<span class="sd">        The integrated background intensity in the windows.</span>
+<span class="sd">    coords : ndarray</span>
+<span class="sd">        The coordinates of the dim_0, dim_1, ... in grid scan.</span>
+<span class="sd">    metadata : dict</span>
+<span class="sd">        The dictionary to record the metadata. There are two important keys: shape, extents. The shape is the</span>
+<span class="sd">        number of points in each dimension in the grid scan. It should be a array like (dim_0, dim_1, ...). The</span>
+<span class="sd">        extents are the start and end value for each dimension. It should be array like [(start0, end0),</span>
+<span class="sd">        (start1, end1), ...]. These two keys are used to calculate the coordinates.</span>
+<span class="sd">    ai : AzimuthalIntegrator</span>
+<span class="sd">        The class to hold the data of the geometry of the experiments. It is used to index the Q values for each</span>
+<span class="sd">        window.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># dims: time, ..., pixel_y, pixel_x</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">frames_arr</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># dims: pixel_y, pixel_x</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dark</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># dims: pixel_y, pixel_x</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">light</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># index: all_grain</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">peaks</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># index: grain</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">windows</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># dims: grain, dim_1, ..., dim_n</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">intensity</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># dims: grain</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bkg_intensity</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># dims: dim_1, ..., dim_n</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">coords</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="n">typing</span><span class="o">.</span><span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># keys: shape, extents, snaking</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># pyFAI</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ai</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="n">AzimuthalIntegrator</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">_check_attr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">CalculatorError</span><span class="p">(</span><span class="s2">&quot;Attribute &#39;</span><span class="si">{}</span><span class="s2">&#39; is None. Please set it.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;metadata&quot;</span> <span class="ow">and</span> <span class="s2">&quot;shape&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">CalculatorError</span><span class="p">(</span><span class="s2">&quot;There is no key &#39;shape&#39; in the metadata.&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Calculator.squeeze_shape_and_extents"><a class="viewcode-back" href="../../apis.html#crystalmapping.utils.Calculator.squeeze_shape_and_extents">[docs]</a>    <span class="k">def</span> <span class="nf">squeeze_shape_and_extents</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Squeeze the shape and extents so that it only has the dimension with length &gt; 1.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_attr</span><span class="p">(</span><span class="s2">&quot;metadata&quot;</span><span class="p">)</span>
+        <span class="n">shape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;shape&quot;</span><span class="p">]</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+        <span class="c1"># get the index of the dimension &gt; 1</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="p">{</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="k">if</span> <span class="n">shape</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;shape&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">shape</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">index</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s2">&quot;extents&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">:</span>
+            <span class="n">extents</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;extents&quot;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;extents&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">extents</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">index</span><span class="p">]</span>
+        <span class="k">return</span></div>
+
+<div class="viewcode-block" id="Calculator.calc_dark_and_light_from_frames_arr"><a class="viewcode-back" href="../../apis.html#crystalmapping.utils.Calculator.calc_dark_and_light_from_frames_arr">[docs]</a>    <span class="k">def</span> <span class="nf">calc_dark_and_light_from_frames_arr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index_range</span><span class="p">:</span> <span class="nb">slice</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the light and dark frame in a series of frames.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_attr</span><span class="p">(</span><span class="s2">&quot;frames_arr&quot;</span><span class="p">)</span>
+        <span class="n">frames_arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">frames_arr</span><span class="p">[</span><span class="n">index_range</span><span class="p">]</span> <span class="k">if</span> <span class="n">index_range</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">frames_arr</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dark</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">light</span> <span class="o">=</span> <span class="n">min_and_max_along_time2</span><span class="p">(</span><span class="n">frames_arr</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Calculator.calc_peaks_from_light_frame"><a class="viewcode-back" href="../../apis.html#crystalmapping.utils.Calculator.calc_peaks_from_light_frame">[docs]</a>    <span class="k">def</span> <span class="nf">calc_peaks_from_light_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">diameter</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">],</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the Bragg peaks on the light frame.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_attr</span><span class="p">(</span><span class="s2">&quot;light&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">peaks</span> <span class="o">=</span> <span class="n">tp</span><span class="o">.</span><span class="n">locate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">light</span><span class="p">,</span> <span class="n">diameter</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Calculator.calc_peaks_from_dk_sub_frame"><a class="viewcode-back" href="../../apis.html#crystalmapping.utils.Calculator.calc_peaks_from_dk_sub_frame">[docs]</a>    <span class="k">def</span> <span class="nf">calc_peaks_from_dk_sub_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">diameter</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">],</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the Bragg peaks on the light frame.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_attr</span><span class="p">(</span><span class="s2">&quot;light&quot;</span><span class="p">)</span>
+        <span class="n">light</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">light</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dark</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">light</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">dark</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">peaks</span> <span class="o">=</span> <span class="n">tp</span><span class="o">.</span><span class="n">locate</span><span class="p">(</span><span class="n">light</span><span class="p">,</span> <span class="n">diameter</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Calculator.calc_windows_from_peaks"><a class="viewcode-back" href="../../apis.html#crystalmapping.utils.Calculator.calc_windows_from_peaks">[docs]</a>    <span class="k">def</span> <span class="nf">calc_windows_from_peaks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">width</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Gte the windows for the most brightest Bragg peaks.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_attr</span><span class="p">(</span><span class="s2">&quot;peaks&quot;</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">peaks</span><span class="o">.</span><span class="n">nlargest</span><span class="p">(</span><span class="n">num</span><span class="p">,</span> <span class="s2">&quot;mass&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">windows</span> <span class="o">=</span> <span class="n">create_windows_from_width2</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">width</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Calculator.calc_intensity_in_windows"><a class="viewcode-back" href="../../apis.html#crystalmapping.utils.Calculator.calc_intensity_in_windows">[docs]</a>    <span class="k">def</span> <span class="nf">calc_intensity_in_windows</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the intensity array as a function of index of frames.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_attr</span><span class="p">(</span><span class="s2">&quot;frames_arr&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_attr</span><span class="p">(</span><span class="s2">&quot;windows&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">intensity</span> <span class="o">=</span> <span class="n">track_peaks2</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frames_arr</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">windows</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dark</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bkg_intensity</span> <span class="o">=</span> <span class="n">average_intensity</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dark</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">windows</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">intensity</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">intensity</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">bkg_intensity</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">my_print</span><span class="p">(</span><span class="s2">&quot;Attribute &#39;dark&#39; is None. No background correction.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Calculator.assign_q_values"><a class="viewcode-back" href="../../apis.html#crystalmapping.utils.Calculator.assign_q_values">[docs]</a>    <span class="k">def</span> <span class="nf">assign_q_values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Assign the values to the windows dataframe.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_attr</span><span class="p">(</span><span class="s2">&quot;ai&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_attr</span><span class="p">(</span><span class="s2">&quot;windows&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">windows</span><span class="p">[</span><span class="s2">&quot;Q&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ai</span><span class="o">.</span><span class="n">qFunction</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">windows</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">windows</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="Calculator.reshape_intensity"><a class="viewcode-back" href="../../apis.html#crystalmapping.utils.Calculator.reshape_intensity">[docs]</a>    <span class="k">def</span> <span class="nf">reshape_intensity</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Reshape the intensity array.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_attr</span><span class="p">(</span><span class="s2">&quot;metadata&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_attr</span><span class="p">(</span><span class="s2">&quot;intensity&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">intensity</span> <span class="o">=</span> <span class="n">reshape_to_ndarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">intensity</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Calculator.calc_coords"><a class="viewcode-back" href="../../apis.html#crystalmapping.utils.Calculator.calc_coords">[docs]</a>    <span class="k">def</span> <span class="nf">calc_coords</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Calculate the coordinates.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_attr</span><span class="p">(</span><span class="s2">&quot;metadata&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">coords</span> <span class="o">=</span> <span class="n">get_coords2</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Calculator.dark_to_xarray"><a class="viewcode-back" href="../../apis.html#crystalmapping.utils.Calculator.dark_to_xarray">[docs]</a>    <span class="k">def</span> <span class="nf">dark_to_xarray</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Convert the dark image to DataArray.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dark</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;pixel_y&quot;</span><span class="p">,</span> <span class="s2">&quot;pixel_x&quot;</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="Calculator.light_to_xarray"><a class="viewcode-back" href="../../apis.html#crystalmapping.utils.Calculator.light_to_xarray">[docs]</a>    <span class="k">def</span> <span class="nf">light_to_xarray</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Convert the light image to DataArray&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">light</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;pixel_y&quot;</span><span class="p">,</span> <span class="s2">&quot;pixel_x&quot;</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="Calculator.intensity_to_xarray"><a class="viewcode-back" href="../../apis.html#crystalmapping.utils.Calculator.intensity_to_xarray">[docs]</a>    <span class="k">def</span> <span class="nf">intensity_to_xarray</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Convert the intensity array to DataArray&quot;&quot;&quot;</span>
+        <span class="n">dims</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;dim_</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">intensity</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)]</span>
+        <span class="n">arr</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">intensity</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;grain&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">dims</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">coords</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">coords</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coords_to_dict</span><span class="p">()</span>
+            <span class="n">arr</span> <span class="o">=</span> <span class="n">arr</span><span class="o">.</span><span class="n">assign_coords</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">arr</span></div>
+
+<div class="viewcode-block" id="Calculator.windows_to_xarray"><a class="viewcode-back" href="../../apis.html#crystalmapping.utils.Calculator.windows_to_xarray">[docs]</a>    <span class="k">def</span> <span class="nf">windows_to_xarray</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Convert the windows DataFrame to xarray.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">windows</span><span class="o">.</span><span class="n">rename_axis</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s2">&quot;grain&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to_xarray</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Calculator.coords_to_dict"><a class="viewcode-back" href="../../apis.html#crystalmapping.utils.Calculator.coords_to_dict">[docs]</a>    <span class="k">def</span> <span class="nf">coords_to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Convert the coordinates to dictionary.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;dim_</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">):</span> <span class="n">coord</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">coord</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coords</span><span class="p">)}</span></div>
+
+<div class="viewcode-block" id="Calculator.to_dataset"><a class="viewcode-back" href="../../apis.html#crystalmapping.utils.Calculator.to_dataset">[docs]</a>    <span class="k">def</span> <span class="nf">to_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Convert the calculation results to DataSet.&quot;&quot;&quot;</span>
+        <span class="n">dct</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dark</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">dct</span><span class="p">[</span><span class="s2">&quot;dark&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dark_to_xarray</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">light</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">dct</span><span class="p">[</span><span class="s2">&quot;light&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">light_to_xarray</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">intensity</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">dct</span><span class="p">[</span><span class="s2">&quot;intensity&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">intensity_to_xarray</span><span class="p">()</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">dct</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">windows</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ds2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">windows_to_xarray</span><span class="p">()</span>
+            <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">ds2</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">assign_attrs</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ds</span></div>
+
+<div class="viewcode-block" id="Calculator.get_frame"><a class="viewcode-back" href="../../apis.html#crystalmapping.utils.Calculator.get_frame">[docs]</a>    <span class="k">def</span> <span class="nf">get_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Get the frame of at the index.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_attr</span><span class="p">(</span><span class="s2">&quot;frames_arr&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">frames_arr</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Calculator.show_frame"><a class="viewcode-back" href="../../apis.html#crystalmapping.utils.Calculator.show_frame">[docs]</a>    <span class="k">def</span> <span class="nf">show_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FacetGrid</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Show the frame at that index.&quot;&quot;&quot;</span>
+        <span class="n">frame</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_frame</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+        <span class="n">set_vlim</span><span class="p">(</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">frame</span><span class="p">,</span> <span class="mf">4.</span><span class="p">)</span>
+        <span class="n">facet</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">set_real_aspect</span><span class="p">(</span><span class="n">facet</span><span class="o">.</span><span class="n">axes</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">facet</span></div>
+
+<div class="viewcode-block" id="Calculator.show_windows_on_frame"><a class="viewcode-back" href="../../apis.html#crystalmapping.utils.Calculator.show_windows_on_frame">[docs]</a>    <span class="k">def</span> <span class="nf">show_windows_on_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FacetGrid</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Show the windows on the frame at the index.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_attr</span><span class="p">(</span><span class="s2">&quot;windows&quot;</span><span class="p">)</span>
+        <span class="n">facet</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">show_frame</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">draw_windows</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">windows</span><span class="p">,</span> <span class="n">facet</span><span class="o">.</span><span class="n">axes</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">facet</span></div>
+
+<div class="viewcode-block" id="Calculator.show_dark"><a class="viewcode-back" href="../../apis.html#crystalmapping.utils.Calculator.show_dark">[docs]</a>    <span class="k">def</span> <span class="nf">show_dark</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FacetGrid</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Show the dark image.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_attr</span><span class="p">(</span><span class="s2">&quot;dark&quot;</span><span class="p">)</span>
+        <span class="n">frame</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dark_to_xarray</span><span class="p">()</span>
+        <span class="n">set_vlim</span><span class="p">(</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">frame</span><span class="p">,</span> <span class="mf">4.</span><span class="p">)</span>
+        <span class="n">facet</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">set_real_aspect</span><span class="p">(</span><span class="n">facet</span><span class="o">.</span><span class="n">axes</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">facet</span></div>
+
+<div class="viewcode-block" id="Calculator.show_light"><a class="viewcode-back" href="../../apis.html#crystalmapping.utils.Calculator.show_light">[docs]</a>    <span class="k">def</span> <span class="nf">show_light</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FacetGrid</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Show the light image.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_attr</span><span class="p">(</span><span class="s2">&quot;light&quot;</span><span class="p">)</span>
+        <span class="n">frame</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">light_to_xarray</span><span class="p">()</span>
+        <span class="n">set_vlim</span><span class="p">(</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">frame</span><span class="p">,</span> <span class="mf">4.</span><span class="p">)</span>
+        <span class="n">facet</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">set_real_aspect</span><span class="p">(</span><span class="n">facet</span><span class="o">.</span><span class="n">axes</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">facet</span></div>
+
+<div class="viewcode-block" id="Calculator.show_light_sub_dark"><a class="viewcode-back" href="../../apis.html#crystalmapping.utils.Calculator.show_light_sub_dark">[docs]</a>    <span class="k">def</span> <span class="nf">show_light_sub_dark</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FacetGrid</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Show the dark subtracted light image.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_attr</span><span class="p">(</span><span class="s2">&quot;light&quot;</span><span class="p">)</span>
+        <span class="n">light</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">light_to_xarray</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dark</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">dark</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dark_to_xarray</span><span class="p">()</span>
+            <span class="n">light</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">light</span><span class="p">,</span> <span class="n">dark</span><span class="p">)</span>
+        <span class="n">set_vlim</span><span class="p">(</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">light</span><span class="p">,</span> <span class="mf">4.</span><span class="p">)</span>
+        <span class="n">facet</span> <span class="o">=</span> <span class="n">light</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">set_real_aspect</span><span class="p">(</span><span class="n">facet</span><span class="o">.</span><span class="n">axes</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">facet</span></div>
+
+<div class="viewcode-block" id="Calculator.show_windows"><a class="viewcode-back" href="../../apis.html#crystalmapping.utils.Calculator.show_windows">[docs]</a>    <span class="k">def</span> <span class="nf">show_windows</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FacetGrid</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Show the windows on the dark subtracted light image.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_attr</span><span class="p">(</span><span class="s2">&quot;light&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_attr</span><span class="p">(</span><span class="s2">&quot;windows&quot;</span><span class="p">)</span>
+        <span class="n">facet</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">show_light_sub_dark</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">draw_windows</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">windows</span><span class="p">,</span> <span class="n">facet</span><span class="o">.</span><span class="n">axes</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">facet</span></div>
+
+<div class="viewcode-block" id="Calculator.show_intensity"><a class="viewcode-back" href="../../apis.html#crystalmapping.utils.Calculator.show_intensity">[docs]</a>    <span class="k">def</span> <span class="nf">show_intensity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FacetGrid</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Show the intensity array.&quot;&quot;&quot;</span>
+        <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">intensity_to_xarray</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">auto_plot</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Calculator.auto_visualize"><a class="viewcode-back" href="../../apis.html#crystalmapping.utils.Calculator.auto_visualize">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">auto_visualize</span><span class="p">(</span>
+        <span class="n">ds</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">,</span>
+        <span class="n">key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;intensity&quot;</span><span class="p">,</span>
+        <span class="n">title</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">invert_y</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FacetGrid</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Automatically plot the intensity array in the dataset.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">auto_plot_dataset</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">invert_y</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Calculator.auto_process"><a class="viewcode-back" href="../../apis.html#crystalmapping.utils.Calculator.auto_process">[docs]</a>    <span class="k">def</span> <span class="nf">auto_process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_wins</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">hw_wins</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">diameter</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">index_filter</span><span class="p">:</span> <span class="nb">slice</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                     <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Automatically process the data in the standard protocol.</span>
+
+<span class="sd">        The calculation results are saved in attributes.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        num_wins : int</span>
+<span class="sd">            The number of windows.</span>
+<span class="sd">        hw_wins : int</span>
+<span class="sd">            The half width of the windows in pixels.</span>
+<span class="sd">        diameter : int</span>
+<span class="sd">            The diameter of the kernel to use in peak finding in pixels. It must be an odd integer.</span>
+<span class="sd">        index_filter : slice</span>
+<span class="sd">            The index slice of the data to use in the calculation of the dark and light image.</span>
+<span class="sd">        args :</span>
+<span class="sd">            The position arguments of the peak finding function `trackpy.locate`.</span>
+<span class="sd">        kwargs :</span>
+<span class="sd">            The keyword arguments of the peak finding function `trackpy.locate`.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">diameter</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">CalculatorError</span><span class="p">(</span><span class="s2">&quot;Diamter must be an odd integer.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">squeeze_shape_and_extents</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">calc_dark_and_light_from_frames_arr</span><span class="p">(</span><span class="n">index_filter</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">calc_peaks_from_dk_sub_frame</span><span class="p">(</span><span class="n">diameter</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">calc_windows_from_peaks</span><span class="p">(</span><span class="n">num_wins</span><span class="p">,</span> <span class="n">hw_wins</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">calc_intensity_in_windows</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">calc_coords</span><span class="p">()</span>
+        <span class="k">except</span> <span class="n">CalculatorError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assign_q_values</span><span class="p">()</span>
+        <span class="k">except</span> <span class="n">CalculatorError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reshape_intensity</span><span class="p">()</span>
+        <span class="k">except</span> <span class="n">CalculatorError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+        <span class="k">return</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2021, Songsheng Tao
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

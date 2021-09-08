@@ -1,0 +1,701 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Run experiments at NSLS-II &mdash; crystalmapping 0.0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/clipboard.min.js"></script>
+        <script src="_static/copybutton.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/plot_directive.css" type="text/css" />
+  <link rel="stylesheet" href="_static/copybutton.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Use the old peak tracking algorithm in streaming data processing" href="old_algorithm.html" />
+    <link rel="prev" title="Installation" href="installation.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> crystalmapping
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Run experiments at NSLS-II</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#simulated-motors-and-detectors">Simulated motors and detectors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#fly-scan">Fly scan</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#fly-scan-in-rows">Fly scan in rows</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#fly-scan-in-rocking-curves-on-a-grid">Fly scan in rocking curves on a grid</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#grid-scan">Grid scan</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#grid-scan-in-x-y-plane">Grid scan in (x, y) plane</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#grid-scan-in-phi-x-y-space">Grid scan in (phi, x, y) space</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="old_algorithm.html">Use the old peak tracking algorithm in streaming data processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="new_algorithm.html">Use new algorithm to run the batch processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="apis.html">API Documents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="min_versions.html">Minimum Version of Python and NumPy</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">crystalmapping</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Run experiments at NSLS-II</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/experiment.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <section id="run-experiments-at-nsls-ii">
+<h1>Run experiments at NSLS-II<a class="headerlink" href="#run-experiments-at-nsls-ii" title="Permalink to this headline">¶</a></h1>
+<p>Here, we demonstrate the example code to run the fly scan and grid scan
+experiment at the NSLS-II.</p>
+<section id="simulated-motors-and-detectors">
+<h2>Simulated motors and detectors<a class="headerlink" href="#simulated-motors-and-detectors" title="Permalink to this headline">¶</a></h2>
+<p>To demonstrate the example, we set up some simulated motors and
+detectors for better description. During the beamtime, these objects
+will be connected to the real devices.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">crystalmapping.sim</span> <span class="k">as</span> <span class="nn">sim</span>
+
+<span class="c1"># An area detector behind the sample</span>
+<span class="n">detector</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">FakeAreaDetector</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;image&quot;</span><span class="p">)</span>
+<span class="c1"># A motor to control the vertical position of the sample stage</span>
+<span class="n">motor_y</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">SynAxis</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;y&quot;</span><span class="p">)</span>
+<span class="c1"># A motor to control the horizontal position of the sample stage</span>
+<span class="n">motor_x</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">SynAxis</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;x&quot;</span><span class="p">)</span>
+<span class="c1"># A motor to control the orientaion of the sample stage</span>
+<span class="n">motor_phi</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">SynAxis</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;phi&quot;</span><span class="p">)</span>
+<span class="c1"># A fast shutter</span>
+<span class="n">shutter</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">SynSignal</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;shutter&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="fly-scan">
+<h2>Fly scan<a class="headerlink" href="#fly-scan" title="Permalink to this headline">¶</a></h2>
+<p>A fly scan is to move to a position in the motor positions space, start
+the movement of a fly motor and take light images for specific times
+during the non-stopping movement and then move to the next point and
+repeat.</p>
+<p>Please the document of the function to know the syntax.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">crystalmapping.plans</span> <span class="k">as</span> <span class="nn">plans</span>
+
+<span class="n">help</span><span class="p">(</span><span class="n">plans</span><span class="o">.</span><span class="n">fly_scan_nd</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Help on function fly_scan_nd in module crystalmapping.plans:
+
+fly_scan_nd(detectors: list, *args, move_velocity: float, time_per_point: float, time_per_frame: float, shutter: object, shutter_open: Any, shutter_close: Any, shutter_wait_open: float = 0.0, shutter_wait_close: float = 0.0, take_dark: bool = True, md: dict = None, backoff: float = 0.0, snake: bool = False) -&gt; &lt;class &#39;Generic&#39;&gt;
+    Move on a grid and do a fly scan at each point in the grid.
+
+    For example, `fly_scan_nd([detector], motor_y, 0, 10, 11, motor_x, 0, 20, 21, motor_fly, 0, 5, 6, time_per_point=10, time_per_frame=1, shutter=shutter, shutter_open=1, shutter_close=0, shutter_wait_open=2, shutter_wait_close=5, move_velocity=5, take_dark=True, md={&quot;task&quot;: &quot;fly scan sample 1&quot;, backoff=0.5, snake=False})` means that
+
+    set detector so that it will collect one image for 10 s
+    one image contains 10 frames and each frame for 1 s
+    for y in 0, 1, 2, ..., 10:
+        for x in 0, 1, 2, ..., 20:
+            move to (x, y)
+            wait 5 s
+            collect dark image during the movement
+            open shutter
+            wait 2 s
+            fly scan the motor_fly from -0.5 to 5.5
+            collect 6 images during the fly
+            close shutter
+
+    Parameters
+    ----------
+    detectors : list
+        A list of detectors. The first one must be an area detector. The list shouldn&#39;t include the motors in the `args`.
+    *args :
+        patterned like (``motor1, start1, stop1, num1,``
+                        ``motor2, start2, stop2, num2,``
+                        ``motor3, start3, stop3, num3,`` ...
+                        ``motorN, startN, stopN, numN``)
+
+        The first motor is the &quot;slowest&quot;, the outer loop. The last motor
+        is the &quot;fly&quot; motor, the non-stoping scan along an axis. For all motors
+        except the first motor, there is a &quot;snake&quot; argument: a boolean
+        indicating whether to following snake-like, winding trajectory or a
+        simple left-to-right trajectory.
+    move_velocity : float
+        The speed for the motors to move to the next grid point.
+    time_per_point : float
+        The time to collect one image at one point.
+    time_per_frame : float
+        The time to collect one frame in a image. One image contains serveral frames.
+    shutter : object
+        The fast shutter.
+    shutter_open : typing.Any
+        The value of the shutter in open state.
+    shutter_close : typing.Any
+        The value of the shutter in close state.
+    shutter_wait_open : float, optional
+        The time between the shutter open and the start of the light image collection, by default 0.
+    shutter_wait_close : float, optional
+        The time between the shutter close and the start of the dark image collection, by default 0.
+    take_dark : bool, optional
+        If true, take a dark image at the end of the fly scan, by default True
+    md : dict, optional
+        The dictionary of the metadata to added into the plan, by default None
+    backoff : float, optional
+        If non-zero, fly scan from start - backoff to end + backoff, by default 0.
+    snake : bool, optional
+        If true, snake the axis of the fly scan, by default False
+
+    Returns
+    -------
+    typing.Generic
+        The generator of the plan.
+
+    Yields
+    -------
+    Iterator[typing.Generic]
+        The messages of the plan.
+
+    Raises
+    ------
+    TomoPlanError
+        Empty detector list.
+    TomoPlanError
+        Not enough motors.
+    TomoPlanError
+        Wrong motor positions format.
+</pre></div>
+</div>
+<section id="fly-scan-in-rows">
+<h3>Fly scan in rows<a class="headerlink" href="#fly-scan-in-rows" title="Permalink to this headline">¶</a></h3>
+<p>Here is an example of fly scan in rows.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plan</span> <span class="o">=</span> <span class="n">plans</span><span class="o">.</span><span class="n">fly_scan_nd</span><span class="p">(</span>
+    <span class="p">[</span><span class="n">detector</span><span class="p">],</span>
+    <span class="n">motor_y</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">20.0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="n">motor_x</span><span class="p">,</span> <span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="n">move_velocity</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span>
+    <span class="n">time_per_point</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+    <span class="n">time_per_frame</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+    <span class="n">shutter</span><span class="o">=</span><span class="n">shutter</span><span class="p">,</span>
+    <span class="n">shutter_open</span><span class="o">=</span><span class="s2">&quot;open&quot;</span><span class="p">,</span>
+    <span class="n">shutter_close</span><span class="o">=</span><span class="s2">&quot;close&quot;</span><span class="p">,</span>
+    <span class="n">shutter_wait_open</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+    <span class="n">shutter_wait_close</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span>
+    <span class="n">take_dark</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">md</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;sample&quot;</span><span class="p">:</span> <span class="s2">&quot;A rod&quot;</span><span class="p">}</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>The pseudo-code of it can be expressed as below.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">:</span>
+    <span class="n">move</span> <span class="n">to</span> <span class="n">y</span>
+    <span class="n">close</span> <span class="n">shutter</span>
+    <span class="n">wait</span> <span class="mi">5</span> <span class="n">s</span>
+    <span class="n">take</span> <span class="n">dark</span> <span class="n">during</span> <span class="n">the</span> <span class="n">movement</span>
+    <span class="nb">open</span> <span class="n">shutter</span>
+    <span class="n">fly</span> <span class="n">scan</span> <span class="n">x</span> <span class="kn">from</span> <span class="o">-</span><span class="mi">5</span> <span class="n">to</span> <span class="mi">25</span><span class="p">,</span> <span class="n">collect</span> <span class="mi">3</span> <span class="n">images</span>
+</pre></div>
+</div>
+<p>Here, we print out the details in this plan. Please pay attention to the
+manner of the shutter in the run to better understand the logic of the
+dark frame.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">bluesky.simulators</span> <span class="k">as</span> <span class="nn">bss</span>
+<span class="kn">import</span> <span class="nn">itertools</span> <span class="k">as</span> <span class="nn">it</span>
+
+<span class="n">copys</span> <span class="o">=</span> <span class="n">it</span><span class="o">.</span><span class="n">tee</span><span class="p">(</span><span class="n">plan</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">bss</span><span class="o">.</span><span class="n">summarize_plan</span><span class="p">(</span><span class="n">copys</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">image_cam_acquire_time</span> <span class="o">-&gt;</span> <span class="mf">1.0</span>
+<span class="n">image_images_per_set</span> <span class="o">-&gt;</span> <span class="mi">1</span>
+<span class="o">===================================</span> <span class="n">Open</span> <span class="n">Run</span> <span class="o">===================================</span>
+<span class="o">***</span> <span class="nb">all</span> <span class="n">positions</span> <span class="k">for</span> <span class="n">x_velocity</span> <span class="n">are</span> <span class="n">relative</span> <span class="n">to</span> <span class="n">current</span> <span class="n">position</span> <span class="o">***</span>
+<span class="n">x_velocity</span> <span class="o">-&gt;</span> <span class="mf">10.0</span>
+<span class="n">y</span> <span class="o">-&gt;</span> <span class="mf">0.0</span>
+<span class="n">x</span> <span class="o">-&gt;</span> <span class="o">-</span><span class="mf">5.0</span>
+  <span class="n">Read</span> <span class="p">[</span><span class="s1">&#39;image&#39;</span><span class="p">]</span>
+<span class="n">x_velocity</span> <span class="o">-&gt;</span> <span class="mf">10.0</span>
+<span class="n">shutter</span> <span class="o">-&gt;</span> <span class="nb">open</span>
+<span class="n">x</span> <span class="o">-&gt;</span> <span class="mf">25.0</span>
+<span class="n">start_x</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+<span class="n">stop_x</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+  <span class="n">Read</span> <span class="p">[</span><span class="s1">&#39;image&#39;</span><span class="p">,</span> <span class="s1">&#39;start_x&#39;</span><span class="p">,</span> <span class="s1">&#39;stop_x&#39;</span><span class="p">,</span> <span class="s1">&#39;x_velocity&#39;</span><span class="p">]</span>
+<span class="n">start_x</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+<span class="n">stop_x</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+  <span class="n">Read</span> <span class="p">[</span><span class="s1">&#39;image&#39;</span><span class="p">,</span> <span class="s1">&#39;start_x&#39;</span><span class="p">,</span> <span class="s1">&#39;stop_x&#39;</span><span class="p">,</span> <span class="s1">&#39;x_velocity&#39;</span><span class="p">]</span>
+<span class="n">start_x</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+<span class="n">stop_x</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+  <span class="n">Read</span> <span class="p">[</span><span class="s1">&#39;image&#39;</span><span class="p">,</span> <span class="s1">&#39;start_x&#39;</span><span class="p">,</span> <span class="s1">&#39;stop_x&#39;</span><span class="p">,</span> <span class="s1">&#39;x_velocity&#39;</span><span class="p">]</span>
+<span class="n">shutter</span> <span class="o">-&gt;</span> <span class="n">close</span>
+<span class="n">x_velocity</span> <span class="o">-&gt;</span> <span class="mf">10.0</span>
+<span class="n">y</span> <span class="o">-&gt;</span> <span class="mf">10.0</span>
+<span class="n">x</span> <span class="o">-&gt;</span> <span class="o">-</span><span class="mf">5.0</span>
+  <span class="n">Read</span> <span class="p">[</span><span class="s1">&#39;image&#39;</span><span class="p">]</span>
+<span class="n">x_velocity</span> <span class="o">-&gt;</span> <span class="mf">10.0</span>
+<span class="n">shutter</span> <span class="o">-&gt;</span> <span class="nb">open</span>
+<span class="n">x</span> <span class="o">-&gt;</span> <span class="mf">25.0</span>
+<span class="n">start_x</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+<span class="n">stop_x</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+  <span class="n">Read</span> <span class="p">[</span><span class="s1">&#39;image&#39;</span><span class="p">,</span> <span class="s1">&#39;start_x&#39;</span><span class="p">,</span> <span class="s1">&#39;stop_x&#39;</span><span class="p">,</span> <span class="s1">&#39;x_velocity&#39;</span><span class="p">]</span>
+<span class="n">start_x</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+<span class="n">stop_x</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+  <span class="n">Read</span> <span class="p">[</span><span class="s1">&#39;image&#39;</span><span class="p">,</span> <span class="s1">&#39;start_x&#39;</span><span class="p">,</span> <span class="s1">&#39;stop_x&#39;</span><span class="p">,</span> <span class="s1">&#39;x_velocity&#39;</span><span class="p">]</span>
+<span class="n">start_x</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+<span class="n">stop_x</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+  <span class="n">Read</span> <span class="p">[</span><span class="s1">&#39;image&#39;</span><span class="p">,</span> <span class="s1">&#39;start_x&#39;</span><span class="p">,</span> <span class="s1">&#39;stop_x&#39;</span><span class="p">,</span> <span class="s1">&#39;x_velocity&#39;</span><span class="p">]</span>
+<span class="n">shutter</span> <span class="o">-&gt;</span> <span class="n">close</span>
+<span class="n">x_velocity</span> <span class="o">-&gt;</span> <span class="mf">10.0</span>
+<span class="n">y</span> <span class="o">-&gt;</span> <span class="mf">20.0</span>
+<span class="n">x</span> <span class="o">-&gt;</span> <span class="o">-</span><span class="mf">5.0</span>
+  <span class="n">Read</span> <span class="p">[</span><span class="s1">&#39;image&#39;</span><span class="p">]</span>
+<span class="n">x_velocity</span> <span class="o">-&gt;</span> <span class="mf">10.0</span>
+<span class="n">shutter</span> <span class="o">-&gt;</span> <span class="nb">open</span>
+<span class="n">x</span> <span class="o">-&gt;</span> <span class="mf">25.0</span>
+<span class="n">start_x</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+<span class="n">stop_x</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+  <span class="n">Read</span> <span class="p">[</span><span class="s1">&#39;image&#39;</span><span class="p">,</span> <span class="s1">&#39;start_x&#39;</span><span class="p">,</span> <span class="s1">&#39;stop_x&#39;</span><span class="p">,</span> <span class="s1">&#39;x_velocity&#39;</span><span class="p">]</span>
+<span class="n">start_x</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+<span class="n">stop_x</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+  <span class="n">Read</span> <span class="p">[</span><span class="s1">&#39;image&#39;</span><span class="p">,</span> <span class="s1">&#39;start_x&#39;</span><span class="p">,</span> <span class="s1">&#39;stop_x&#39;</span><span class="p">,</span> <span class="s1">&#39;x_velocity&#39;</span><span class="p">]</span>
+<span class="n">start_x</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+<span class="n">stop_x</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+  <span class="n">Read</span> <span class="p">[</span><span class="s1">&#39;image&#39;</span><span class="p">,</span> <span class="s1">&#39;start_x&#39;</span><span class="p">,</span> <span class="s1">&#39;stop_x&#39;</span><span class="p">,</span> <span class="s1">&#39;x_velocity&#39;</span><span class="p">]</span>
+<span class="n">shutter</span> <span class="o">-&gt;</span> <span class="n">close</span>
+<span class="o">==================================</span> <span class="n">Close</span> <span class="n">Run</span> <span class="o">===================================</span>
+<span class="n">x_velocity</span> <span class="o">-&gt;</span> <span class="mi">0</span>
+</pre></div>
+</div>
+<p>Here, we plot the trajectory of the stage. Be mindful that the beam
+moves in the opposite direction in the sample frame. A lager y means the
+beam aiming at a lower part of the sample.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="n">bss</span><span class="o">.</span><span class="n">plot_raster_path</span><span class="p">(</span><span class="n">copys</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="_images/experiment1_11_0.png" src="_images/experiment1_11_0.png" />
+</section>
+<section id="fly-scan-in-rocking-curves-on-a-grid">
+<h3>Fly scan in rocking curves on a grid<a class="headerlink" href="#fly-scan-in-rocking-curves-on-a-grid" title="Permalink to this headline">¶</a></h3>
+<p>A more complicated example is to move the sample in a grid and fly in
+the rotation.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plan</span> <span class="o">=</span> <span class="n">plans</span><span class="o">.</span><span class="n">fly_scan_nd</span><span class="p">(</span>
+    <span class="p">[</span><span class="n">detector</span><span class="p">],</span>
+    <span class="n">motor_y</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">20.0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="n">motor_x</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">20.0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="n">motor_phi</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.5</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="n">move_velocity</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span>
+    <span class="n">time_per_point</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+    <span class="n">time_per_frame</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+    <span class="n">shutter</span><span class="o">=</span><span class="n">shutter</span><span class="p">,</span>
+    <span class="n">shutter_open</span><span class="o">=</span><span class="s2">&quot;open&quot;</span><span class="p">,</span>
+    <span class="n">shutter_close</span><span class="o">=</span><span class="s2">&quot;close&quot;</span><span class="p">,</span>
+    <span class="n">shutter_wait_open</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+    <span class="n">shutter_wait_close</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span>
+    <span class="n">take_dark</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">md</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;sample&quot;</span><span class="p">:</span> <span class="s2">&quot;A rod&quot;</span><span class="p">}</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>The pseudo-code of it is shown below.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">:</span>
+        <span class="n">move</span> <span class="n">to</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="n">close</span> <span class="n">shutter</span>
+        <span class="n">wait</span> <span class="mi">5</span> <span class="n">s</span>
+        <span class="n">take</span> <span class="n">dark</span> <span class="n">during</span> <span class="n">the</span> <span class="n">movement</span>
+        <span class="nb">open</span> <span class="n">shutter</span>
+        <span class="n">fly</span> <span class="n">scan</span> <span class="n">phi</span> <span class="kn">from</span> <span class="o">-</span><span class="mf">1.5</span> <span class="n">to</span> <span class="mf">1.5</span><span class="p">,</span> <span class="n">collect</span> <span class="mi">3</span> <span class="n">images</span>
+</pre></div>
+</div>
+<p>We plot the trajectory in (x, y) plane. At each point, there is a fly
+scan in the phi axis.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">bss</span><span class="o">.</span><span class="n">plot_raster_path</span><span class="p">(</span><span class="n">plan</span><span class="p">,</span> <span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="_images/experiment1_16_1.png" src="_images/experiment1_16_1.png" />
+</section>
+</section>
+<section id="grid-scan">
+<h2>Grid scan<a class="headerlink" href="#grid-scan" title="Permalink to this headline">¶</a></h2>
+<p>A grid scan is to move to a point in the motor positions space, stay
+there, collect one image at that point and then move to the next point
+and repeat.</p>
+<p>Please read the document below about the syntax of the function.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">help</span><span class="p">(</span><span class="n">plans</span><span class="o">.</span><span class="n">grid_scan_nd</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Help on function grid_scan_nd in module crystalmapping.plans:
+
+grid_scan_nd(detectors: list, *args, snake: Union[list, bool] = None, time_per_point: float, time_per_frame: float, shutter: object, shutter_open: Any, shutter_close: Any, shutter_wait_open: float = 0.0, shutter_wait_close: float = 0.0, take_dark: bool = True, md=None) -&gt; &lt;class &#39;Generic&#39;&gt;
+    Scan over a mesh; each motor is on an independent trajectory.
+
+    Parameters
+    ----------
+    detectors : list
+        A list of &#39;readable&#39; objects
+    *args :
+        patterned like (``motor1, start1, stop1, num1,``
+                        ``motor2, start2, stop2, num2,``
+                        ``motor3, start3, stop3, num3,`` ...
+                        ``motorN, startN, stopN, numN``)
+
+        The first motor is the &quot;slowest&quot;, the outer loop. The last motor
+        is the &quot;fly&quot; motor, the non-stoping scan along an axis. For all motors
+        except the first motor, there is a &quot;snake&quot; argument: a boolean
+        indicating whether to following snake-like, winding trajectory or a
+        simple left-to-right trajectory.
+    snake : bool, optional
+        If true, snake the axis of the fly scan, by default None
+    time_per_point : float
+        The time to collect one image at one point.
+    time_per_frame : float
+        The time to collect one frame in a image. One image contains serveral frames.
+    time_per_point : float
+        The time to collect one image at one point.
+    time_per_frame : float
+        The time to collect one frame in a image. One image contains serveral frames.
+    shutter : object
+        The fast shutter.
+    shutter_open : typing.Any
+        The value of the shutter in open state.
+    shutter_close : typing.Any
+        The value of the shutter in close state.
+    shutter_wait_open : float, optional
+        The time between the shutter open and the start of the light image collection, by default 0.
+    shutter_wait_close : float, optional
+        The time between the shutter close and the start of the dark image collection, by default 0.
+    take_dark : bool, optional
+        If true, take a dark image at the end of the fly scan, by default True
+    md : [type], optional
+        The dictionary of the metadata to added into the plan, by default None, by default None
+
+    Returns
+    -------
+    typing.Generic
+        The generator of the plan.
+
+    Yields
+    -------
+    Iterator[typing.Generic]
+        The messages of the plan.
+
+    Raises
+    ------
+    TomoPlanError
+        Empty detector list.
+    TomoPlanError
+        Not enough motors.
+    TomoPlanError
+        Wrong motor positions format.
+</pre></div>
+</div>
+<section id="grid-scan-in-x-y-plane">
+<h3>Grid scan in (x, y) plane<a class="headerlink" href="#grid-scan-in-x-y-plane" title="Permalink to this headline">¶</a></h3>
+<p>Below is an example to do grid scan in rows.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plan</span> <span class="o">=</span> <span class="n">plans</span><span class="o">.</span><span class="n">grid_scan_nd</span><span class="p">(</span>
+    <span class="p">[</span><span class="n">detector</span><span class="p">],</span>
+    <span class="n">motor_y</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">20.0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="n">motor_x</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">20.0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="n">time_per_point</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+    <span class="n">time_per_frame</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+    <span class="n">shutter</span><span class="o">=</span><span class="n">shutter</span><span class="p">,</span>
+    <span class="n">shutter_open</span><span class="o">=</span><span class="s2">&quot;open&quot;</span><span class="p">,</span>
+    <span class="n">shutter_close</span><span class="o">=</span><span class="s2">&quot;close&quot;</span><span class="p">,</span>
+    <span class="n">shutter_wait_open</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+    <span class="n">shutter_wait_close</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span>
+    <span class="n">take_dark</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">md</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;sample&quot;</span><span class="p">:</span> <span class="s2">&quot;A rod&quot;</span><span class="p">}</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>The pseudo-code of it can be expressed as below.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">:</span>
+        <span class="n">move</span> <span class="n">to</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">y</span> <span class="n">moves</span> <span class="ow">in</span> <span class="n">this</span> <span class="n">step</span><span class="p">:</span>
+            <span class="n">close</span> <span class="n">shutter</span>
+            <span class="n">wait</span> <span class="mi">5</span> <span class="n">s</span>
+            <span class="n">take</span> <span class="n">dark</span> <span class="n">during</span> <span class="n">the</span> <span class="n">movement</span>
+            <span class="nb">open</span> <span class="n">shutter</span>
+        <span class="n">collect</span> <span class="mi">1</span> <span class="n">image</span>
+</pre></div>
+</div>
+<p>We print out the details of the plans.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">copys</span> <span class="o">=</span> <span class="n">it</span><span class="o">.</span><span class="n">tee</span><span class="p">(</span><span class="n">plan</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">bss</span><span class="o">.</span><span class="n">summarize_plan</span><span class="p">(</span><span class="n">copys</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">image_cam_acquire_time</span> <span class="o">-&gt;</span> <span class="mf">1.0</span>
+<span class="n">image_images_per_set</span> <span class="o">-&gt;</span> <span class="mi">1</span>
+<span class="n">shutter</span> <span class="o">-&gt;</span> <span class="nb">open</span>
+<span class="o">===================================</span> <span class="n">Open</span> <span class="n">Run</span> <span class="o">===================================</span>
+<span class="n">y</span> <span class="o">-&gt;</span> <span class="mf">0.0</span>
+<span class="n">x</span> <span class="o">-&gt;</span> <span class="mf">0.0</span>
+<span class="n">shutter</span> <span class="o">-&gt;</span> <span class="n">close</span>
+  <span class="n">Read</span> <span class="p">[</span><span class="s1">&#39;image&#39;</span><span class="p">]</span>
+<span class="n">shutter</span> <span class="o">-&gt;</span> <span class="nb">open</span>
+  <span class="n">Read</span> <span class="p">[</span><span class="s1">&#39;image&#39;</span><span class="p">]</span>
+<span class="n">y</span> <span class="o">-&gt;</span> <span class="mf">0.0</span>
+<span class="n">x</span> <span class="o">-&gt;</span> <span class="mf">10.0</span>
+  <span class="n">Read</span> <span class="p">[</span><span class="s1">&#39;image&#39;</span><span class="p">]</span>
+<span class="n">y</span> <span class="o">-&gt;</span> <span class="mf">0.0</span>
+<span class="n">x</span> <span class="o">-&gt;</span> <span class="mf">20.0</span>
+  <span class="n">Read</span> <span class="p">[</span><span class="s1">&#39;image&#39;</span><span class="p">]</span>
+<span class="n">y</span> <span class="o">-&gt;</span> <span class="mf">10.0</span>
+<span class="n">x</span> <span class="o">-&gt;</span> <span class="mf">0.0</span>
+<span class="n">shutter</span> <span class="o">-&gt;</span> <span class="n">close</span>
+  <span class="n">Read</span> <span class="p">[</span><span class="s1">&#39;image&#39;</span><span class="p">]</span>
+<span class="n">shutter</span> <span class="o">-&gt;</span> <span class="nb">open</span>
+  <span class="n">Read</span> <span class="p">[</span><span class="s1">&#39;image&#39;</span><span class="p">]</span>
+<span class="n">y</span> <span class="o">-&gt;</span> <span class="mf">10.0</span>
+<span class="n">x</span> <span class="o">-&gt;</span> <span class="mf">10.0</span>
+  <span class="n">Read</span> <span class="p">[</span><span class="s1">&#39;image&#39;</span><span class="p">]</span>
+<span class="n">y</span> <span class="o">-&gt;</span> <span class="mf">10.0</span>
+<span class="n">x</span> <span class="o">-&gt;</span> <span class="mf">20.0</span>
+  <span class="n">Read</span> <span class="p">[</span><span class="s1">&#39;image&#39;</span><span class="p">]</span>
+<span class="n">y</span> <span class="o">-&gt;</span> <span class="mf">20.0</span>
+<span class="n">x</span> <span class="o">-&gt;</span> <span class="mf">0.0</span>
+<span class="n">shutter</span> <span class="o">-&gt;</span> <span class="n">close</span>
+  <span class="n">Read</span> <span class="p">[</span><span class="s1">&#39;image&#39;</span><span class="p">]</span>
+<span class="n">shutter</span> <span class="o">-&gt;</span> <span class="nb">open</span>
+  <span class="n">Read</span> <span class="p">[</span><span class="s1">&#39;image&#39;</span><span class="p">]</span>
+<span class="n">y</span> <span class="o">-&gt;</span> <span class="mf">20.0</span>
+<span class="n">x</span> <span class="o">-&gt;</span> <span class="mf">10.0</span>
+  <span class="n">Read</span> <span class="p">[</span><span class="s1">&#39;image&#39;</span><span class="p">]</span>
+<span class="n">y</span> <span class="o">-&gt;</span> <span class="mf">20.0</span>
+<span class="n">x</span> <span class="o">-&gt;</span> <span class="mf">20.0</span>
+  <span class="n">Read</span> <span class="p">[</span><span class="s1">&#39;image&#39;</span><span class="p">]</span>
+<span class="o">==================================</span> <span class="n">Close</span> <span class="n">Run</span> <span class="o">===================================</span>
+<span class="n">shutter</span> <span class="o">-&gt;</span> <span class="n">close</span>
+</pre></div>
+</div>
+<p>We plot the trajectory of the stage.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">bss</span><span class="o">.</span><span class="n">plot_raster_path</span><span class="p">(</span><span class="n">copys</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="_images/experiment1_25_0.png" src="_images/experiment1_25_0.png" />
+</section>
+<section id="grid-scan-in-phi-x-y-space">
+<h3>Grid scan in (phi, x, y) space<a class="headerlink" href="#grid-scan-in-phi-x-y-space" title="Permalink to this headline">¶</a></h3>
+<p>We can use arbitrary number of the motors in a grid scan. Here, we show
+an example to do a scan in a three dimensional space.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plan</span> <span class="o">=</span> <span class="n">plans</span><span class="o">.</span><span class="n">grid_scan_nd</span><span class="p">(</span>
+    <span class="p">[</span><span class="n">detector</span><span class="p">],</span>
+    <span class="n">motor_y</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">20.0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="n">motor_x</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">20.0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="n">motor_phi</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="n">time_per_point</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+    <span class="n">time_per_frame</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+    <span class="n">shutter</span><span class="o">=</span><span class="n">shutter</span><span class="p">,</span>
+    <span class="n">shutter_open</span><span class="o">=</span><span class="s2">&quot;open&quot;</span><span class="p">,</span>
+    <span class="n">shutter_close</span><span class="o">=</span><span class="s2">&quot;close&quot;</span><span class="p">,</span>
+    <span class="n">shutter_wait_open</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+    <span class="n">shutter_wait_close</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span>
+    <span class="n">take_dark</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">md</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;sample&quot;</span><span class="p">:</span> <span class="s2">&quot;A rod&quot;</span><span class="p">}</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>The pseudo-code of it is described as below.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">phi</span> <span class="ow">in</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">move</span> <span class="n">to</span> <span class="p">(</span><span class="n">phi</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">y</span> <span class="n">moves</span> <span class="ow">in</span> <span class="n">this</span> <span class="n">step</span><span class="p">:</span>
+                <span class="n">close</span> <span class="n">shutter</span>
+                <span class="n">wait</span> <span class="mi">5</span> <span class="n">s</span>
+                <span class="n">take</span> <span class="n">dark</span> <span class="n">during</span> <span class="n">the</span> <span class="n">movement</span>
+                <span class="nb">open</span> <span class="n">shutter</span>
+            <span class="n">collect</span> <span class="mi">1</span> <span class="n">image</span>
+</pre></div>
+</div>
+<p>The trajectory in (x, y) plane is shown below. At each (x, y) point,
+there is a scan at three points along phi axis.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">bss</span><span class="o">.</span><span class="n">plot_raster_path</span><span class="p">(</span><span class="n">plan</span><span class="p">,</span> <span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="_images/experiment1_30_0.png" src="_images/experiment1_30_0.png" />
+</section>
+</section>
+</section>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="old_algorithm.html" class="btn btn-neutral float-right" title="Use the old peak tracking algorithm in streaming data processing" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="installation.html" class="btn btn-neutral float-left" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2021, Songsheng Tao
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

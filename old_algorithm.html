@@ -1,0 +1,375 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Use the old peak tracking algorithm in streaming data processing &mdash; crystalmapping 0.0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/clipboard.min.js"></script>
+        <script src="_static/copybutton.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/plot_directive.css" type="text/css" />
+  <link rel="stylesheet" href="_static/copybutton.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Use new algorithm to run the batch processing" href="new_algorithm.html" />
+    <link rel="prev" title="Run experiments at NSLS-II" href="experiment.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> crystalmapping
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="experiment.html">Run experiments at NSLS-II</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Use the old peak tracking algorithm in streaming data processing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#take-a-look-at-the-raw-data">Take a look at the raw data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#use-callbacks-to-process-the-event-stream">Use callbacks to process the event stream</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#use-servers-to-process-the-real-time-event-stream">Use servers to process the real time event stream</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pipe-the-data-into-the-database">Pipe the data into the database</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="new_algorithm.html">Use new algorithm to run the batch processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="apis.html">API Documents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="min_versions.html">Minimum Version of Python and NumPy</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">crystalmapping</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Use the old peak tracking algorithm in streaming data processing</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/old_algorithm.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <section id="use-the-old-peak-tracking-algorithm-in-streaming-data-processing">
+<h1>Use the old peak tracking algorithm in streaming data processing<a class="headerlink" href="#use-the-old-peak-tracking-algorithm-in-streaming-data-processing" title="Permalink to this headline">¶</a></h1>
+<p>The package also offers the infrastructure for the streaming data
+processing old way, where the peaks are tracked on each image in
+the series of the exposures and the peaks will be linked in the
+final. The crystal maps are generated by filling the peak
+intensity in the zero background.</p>
+<p>Here, we show an example to process the streaming data. The streaming
+data is obtained from the database and we will use <code class="docutils literal notranslate"><span class="pre">databroker</span></code> as the
+interface to the database. In real use cases, the data will be from the
+<code class="docutils literal notranslate"><span class="pre">RunEngine</span></code>.</p>
+<section id="take-a-look-at-the-raw-data">
+<h2>Take a look at the raw data<a class="headerlink" href="#take-a-look-at-the-raw-data" title="Permalink to this headline">¶</a></h2>
+<p>First, we take a look at what our data is like. This is a grid scan on a
+crystal rod. At each pixel in the grid, there are multiple frames of
+diffraction images.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">uid</span> <span class="o">=</span> <span class="n">UID</span><span class="p">[</span><span class="s2">&quot;uid&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">run</span> <span class="o">=</span> <span class="n">DB</span><span class="p">[</span><span class="n">uid</span><span class="p">]</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">dask_array</span> <span class="o">=</span> <span class="n">run</span><span class="o">.</span><span class="n">xarray_dask</span><span class="p">()</span>
+<span class="n">dask_array</span><span class="o">.</span><span class="n">attrs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">run</span><span class="o">.</span><span class="n">start</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Here, we plot the spatial distribution of the total intensity. The upper
+part of the rod is made up by multiple crystalline domains while the
+lower part is full of powder.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stats1</span> <span class="o">=</span> <span class="n">reshape</span><span class="p">(</span><span class="n">dask_array</span><span class="p">,</span> <span class="s2">&quot;dexela_stats1_total&quot;</span><span class="p">)</span>
+<span class="n">plot_real_aspect</span><span class="p">(</span><span class="n">stats1</span><span class="p">);</span>
+</pre></div>
+</div>
+<img alt="_images/process_streaming_data_6_0.png" src="_images/process_streaming_data_6_0.png" />
+<p>We select a image taken at the empty space. The image only contains dark
+current and air scattering. We will use this to subtract all other
+images in this scan.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">image</span> <span class="o">=</span> <span class="n">dask_array</span><span class="p">[</span><span class="s2">&quot;dexela_image&quot;</span><span class="p">][</span><span class="mi">4523</span><span class="p">]</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">plot_real_aspect</span><span class="p">(</span><span class="n">image</span><span class="p">);</span>
+</pre></div>
+</div>
+<img alt="_images/process_streaming_data_8_0.png" src="_images/process_streaming_data_8_0.png" />
+</section>
+<section id="use-callbacks-to-process-the-event-stream">
+<h2>Use callbacks to process the event stream<a class="headerlink" href="#use-callbacks-to-process-the-event-stream" title="Permalink to this headline">¶</a></h2>
+<p>Here, we use the callbacks to process the data in a stream. The frames
+will be first go into the <code class="docutils literal notranslate"><span class="pre">ImageProcessor</span></code>. The frames will be
+averaged and subtracted by the <code class="docutils literal notranslate"><span class="pre">subtrahend</span></code>. Because diffraction image
+is non-negative, the negative pixels will be filled with zero. Then, the
+results will be sent to <code class="docutils literal notranslate"><span class="pre">PeakTracker</span></code>. It will find the Bragg peaks on
+the images and output each peak as a single event. The data will be
+dumped to <code class="docutils literal notranslate"><span class="pre">DB2</span></code>. During this process, <code class="docutils literal notranslate"><span class="pre">TrackLinker</span></code> will monitor the
+events. If all peaks have been found in all images, it will start
+linking the peaks and output where the same Bragg peak is on a series of
+images. The results will also be recorded in the database.</p>
+<p>The argument <code class="docutils literal notranslate"><span class="pre">dexela_image</span></code> is the name of the data key of the data in
+the event stream. <code class="docutils literal notranslate"><span class="pre">diameter=15,</span> <span class="pre">percentile=80,</span> <span class="pre">separation=100</span></code> are the
+key words for the <code class="docutils literal notranslate"><span class="pre">trackpy.locate</span></code>. <code class="docutils literal notranslate"><span class="pre">search_range=50</span></code> is the key
+word for the <code class="docutils literal notranslate"><span class="pre">trackpy.link</span></code>. Please see the documents of
+<a class="reference external" href="http://soft-matter.github.io/trackpy/v0.5.0/api.html">trackpy</a> for
+more information.</p>
+<p>Here, the <code class="docutils literal notranslate"><span class="pre">BestEffortCallback</span></code> is used to print out the status of
+<code class="docutils literal notranslate"><span class="pre">ImageProcessor</span></code>. It is optional and does nothing to the data.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ip</span> <span class="o">=</span> <span class="n">ImageProcessor</span><span class="p">(</span><span class="s2">&quot;dexela_image&quot;</span><span class="p">,</span> <span class="n">subtrahend</span><span class="o">=</span><span class="n">image</span><span class="p">)</span>
+<span class="n">pt</span> <span class="o">=</span> <span class="n">PeakTracker</span><span class="p">(</span><span class="s2">&quot;dexela_image&quot;</span><span class="p">,</span> <span class="n">diameter</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">percentile</span><span class="o">=</span><span class="mi">80</span><span class="p">,</span> <span class="n">separation</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<span class="n">tl</span> <span class="o">=</span> <span class="n">TrackLinker</span><span class="p">(</span><span class="n">db</span><span class="o">=</span><span class="n">DB2</span><span class="p">,</span> <span class="n">search_range</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+<span class="n">bec</span> <span class="o">=</span> <span class="n">BestEffortCallback</span><span class="p">()</span>
+<span class="n">bec</span><span class="o">.</span><span class="n">disable_plots</span><span class="p">()</span>
+<span class="n">tl</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="n">DB2</span><span class="o">.</span><span class="n">insert</span><span class="p">)</span>
+<span class="n">pt</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="n">tl</span><span class="p">)</span>
+<span class="n">pt</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="n">DB2</span><span class="o">.</span><span class="n">insert</span><span class="p">)</span>
+<span class="n">ip</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="n">pt</span><span class="p">)</span>
+<span class="n">ip</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="n">bec</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>We pipe the data from our database to this callback function.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">Filler</span><span class="p">(</span>
+    <span class="n">handler_registry</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">DB</span><span class="o">.</span><span class="n">reg</span><span class="o">.</span><span class="n">handler_reg</span><span class="p">),</span>
+    <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">root_map</span><span class="o">=</span><span class="n">DB</span><span class="o">.</span><span class="n">reg</span><span class="o">.</span><span class="n">root_map</span>
+<span class="p">)</span> <span class="k">as</span> <span class="n">filler</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">doc</span> <span class="ow">in</span> <span class="n">run</span><span class="o">.</span><span class="n">documents</span><span class="p">(</span><span class="n">fill</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="n">filler</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">doc</span><span class="p">)</span>
+        <span class="n">ip</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">doc</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="use-servers-to-process-the-real-time-event-stream">
+<h2>Use servers to process the real time event stream<a class="headerlink" href="#use-servers-to-process-the-real-time-event-stream" title="Permalink to this headline">¶</a></h2>
+<p>We are basically replaying the data processing procedure in the last
+section. In this section, we will learn how the data is processed at the
+beamline in “real time”. We need to setup a server that wraps the
+callback function in last section. An example script is show here.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>cat server.py
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">databroker</span> <span class="kn">import</span> <span class="n">Broker</span>
+<span class="kn">from</span> <span class="nn">bluesky.callbacks.best_effort</span> <span class="kn">import</span> <span class="n">BestEffortCallback</span>
+<span class="kn">from</span> <span class="nn">crystalmapping.callbacks</span> <span class="kn">import</span> <span class="n">ImageProcessor</span><span class="p">,</span> <span class="n">PeakTrackor</span><span class="p">,</span> <span class="n">TrackLinker</span>
+<span class="kn">from</span> <span class="nn">bluesky.callbacks.zmq</span> <span class="kn">import</span> <span class="n">RemoteDispatcher</span>
+
+<span class="c1"># load the image to use</span>
+<span class="n">image</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;./data/PARAMID-2_background_1.npy&quot;</span><span class="p">,</span> <span class="n">allow_pickle</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># create a remote dispatcher to receive the dispatch the data</span>
+<span class="n">rd</span> <span class="o">=</span> <span class="n">RemoteDispatcher</span><span class="p">(</span><span class="n">address</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;localhost&quot;</span><span class="p">,</span> <span class="mi">5568</span><span class="p">),</span> <span class="n">prefix</span><span class="o">=</span><span class="sa">b</span><span class="s1">&#39;raw&#39;</span><span class="p">)</span>
+
+<span class="c1"># create the callback</span>
+<span class="n">ip</span> <span class="o">=</span> <span class="n">ImageProcessor</span><span class="p">(</span><span class="s2">&quot;dexela_image&quot;</span><span class="p">,</span> <span class="n">subtrahend</span><span class="o">=</span><span class="n">image</span><span class="p">)</span>
+<span class="n">pt</span> <span class="o">=</span> <span class="n">PeakTracker</span><span class="p">(</span><span class="s2">&quot;dexela_image&quot;</span><span class="p">,</span> <span class="n">diameter</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">percentile</span><span class="o">=</span><span class="mi">80</span><span class="p">,</span> <span class="n">separation</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<span class="n">tl</span> <span class="o">=</span> <span class="n">TrackLinker</span><span class="p">(</span><span class="n">db</span><span class="o">=</span><span class="n">DB2</span><span class="p">,</span> <span class="n">search_range</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+<span class="n">bec</span> <span class="o">=</span> <span class="n">BestEffortCallback</span><span class="p">()</span>
+<span class="n">bec</span><span class="o">.</span><span class="n">disable_plots</span><span class="p">()</span>
+<span class="n">tl</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="n">DB2</span><span class="o">.</span><span class="n">insert</span><span class="p">)</span>
+<span class="n">pt</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="n">tl</span><span class="p">)</span>
+<span class="n">pt</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="n">DB2</span><span class="o">.</span><span class="n">insert</span><span class="p">)</span>
+<span class="n">ip</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="n">pt</span><span class="p">)</span>
+<span class="n">ip</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="n">bec</span><span class="p">)</span>
+
+<span class="c1"># subscribe the callback to the dispatcher</span>
+<span class="n">rd</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="n">ip</span><span class="p">)</span>
+
+<span class="c1"># start the server</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Start the server ...&quot;</span><span class="p">)</span>
+    <span class="n">rd</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>To start the server, we will run:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">server</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<p>Then, this server will receive the data from “localhost:5568” with
+prefix “raw” and process the data using the callback defined in the
+script.</p>
+</section>
+<section id="pipe-the-data-into-the-database">
+<h2>Pipe the data into the database<a class="headerlink" href="#pipe-the-data-into-the-database" title="Permalink to this headline">¶</a></h2>
+<p>We can also publish the data in the database to the server using
+<code class="docutils literal notranslate"><span class="pre">Publisher</span></code>. Here, we show an example to publish our data to
+“localhost:5567”. The server will process the data just like it is from
+the beamline devices.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pub</span> <span class="o">=</span> <span class="n">Publisher</span><span class="p">(</span><span class="s2">&quot;localhost&quot;</span><span class="p">,</span> <span class="mi">5567</span><span class="p">)</span>
+<span class="k">with</span> <span class="n">Filler</span><span class="p">(</span>
+    <span class="n">handler_registry</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">DB</span><span class="o">.</span><span class="n">reg</span><span class="o">.</span><span class="n">handler_reg</span><span class="p">),</span>
+    <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">root_map</span><span class="o">=</span><span class="n">DB</span><span class="o">.</span><span class="n">reg</span><span class="o">.</span><span class="n">root_map</span>
+<span class="p">)</span> <span class="k">as</span> <span class="n">filler</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">doc</span> <span class="ow">in</span> <span class="n">run</span><span class="o">.</span><span class="n">documents</span><span class="p">(</span><span class="n">fill</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="n">filler</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">doc</span><span class="p">)</span>
+        <span class="n">pub</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">doc</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="new_algorithm.html" class="btn btn-neutral float-right" title="Use new algorithm to run the batch processing" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="experiment.html" class="btn btn-neutral float-left" title="Run experiments at NSLS-II" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2021, Songsheng Tao
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
