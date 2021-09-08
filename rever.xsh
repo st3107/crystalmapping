@@ -13,7 +13,7 @@ $VERSION_BUMP_PATTERNS = [  # These note where/how to find the version numbers
                          ]
 $CHANGELOG_FILENAME = 'CHANGELOG.rst'  # Filename for the changelog
 $CHANGELOG_TEMPLATE = 'TEMPLATE.rst'  # Filename for the news template
-$PUSH_TAG_REMOTE = 'git@github.com:st3107/tomology.git'  # Repo to push tags to
+$PUSH_TAG_REMOTE = 'git@github.com:st3107/crystalmapping.git'  # Repo to push tags to
 
 $GITHUB_ORG = 'st3107'  # Github org for Github releases and conda-forge
-$GITHUB_REPO = 'tomology'  # Github repo for Github releases  and conda-forge
+$GITHUB_REPO = 'crystalmapping'  # Github repo for Github releases  and conda-forge
