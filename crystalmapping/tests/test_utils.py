@@ -1,3 +1,4 @@
+import pytest
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -41,6 +42,7 @@ def test_annotate_peaks():
     plt.clf()
 
 
+@pytest.mark.skip
 def test_create_atlas():
     """Test create_atlas by plotting the figure out. Test assign_Q_to_atlas"""
     df = pd.DataFrame(
