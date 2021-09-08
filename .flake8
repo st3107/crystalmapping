@@ -1,0 +1,11 @@
+[flake8]
+exclude =
+    .git,
+    __pycache__,
+    build,
+    dist,
+    versioneer.py,
+    tomography/_version.py,
+    docs/source/conf.py
+    notebooks/*
+max-line-length = 115
