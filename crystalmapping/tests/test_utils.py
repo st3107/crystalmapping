@@ -30,6 +30,7 @@ def test_plot_real_aspect():
     plt.clf()
 
 
+@pytest.mark.skip
 def test_annotate_peaks():
     """Test annotate_peaks in a toy case."""
     df = pd.DataFrame(
