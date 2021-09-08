@@ -39,7 +39,7 @@ setup(
     long_description=readme,
     author="Songsheng Tao",
     author_email='st3107@columbia.edu',
-    url='https://github.com/st3107/tomography',
+    url='https://github.com/st3107/crystalmapping',
     python_requires='>={}'.format('.'.join(str(n) for n in min_version)),
     packages=find_packages(exclude=['docs', 'tests']),
     entry_points={

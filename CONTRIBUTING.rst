@@ -13,7 +13,7 @@ Types of Contributions
 Report Bugs
 ~~~~~~~~~~~
 
-Report bugs at https://github.com/st3107/tomography/issues.
+Report bugs at https://github.com/st3107/crystalmapping/issues.
 
 If you are reporting a bug, please include:
 
@@ -35,14 +35,14 @@ is open to whoever wants to implement it.
 Write Documentation
 ~~~~~~~~~~~~~~~~~~~
 
-tomography could always use more documentation, whether
-as part of the official tomography docs, in docstrings,
+crystalmapping could always use more documentation, whether
+as part of the official crystalmapping docs, in docstrings,
 or even on the web in blog posts, articles, and such.
 
 Submit Feedback
 ~~~~~~~~~~~~~~~
 
-The best way to send feedback is to file an issue at https://github.com/st3107/tomography/issues.
+The best way to send feedback is to file an issue at https://github.com/st3107/crystalmapping/issues.
 
 If you are proposing a feature:
 
@@ -54,17 +54,17 @@ If you are proposing a feature:
 Get Started!
 ------------
 
-Ready to contribute? Here's how to set up `tomography` for local development.
+Ready to contribute? Here's how to set up `crystalmapping` for local development.
 
-1. Fork the `tomography` repo on GitHub.
+1. Fork the `crystalmapping` repo on GitHub.
 2. Clone your fork locally::
 
-    $ git clone git@github.com:your_name_here/tomography.git
+    $ git clone git@github.com:your_name_here/crystalmapping.git
 
 3. Install your local copy into a virtualenv. Assuming you have virtualenvwrapper installed, this is how you set up your fork for local development::
 
-    $ mkvirtualenv tomography
-    $ cd tomography/
+    $ mkvirtualenv crystalmapping
+    $ cd crystalmapping/
     $ python setup.py develop
 
 4. Create a branch for local development::
@@ -75,7 +75,7 @@ Ready to contribute? Here's how to set up `tomography` for local development.
 
 5. When you're done making changes, check that your changes pass flake8 and the tests, including testing other Python versions with tox::
 
-    $ flake8 tomography tests
+    $ flake8 crystalmapping tests
     $ python setup.py test
     $ tox
 
@@ -99,6 +99,6 @@ Before you submit a pull request, check that it meets these guidelines:
    your new functionality into a function with a docstring, and add the
    feature to the list in README.rst.
 3. The pull request should work for Python 2.7, 3.3, 3.4, 3.5 and for PyPy. Check
-   https://travis-ci.org/st3107/tomography/pull_requests
+   https://travis-ci.org/st3107/crystalmapping/pull_requests
    and make sure that the tests pass for all supported Python versions.
 
