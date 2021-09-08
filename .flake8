@@ -5,7 +5,7 @@ exclude =
     build,
     dist,
     versioneer.py,
-    tomography/_version.py,
+    crystalmapping/_version.py,
     docs/source/conf.py
     notebooks/*
 max-line-length = 115

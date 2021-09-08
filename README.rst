@@ -1,5 +1,5 @@
 ==========
-tomography
+crystalmapping
 ==========
 
 .. image:: https://codecov.io/gh/st3107/tomology/branch/main/graph/badge.svg?token=GLRRK9K9BM
@@ -10,4 +10,4 @@ Obtain the distribution of grains inside a crystal from a series of diffraction 
 tracking.
 
 * Free software: 3-clause BSD license
-* Documentation: https://st3107.github.io/tomography.
+* Documentation: https://st3107.github.io/crystalmapping.

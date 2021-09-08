@@ -1,6 +1,6 @@
 [run]
 source =
-    tomography
+    crystalmapping
 [report]
 omit =
     */python?.?/*
