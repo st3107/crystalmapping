@@ -1,5 +1,5 @@
 crystalmapping Documentation
-========================
+============================
 
 Welcome to the document of the crystalmapping. The package is a toolbox for the data collection, processing, analysis
 and visualization in the crystal mapping. The crystal mapping is a technique to reveal the spatial or oriental
