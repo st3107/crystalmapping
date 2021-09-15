@@ -1,7 +1,10 @@
+import bisect
 import math
+import pathlib
 import typing
 
 import fabio
+import yaml
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
 import numpy as np
@@ -11,6 +14,7 @@ import trackpy as tp
 import xarray as xr
 from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
 from xarray.plot import FacetGrid
+from pyFAI.calibrant import Cell
 
 _VERBOSE = 1
 
@@ -770,6 +774,20 @@ class Calculator(object):
         self.metadata: typing.Union[None, dict] = None
         # pyFAI
         self.ai: typing.Union[None, AzimuthalIntegrator] = None
+        # dims: all d spacings
+        self.all_dspacing: typing.Union[None, np.ndarray] = None
+        # dims: all d spacings, hkl idx, hkl
+        self.all_hkl: typing.Union[None, np.ndarray] = None
+        # dims: all d spacings
+        self.all_n_hkl: typing.Union[None, np.ndarray] = None
+        # dims: grain
+        self.dspacing: typing.Union[None, np.ndarray] = None
+        # dims: grain, hkl idex ,hkl
+        self.hkl: typing.Union[None, np.ndarray] = None
+        # dims: grain
+        self.n_hkl: typing.Union[None, np.ndarray] = None
+        # a pyFAI cell object
+        self.cell: typing[None, Cell] = None
 
     def _check_attr(self, name: str):
         if getattr(self, name) is None:
@@ -795,23 +813,23 @@ class Calculator(object):
         self._check_attr("frames_arr")
         frames_arr = self.frames_arr[index_range] if index_range is not None else self.frames_arr
         self.dark, self.light = min_and_max_along_time2(frames_arr)
+        return
 
-    def calc_peaks_from_light_frame(self, diameter: typing.Union[int, tuple], *args, **kwargs):
-        """Get the Bragg peaks on the light frame."""
-        self._check_attr("light")
-        self.peaks = tp.locate(self.light, diameter, *args, **kwargs)
-
-    def calc_peaks_from_dk_sub_frame(self, diameter: typing.Union[int, tuple], *args, **kwargs):
+    def calc_peaks_from_dk_sub_frame(self, radius: typing.Union[int, tuple], *args, **kwargs):
         """Get the Bragg peaks on the light frame."""
         self._check_attr("light")
         light = self.light if self.dark is None else self.light - self.dark
-        self.peaks = tp.locate(light, diameter, *args, **kwargs)
+        self.peaks = tp.locate(light, 2 * radius + 1, *args, **kwargs)
+        return
 
-    def calc_windows_from_peaks(self, num: int, width: int):
+    def calc_windows_from_peaks(self, max_num: int, width: int):
         """Gte the windows for the most brightest Bragg peaks."""
         self._check_attr("peaks")
-        df = self.peaks.nlargest(num, "mass")
+        if self.peaks.shape[0] == 0:
+            raise CalculatorError("There is no peak found on the image. Please check your peaks table.")
+        df = self.peaks.nlargest(max_num, "mass")
         self.windows = create_windows_from_width2(df, width)
+        return
 
     def calc_intensity_in_windows(self):
         """Get the intensity array as a function of index of frames."""
@@ -823,34 +841,43 @@ class Calculator(object):
             self.intensity = (self.intensity.transpose() - self.bkg_intensity).transpose()
         else:
             my_print("Attribute 'dark' is None. No background correction.")
+        return
 
-    def assign_q_values(self):
+    def assign_q_values(self) -> None:
         """Assign the values to the windows dataframe."""
         self._check_attr("ai")
         self._check_attr("windows")
-        self.windows["Q"] = self.ai.qFunction(self.windows["x"], self.windows["y"])
+        qa = self.ai.qArray()
+        self.windows["Q"] = [qa[row.y, row.x] for row in self.windows.itertuples()]
+        self.windows["d"] = 2. * math.pi / self.windows["Q"]
+        return
 
-    def reshape_intensity(self):
+    def reshape_intensity(self) -> None:
         """Reshape the intensity array."""
         self._check_attr("metadata")
         self._check_attr("intensity")
         self.intensity = reshape_to_ndarray(self.intensity, self.metadata)
+        return
 
-    def calc_coords(self):
+    def calc_coords(self) -> None:
         """Calculate the coordinates."""
         self._check_attr("metadata")
         self.coords = get_coords2(self.metadata)
+        return
 
     def dark_to_xarray(self) -> xr.DataArray:
         """Convert the dark image to DataArray."""
+        self._check_attr("dark")
         return xr.DataArray(self.dark, dims=["pixel_y", "pixel_x"])
 
     def light_to_xarray(self) -> xr.DataArray:
         """Convert the light image to DataArray"""
+        self._check_attr("light")
         return xr.DataArray(self.light, dims=["pixel_y", "pixel_x"])
 
     def intensity_to_xarray(self) -> xr.DataArray:
         """Convert the intensity array to DataArray"""
+        self._check_attr("intensity")
         dims = ["dim_{}".format(i) for i in range(self.intensity.ndim - 1)]
         arr = xr.DataArray(self.intensity, dims=["grain"] + dims)
         if self.coords is not None:
@@ -860,11 +887,22 @@ class Calculator(object):
 
     def windows_to_xarray(self) -> xr.DataArray:
         """Convert the windows DataFrame to xarray."""
+        self._check_attr("windows")
         return self.windows.rename_axis(index="grain").to_xarray()
 
     def coords_to_dict(self) -> dict:
         """Convert the coordinates to dictionary."""
+        self._check_attr("coords")
         return {"dim_{}".format(i): coord for i, coord in enumerate(self.coords)}
+
+    def dspacing_to_xarray(self) -> xr.DataArray:
+        return xr.DataArray(self.dspacing, dims=["grain"], attrs={"units": r"nm$^{-1}$"})
+
+    def hkl_to_xarray(self) -> xr.DataArray:
+        return xr.DataArray(self.hkl, dims=["grain", "hkl_id", "hkl_idx"])
+
+    def n_hkl_to_xarray(self) -> xr.DataArray:
+        return xr.DataArray(self.n_hkl, dims=["grain"])
 
     def to_dataset(self) -> xr.Dataset:
         """Convert the calculation results to DataSet."""
@@ -879,6 +917,19 @@ class Calculator(object):
         if self.windows is not None:
             ds2 = self.windows_to_xarray()
             ds = ds.merge(ds2)
+        if self.dspacing is not None:
+            ds = ds.assign(
+                {"dspacing": self.dspacing_to_xarray()}
+            )
+        if self.hkl is not None:
+            ds = ds.assign(
+                {"hkl": self.hkl_to_xarray()}
+            )
+        if self.n_hkl is not None:
+            ds = ds.assign(
+                {"n_hkl": self.n_hkl_to_xarray()}
+            )
+
         if self.metadata is not None:
             ds = ds.assign_attrs(**self.metadata)
         return ds
@@ -886,10 +937,17 @@ class Calculator(object):
     def get_frame(self, index: int) -> xr.DataArray:
         """Get the frame of at the index."""
         self._check_attr("frames_arr")
-        return self.frames_arr[index].compute().mean(axis=0)
+        frames = self.frames_arr[index].compute()
+        if frames.ndim == 3:
+            return frames.mean(axis=0)
+        elif frames.ndim == 2:
+            return frames
+        else:
+            raise CalculatorError("The dimension of the frame is {}. Require 2 or 3.".format(frames.ndim))
 
     def show_frame(self, index: int, *args, **kwargs) -> FacetGrid:
         """Show the frame at that index."""
+        self._check_attr("frames_arr")
         frame = self.get_frame(index)
         set_vlim(kwargs, frame, 4.)
         facet = frame.plot.imshow(*args, **kwargs)
@@ -957,8 +1015,8 @@ class Calculator(object):
         """Automatically plot the intensity array in the dataset."""
         return auto_plot_dataset(ds, key, title, invert_y, **kwargs)
 
-    def auto_process(self, num_wins: int, hw_wins: int, diameter: int, index_filter: slice = None,
-                     *args, **kwargs) -> None:
+    def auto_process(self, num_wins: int, wins_width: int, kernel_radius: int, index_filter: slice = None,
+                     **kwargs) -> None:
         """Automatically process the data in the standard protocol.
 
         The calculation results are saved in attributes.
@@ -967,10 +1025,10 @@ class Calculator(object):
         ----------
         num_wins : int
             The number of windows.
-        hw_wins : int
+        wins_width : int
             The half width of the windows in pixels.
-        diameter : int
-            The diameter of the kernel to use in peak finding in pixels. It must be an odd integer.
+        kernel_radius : int
+            The radius of the kernel to use in peak finding in pixels. It must be an odd integer.
         index_filter : slice
             The index slice of the data to use in the calculation of the dark and light image.
         args :
@@ -982,12 +1040,10 @@ class Calculator(object):
         -------
         None.
         """
-        if diameter % 2 == 0:
-            raise CalculatorError("Diamter must be an odd integer.")
         self.squeeze_shape_and_extents()
         self.calc_dark_and_light_from_frames_arr(index_filter)
-        self.calc_peaks_from_dk_sub_frame(diameter, *args, **kwargs)
-        self.calc_windows_from_peaks(num_wins, hw_wins)
+        self.calc_peaks_from_dk_sub_frame(kernel_radius, **kwargs)
+        self.calc_windows_from_peaks(num_wins, wins_width)
         self.calc_intensity_in_windows()
         try:
             self.calc_coords()
@@ -998,7 +1054,66 @@ class Calculator(object):
         except CalculatorError as e:
             print(e)
         try:
+            self.calc_hkls()
+        except CalculatorError as e:
+            print(e)
+        try:
             self.reshape_intensity()
         except CalculatorError as e:
             print(e)
         return
+
+    def load_cell(self, filename: str) -> None:
+        with pathlib.Path(filename).open("r") as f:
+            dct = yaml.load(f)
+        self.cell = Cell(**dct)
+        return
+
+    def calc_hkls(self):
+        self._check_attr("windows")
+        self._check_attr("cell")
+        if "d" not in self.windows.columns:
+            self.assign_q_values()
+        if self.all_dspacing is None:
+            self._calc_ds_and_hkls()
+        idxs = []
+        for d in self.windows["d"]:
+            idx = self._search_hkls_idx(d)
+            idxs.append(idx)
+        self.dspacing = self.all_dspacing[idxs]
+        self.hkl = self.all_hkl[idxs]
+        self.n_hkl = self.all_n_hkl[idxs]
+        return
+
+    def _calc_ds_and_hkls(self) -> None:
+        dmin = self.windows["d"].min()
+        dhkls = sorted(self.cell.d_spacing(dmin).values())
+        if len(dhkls) == 0:
+            raise CalculatorError(
+                "There is no matching d-spacing. Please check the cell attribute."
+            )
+        ds = []
+        hkls = []
+        rows = []
+        for dhkl in dhkls:
+            d = dhkl[0]
+            ds.append(d)
+            hkl = np.asarray(dhkl[1:])
+            rows.append(hkl.shape[0])
+            hkls.append(hkl)
+        max_row = max(rows)
+        for i, hkl in enumerate(hkls):
+            row = hkl.shape[0]
+            # pad the hkls to be the same number of rows
+            hkls[i] = np.pad(hkl, [(0, max_row - row), (0, 0)], constant_values=0)
+        self.all_dspacing = np.asarray(ds)
+        self.all_hkl = np.asarray(hkls)
+        self.all_n_hkl = np.asarray(rows)
+        return
+
+    def _search_hkls_idx(self, d: float) -> int:
+        i = bisect.bisect(self.all_dspacing, d)
+        n = len(self.all_dspacing)
+        left = self.all_dspacing[i - 1] if i - 1 > -1 else float("-inf")
+        right = self.all_dspacing[i] if i < n else float("inf")
+        return i - 1 if d - left < right - d else i
