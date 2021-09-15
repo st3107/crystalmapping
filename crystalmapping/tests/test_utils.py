@@ -150,6 +150,8 @@ def test_Calculator_auto_processing_and_reload():
     c.cell = utils.Cell(a=5, b=5, c=5)
     # run auto processing
     c.auto_process(4, 2, 2, invert=True)
-    # test
+    # test reloading
     ds = c.to_dataset()
-    print(ds)
+    c.load_dataset(ds)
+    ds2 = c.to_dataset()
+    assert ds2.equals(ds)

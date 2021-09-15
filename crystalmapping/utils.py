@@ -4,6 +4,7 @@ import pathlib
 import typing
 
 import fabio
+import pyFAI
 import yaml
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
@@ -795,6 +796,8 @@ class Calculator(object):
         self.n_hkl: typing.Union[None, np.ndarray] = None
         # a pyFAI cell object
         self.cell: typing[None, Cell] = None
+        # column names of the windows
+        self.window_names = frozenset(["x", "y", "dx", "dy", "d", "Q"])
 
     def _check_attr(self, name: str):
         if getattr(self, name) is None:
@@ -1068,6 +1071,24 @@ class Calculator(object):
             self.reshape_intensity()
         except CalculatorError as e:
             print(e)
+        return
+
+    def load_ai(self, filename: str) -> None:
+        self.ai = pyFAI.load(filename)
+        return
+
+    def load_frames_arr(self, filename: str) -> None:
+        self.frames_arr = xr.load_dataarray(filename)
+        return
+
+    def load_dataset(self, ds: xr.Dataset) -> None:
+        w_names = []
+        for name in ds:
+            if name not in self.window_names:
+                self.__setattr__(str(name), ds[name].values)
+            else:
+                w_names.append(name)
+        self.windows = ds[w_names].to_dataframe()
         return
 
     def load_cell(self, filename: str) -> None:
