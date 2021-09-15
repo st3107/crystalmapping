@@ -3,10 +3,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import xarray as xr
+from pkg_resources import resource_filename
 
 import crystalmapping.utils as utils
 
 plt.ioff()
+IMAGE_FILE = resource_filename("crystalmapping", "data/image.png")
+DEXELA_LIGHT_IMAGE_FILE = resource_filename("crystalmapping", "data/dexela_light_image.npy")
+DEXELA_DARK_IMAGE_FILE = resource_filename("crystalmapping", "data/dexela_dark_image.npy")
 
 
 def test_reshape():
@@ -75,76 +79,77 @@ def test_map_to_Q():
     assert q.shape == (2,)
 
 
-def test_Calculator_1():
+def test_Calculator_step_by_step():
     c = utils.Calculator()
-
-    c.frames_arr = xr.DataArray([[[[1, 0], [0, 0]]], [[[0, 0], [1, 1]]]])
+    # load test data
+    light_image: np.ndarray = plt.imread(IMAGE_FILE)
+    light_image = np.expand_dims(light_image, 0)
+    dark_image: np.ndarray = np.zeros_like(light_image)
+    # give the data to the calculator
+    c.frames_arr = xr.DataArray([light_image, light_image, dark_image, dark_image])
+    c.metadata = {"shape": [2, 2], "extents": [(0, 1), (0, 1)], "snaking": (False, False)}
+    c.ai = utils.AzimuthalIntegrator(
+        detector="dexela2923",
+        wavelength=0.168 * 1e-9,
+        dist=0.01
+    )
+    c.cell = utils.Cell(a=5, b=5, c=5)
+    # test the show frames
     c.show_frame(0)
-    c.show_frame(1)
+    plt.show(block=False)
+    plt.clf()
+    # test calculation of the light and dark
     c.calc_dark_and_light_from_frames_arr()
-    expect0 = np.array([[0, 0], [0, 0]])
-    expect1 = np.array([[1, 0], [1, 1]])
-    assert np.array_equal(c.dark, expect0)
-    assert np.array_equal(c.light, expect1)
-
+    assert np.array_equal(c.dark, np.squeeze(dark_image))
+    assert np.array_equal(c.light, np.squeeze(light_image))
+    # test the visualization of light and dark
     c.show_dark()
     plt.show(block=False)
     plt.clf()
     c.show_light()
     plt.show(block=False)
     plt.clf()
-
-    c.calc_peaks_from_light_frame(1, noise_size=0)
-    expect2 = pd.DataFrame(columns=["y", "x", "mass", "size", "ecc", "signal", "raw_mass"])
-    assert c.peaks.equals(expect2)
-
-    c.peaks = pd.DataFrame([[1.5, 0.5, 3], [0.5, 0.5, 2], [1.5, 1.5, 1]],
-                           columns=["y", "x", "mass"])
-    c.calc_windows_from_peaks(100, 0)
-    expect3 = pd.DataFrame([[1, 0, 0, 0], [0, 0, 0, 0], [1, 0, 1, 0]], columns=["y", "dy", "x", "dx"])
-    assert c.windows.equals(expect3)
-
+    # test the peak tracking
+    c.calc_peaks_from_dk_sub_frame(2, invert=True)
+    # test the window drawing
+    c.calc_windows_from_peaks(4, 2)
+    # test the visualization of windows
     c.show_windows()
     plt.show(block=False)
     plt.clf()
-
+    # test the calculation of the intensity
     c.calc_intensity_in_windows()
-    expect4 = np.array([[0., 1.], [1., 0], [0., 1.]])
-    assert np.array_equal(c.intensity, expect4)
-
+    c.reshape_intensity()
+    # test the visualization of the intensity
     c.show_intensity()
     plt.show(block=False)
     plt.clf()
-
+    # test the calculation of the coordinates
+    c.calc_coords()
+    # test the hkl indexing
+    c.calc_hkls()
+    # test export dataset
     ds = c.to_dataset()
     print(ds)
 
 
-def test_Calculator_2():
+def test_Calculator_auto_processing_and_reload():
     c = utils.Calculator()
-
-    c.metadata = {"shape": [2, 2], "extents": [(-1, 0), (1, 3)], "snaking": (False, True)}
-    c.intensity = np.array([[1, 2, 3, 4], [4, 3, 2, 1]])
-    c.reshape_intensity()
-    expect5 = np.array([[[1, 2], [4, 3]], [[4, 3], [1, 2]]])
-    assert np.array_equal(c.intensity, expect5)
-
-    c.show_intensity()
-    plt.show(block=False)
-    plt.clf()
-
-    c.calc_coords()
-    assert np.array_equal(c.coords[0], np.array([-1., 0.]))
-    assert np.array_equal(c.coords[1], np.array([1., 3.]))
-
-    c.show_intensity()
-    plt.show(block=False)
-    plt.clf()
-
-
-def test_Calculator_3():
-    c = utils.Calculator()
-    c.windows = pd.DataFrame([[1, 0, 0, 0], [0, 0, 0, 0], [1, 0, 1, 0]], columns=["y", "dy", "x", "dx"])
-    c.ai = utils.AzimuthalIntegrator(detector="Perkin", wavelength=2 * np.pi)
-    c.assign_q_values()
-    print(c.windows)
+    # load test data
+    light_image: np.ndarray = plt.imread(IMAGE_FILE)
+    light_image = np.expand_dims(light_image, 0)
+    dark_image: np.ndarray = np.zeros_like(light_image)
+    # give the data to the calculator
+    c.frames_arr = xr.DataArray([light_image, light_image, dark_image, dark_image])
+    c.metadata = {"shape": [2, 2], "extents": [(0, 1), (0, 1)], "snaking": (False, False)}
+    c.ai = utils.AzimuthalIntegrator(
+        detector="dexela2923",
+        wavelength=0.168 * 1e-9,
+        dist=0.01
+    )
+    c.cell = utils.Cell(a=5, b=5, c=5)
+    # run auto processing
+    c.auto_process(4, 2, 2, invert=True)
+    # test
+    ds = c.to_dataset()
+    print(ds)
