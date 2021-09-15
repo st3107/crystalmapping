@@ -17,6 +17,7 @@ from xarray.plot import FacetGrid
 from pyFAI.calibrant import Cell
 
 _VERBOSE = 1
+COLORS = list(plt.rcParams['axes.prop_cycle'].by_key()['color'])
 
 
 def set_verbose(level: int) -> None:
@@ -349,11 +350,17 @@ def reformat_data(ds: xr.Dataset) -> xr.Dataset:
 
 def draw_windows(df: pd.DataFrame, ax: plt.Axes) -> None:
     """Draw windows on the axes."""
-    for row in df.itertuples():
+    n_c = len(COLORS)
+    for i, row in enumerate(df.itertuples()):
         xy = (row.x - row.dx - 0.5, row.y - row.dy - 0.5)
         width = row.dx * 2 + 1
         height = row.dy * 2 + 1
-        patch = patches.Rectangle(xy, width=width, height=height, linewidth=2, edgecolor="r", fill=False)
+        patch = patches.Rectangle(
+            xy,
+            width=width, height=height,
+            linewidth=1, edgecolor=COLORS[i % n_c],
+            fill=False
+        )
         ax.add_patch(patch)
     return
 
