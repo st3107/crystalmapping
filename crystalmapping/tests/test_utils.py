@@ -155,3 +155,17 @@ def test_Calculator_auto_processing_and_reload():
     c.load_dataset(ds)
     ds2 = c.to_dataset()
     assert ds2.equals(ds)
+    # check the frame
+    c.show_frame(0)
+    plt.show(block=False)
+    plt.clf()
+    # check the frame
+    c.show_windows()
+    plt.show(block=False)
+    plt.clf()
+    # check the intensity
+    c.show_intensity()
+    plt.show(block=False)
+    plt.clf()
+    # check the ds
+    print(ds)
