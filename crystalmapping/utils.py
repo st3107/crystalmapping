@@ -788,11 +788,11 @@ class Calculator(object):
         self.all_hkl: typing.Union[None, np.ndarray] = None
         # dims: all d spacings
         self.all_n_hkl: typing.Union[None, np.ndarray] = None
-        # dims: grain
+        # dims: grain, d_idx
         self.dspacing: typing.Union[None, np.ndarray] = None
-        # dims: grain, hkl idex ,hkl
+        # dims: grain, d_idx, hkl_idx ,hkl
         self.hkl: typing.Union[None, np.ndarray] = None
-        # dims: grain
+        # dims: grain, d_idx
         self.n_hkl: typing.Union[None, np.ndarray] = None
         # a pyFAI cell object
         self.cell: typing[None, Cell] = None
@@ -906,13 +906,13 @@ class Calculator(object):
         return {"dim_{}".format(i): coord for i, coord in enumerate(self.coords)}
 
     def dspacing_to_xarray(self) -> xr.DataArray:
-        return xr.DataArray(self.dspacing, dims=["grain"], attrs={"units": r"nm$^{-1}$"})
+        return xr.DataArray(self.dspacing, dims=["grain", "d_idx"], attrs={"units": r"nm$^{-1}$"})
 
     def hkl_to_xarray(self) -> xr.DataArray:
-        return xr.DataArray(self.hkl, dims=["grain", "hkl_id", "hkl_idx"])
+        return xr.DataArray(self.hkl, dims=["grain", "d_idx", "hkl_idx", "reciprocal"])
 
     def n_hkl_to_xarray(self) -> xr.DataArray:
-        return xr.DataArray(self.n_hkl, dims=["grain"])
+        return xr.DataArray(self.n_hkl, dims=["grain", "d_idx"])
 
     def to_dataset(self) -> xr.Dataset:
         """Convert the calculation results to DataSet."""
@@ -1025,8 +1025,15 @@ class Calculator(object):
         """Automatically plot the intensity array in the dataset."""
         return auto_plot_dataset(ds, key, title, invert_y, **kwargs)
 
-    def auto_process(self, num_wins: int, wins_width: int, kernel_radius: int, index_filter: slice = None,
-                     **kwargs) -> None:
+    def auto_process(
+        self,
+        num_wins: int = 100,
+        wins_width: int = 25,
+        kernel_radius: int = 25,
+        index_filter: slice = None,
+        dspacing_tolerance: typing.Tuple[float, float] = (0.99, 1.01),
+        **kwargs
+    ) -> None:
         """Automatically process the data in the standard protocol.
 
         The calculation results are saved in attributes.
@@ -1043,6 +1050,8 @@ class Calculator(object):
             The index slice of the data to use in the calculation of the dark and light image.
         args :
             The position arguments of the peak finding function `trackpy.locate`.
+        dspacing_tolerance : tuple
+            The tolerance to find the d-spacing for ech peak. It is the ratio between the expected and real.
         kwargs :
             The keyword arguments of the peak finding function `trackpy.locate`.
 
@@ -1064,7 +1073,7 @@ class Calculator(object):
         except CalculatorError as e:
             print(e)
         try:
-            self.calc_hkls()
+            self.calc_hkls(*dspacing_tolerance)
         except CalculatorError as e:
             print(e)
         try:
@@ -1097,20 +1106,27 @@ class Calculator(object):
         self.cell = Cell(**dct)
         return
 
-    def calc_hkls(self):
+    def calc_hkls(self, lb: float, rb: float):
         self._check_attr("windows")
         self._check_attr("cell")
         if "d" not in self.windows.columns:
             self.assign_q_values()
         if self.all_dspacing is None:
             self._calc_ds_and_hkls()
-        idxs = []
+        dspacings = []
+        hkls = []
+        n_hkls = []
         for d in self.windows["d"]:
-            idx = self._search_hkls_idx(d)
-            idxs.append(idx)
-        self.dspacing = self.all_dspacing[idxs]
-        self.hkl = self.all_hkl[idxs]
-        self.n_hkl = self.all_n_hkl[idxs]
+            l_idx, r_idx = self._search_hkls_idx(d, lb, rb)
+            dspacing = self.all_dspacing[l_idx:r_idx]
+            dspacings.append(dspacing)
+            hkl = self.all_hkl[l_idx:r_idx]
+            hkls.append(hkl)
+            n_hkl = self.all_n_hkl[l_idx:r_idx]
+            n_hkls.append(n_hkl)
+        self.dspacing = stack_arrays(dspacings)
+        self.hkl = stack_arrays(hkls)
+        self.n_hkl = stack_arrays(n_hkls)
         return
 
     def _calc_ds_and_hkls(self) -> None:
@@ -1131,17 +1147,32 @@ class Calculator(object):
             hkls.append(hkl)
         max_row = max(rows)
         for i, hkl in enumerate(hkls):
-            row = hkl.shape[0]
             # pad the hkls to be the same number of rows
-            hkls[i] = np.pad(hkl, [(0, max_row - row), (0, 0)], constant_values=0)
+            hkls[i] = pad_array(hkl, (max_row, 3))
         self.all_dspacing = np.asarray(ds)
         self.all_hkl = np.asarray(hkls)
         self.all_n_hkl = np.asarray(rows)
         return
 
-    def _search_hkls_idx(self, d: float) -> int:
-        i = bisect.bisect(self.all_dspacing, d)
-        n = len(self.all_dspacing)
-        left = self.all_dspacing[i - 1] if i - 1 > -1 else float("-inf")
-        right = self.all_dspacing[i] if i < n else float("inf")
-        return i - 1 if d - left < right - d else i
+    def _search_hkls_idx(self, d: float, lb: float, rb: float) -> typing.Tuple[int, int]:
+        ratio = np.divide(self.all_dspacing, d)
+        return bisect.bisect(ratio, lb), bisect.bisect(ratio, rb)
+
+
+def pad_array(arr: np.ndarray, shape: typing.Sequence[int]) -> np.ndarray:
+    lst = [(0, s1 - s2) for s1, s2 in zip(shape, arr.shape)]
+    return np.pad(arr, lst, constant_values=0)
+
+
+def get_max_shape(arrs: typing.Sequence[np.ndarray]):
+    max_shape = np.shape(arrs[0])
+    n = len(arrs)
+    for i in range(1, n):
+        max_shape = np.fmax(max_shape, np.shape(arrs[i]))
+    return max_shape
+
+
+def stack_arrays(arrs: typing.Sequence[np.ndarray]) -> np.ndarray:
+    max_shape = get_max_shape(arrs)
+    arrs = [pad_array(a, max_shape) for a in arrs]
+    return np.stack(arrs)
