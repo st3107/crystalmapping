@@ -18,3 +18,4 @@ dependencies:
   - coverage
   - flake8
   - pytest
+  - diffpy.structure
