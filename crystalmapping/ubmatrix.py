@@ -189,13 +189,13 @@ class UBMatrix:
         """Transform a vector from reciprocal space (hkl) frame to crystal cartesian frame."""
         if self.B is None:
             raise UBMatrixError("`self.B` is None.")
-        return np.matmul(v, self.B)
+        return np.matmul(self.B, v.T).T
 
     def cart_to_lab(self, v: np.ndarray) -> np.ndarray:
         """Transform a vector from cartesian crystal frame to lab frame."""
         if self.U is None:
             raise UBMatrixError("`self.U` is None")
-        return np.matmul(v, self.U)
+        return np.matmul(self.U, v.T).T
 
     def get_U_from_two_points(self, xy1: np.ndarray, hkl1: np.ndarray, xy2: np.ndarray, hkl2: np.ndarray) -> None:
         """Get the U matrix from two x, y pixel coordinates on the detector and their hkl."""
