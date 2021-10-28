@@ -84,7 +84,29 @@ class UBMatrixError(Exception):
 
 
 class UBMatrix:
-    """Calculator for the UB matrix."""
+    """Calculator for the UB matrix.
+
+    The algorithm is based on Busing, W. R. & Levy, H. A. (1967). Acta Cryst. 22, 457–464.
+
+    Attributes
+    ----------
+    h1 : 1d array
+        A vector in crystal cartesian coordinate.
+    h2 : 1d array
+        A vector in crystal cartesian coordinate.
+    u1 : 1d array
+        A vector in lab frame.
+    u2 : 1d array
+        A vector in lab frame.
+    lat : Lattice
+        A lattice containing a, b, c, alpha, beta, gamma.
+    geo : AzimuthalIntegrator
+        The geometry of the sample and detector in lab frame.
+    U : 2d array
+        The U matrix for column vectors.
+    B : 2d array
+        The B matrix for column vectors.
+    """
 
     def __init__(self, h1: np.ndarray = None, h2: np.ndarray = None, u1: np.ndarray = None, u2: np.ndarray = None,
                  lat: Lattice = None, geo: AzimuthalIntegrator = None):
