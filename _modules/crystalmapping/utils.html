@@ -1207,9 +1207,7 @@
 <span class="sd">        kernel_radius : int</span>
 <span class="sd">            The radius of the kernel to use in peak finding in pixels. It must be an odd integer.</span>
 <span class="sd">        index_filter : slice</span>
-<span class="sd">            The index slice of the data to use in the calculation of the dark and light image.</span>
-<span class="sd">        args :</span>
-<span class="sd">            The position arguments of the peak finding function `trackpy.locate`.</span>
+<span class="sd">            The index slice of the data to use in the calculation of the dark and light image..</span>
 <span class="sd">        dspacing_tolerance : tuple</span>
 <span class="sd">            The tolerance to find the d-spacing for ech peak. It is the ratio between the expected and real.</span>
 <span class="sd">        kwargs :</span>
@@ -1262,7 +1260,7 @@
 
     <span class="k">def</span> <span class="nf">load_cell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">with</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-            <span class="n">dct</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+            <span class="n">dct</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cell</span> <span class="o">=</span> <span class="n">Cell</span><span class="p">(</span><span class="o">**</span><span class="n">dct</span><span class="p">)</span>
         <span class="k">return</span>
 
