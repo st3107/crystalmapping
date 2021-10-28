@@ -1102,7 +1102,7 @@ class Calculator(object):
 
     def load_cell(self, filename: str) -> None:
         with pathlib.Path(filename).open("r") as f:
-            dct = yaml.load(f)
+            dct = yaml.safe_load(f)
         self.cell = Cell(**dct)
         return
 
