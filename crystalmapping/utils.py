@@ -1047,9 +1047,7 @@ class Calculator(object):
         kernel_radius : int
             The radius of the kernel to use in peak finding in pixels. It must be an odd integer.
         index_filter : slice
-            The index slice of the data to use in the calculation of the dark and light image.
-        args :
-            The position arguments of the peak finding function `trackpy.locate`.
+            The index slice of the data to use in the calculation of the dark and light image..
         dspacing_tolerance : tuple
             The tolerance to find the d-spacing for ech peak. It is the ratio between the expected and real.
         kwargs :
