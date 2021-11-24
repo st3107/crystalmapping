@@ -16,6 +16,7 @@ import xarray as xr
 from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
 from xarray.plot import FacetGrid
 from pyFAI.calibrant import Cell
+from diffpy.structure import loadStructure, Structure, Lattice
 
 _VERBOSE = 1
 COLORS = list(plt.rcParams['axes.prop_cycle'].by_key()['color'])
@@ -859,8 +860,11 @@ class Calculator(object):
         """Assign the values to the windows dataframe."""
         self._check_attr("ai")
         self._check_attr("windows")
-        qa = self.ai.qArray()
+        qa = self.ai.qArray() / 10.
         self.windows["Q"] = [qa[row.y, row.x] for row in self.windows.itertuples()]
+        return
+
+    def assign_d_values(self) -> None:
         self.windows["d"] = 2. * math.pi / self.windows["Q"]
         return
 
@@ -1070,6 +1074,7 @@ class Calculator(object):
             print(e)
         try:
             self.assign_q_values()
+            self.assign_d_values()
         except CalculatorError as e:
             print(e)
         try:
@@ -1106,11 +1111,19 @@ class Calculator(object):
         self.cell = Cell(**dct)
         return
 
+    def load_cell_from_cif(self, cif_file: str) -> None:
+        stru: Structure = loadStructure(cif_file, fmt="cif")
+        lat: Lattice = stru.lattice
+        self.cell = Cell(a=lat.a, b=lat.b, c=lat.c, alpha=lat.alpha, beta=lat.beta, gamma=lat.gamma)
+        return
+
     def calc_hkls(self, lb: float, rb: float):
         self._check_attr("windows")
         self._check_attr("cell")
         if "d" not in self.windows.columns:
-            self.assign_q_values()
+            if "Q" not in self.windows.columns:
+                self.assign_q_values()
+            self.assign_d_values()
         if self.all_dspacing is None:
             self._calc_ds_and_hkls()
         dspacings = []
