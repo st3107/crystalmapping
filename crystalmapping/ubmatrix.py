@@ -205,3 +205,9 @@ class UBMatrix:
         self.set_h2_from_hkl(hkl2)
         self.get_U()
         return
+
+    def set_geo_from_poni(self, poni_file: str) -> None:
+        """Set the geometry by poni file."""
+        self.geo = AzimuthalIntegrator()
+        self.geo.load(poni_file)
+        return
