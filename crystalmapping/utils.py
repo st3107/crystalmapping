@@ -689,6 +689,7 @@ def auto_plot(
         axes: typing.List[plt.Axes] = facet.axes.flatten()
         for ax, val in zip(axes, vals):
             ax.set_title(f_title.format(val))
+    facet.fig.tight_layout()
     return facet
 
 
@@ -706,6 +707,7 @@ def auto_plot_dataset(
         axes: typing.List[plt.Axes] = facet.axes.flatten()
         for ax, val in zip(axes, vals):
             ax.set_title(f_title.format(val))
+    facet.fig.tight_layout()
     return facet
 
 
