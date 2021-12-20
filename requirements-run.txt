@@ -1,0 +1,7 @@
+# need for analysis after the experiments
+trackpy
+pyfai
+diffpy.structure
+# need for experiment at nsls-ii
+bluesky
+databroker
