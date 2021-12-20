@@ -445,7 +445,7 @@ def select_frames(
 def average_intensity(frame: np.ndarray, windows: pd.DataFrame) -> np.ndarray:
     """Calculate the average intensity in windows. Return an array of average intensity."""
     if frame.ndim < 2:
-        raise CalculatorError("frame must have no less than 2 dimensions.")
+        raise CrystalMapperError("frame must have no less than 2 dimensions.")
     elif frame.ndim > 2:
         n = frame.ndim - 2
         frame = frame.mean(axis=tuple(range(n)))
@@ -486,14 +486,14 @@ def summary_in_a_dataset(arr: xr.DataArray, windows: pd.DataFrame):
 
 def reshape_to_ndarray(arr: np.ndarray, metadata: dict) -> np.ndarray:
     if "shape" not in metadata:
-        raise CalculatorError("Missing key '{}' in metadata.".format("shape"))
+        raise CrystalMapperError("Missing key '{}' in metadata.".format("shape"))
     shape = list(arr.shape)[:-1]
     shape.extend(metadata["shape"])
     arr: np.ndarray = arr.reshape(shape)
     # if snaking the row
     if "snaking" in metadata and len(metadata["snaking"]) > 1 and metadata["snaking"][1]:
         if len(metadata["shape"]) != 2:
-            raise CalculatorError("snaking only works for the 2 dimension array.")
+            raise CrystalMapperError("snaking only works for the 2 dimension array.")
         n = arr.shape[1]
         for i in range(n):
             if i % 2 == 1:
@@ -721,11 +721,11 @@ def set_vlim(kwargs: dict, da: xr.DataArray, alpha: float, low_lim: float = 0.,
     return
 
 
-class CalculatorError(Exception):
+class CrystalMapperError(Exception):
     pass
 
 
-class Calculator(object):
+class CrystalMapper(object):
     """The Calculator of the crystal maps.
 
     Each of the attribute can be the calculated output and the input for the next step of calculation.
@@ -804,9 +804,9 @@ class Calculator(object):
 
     def _check_attr(self, name: str):
         if getattr(self, name) is None:
-            raise CalculatorError("Attribute '{}' is None. Please set it.".format(name))
+            raise CrystalMapperError("Attribute '{}' is None. Please set it.".format(name))
         if name == "metadata" and "shape" not in self.metadata:
-            raise CalculatorError("There is no key 'shape' in the metadata.")
+            raise CrystalMapperError("There is no key 'shape' in the metadata.")
 
     def squeeze_shape_and_extents(self) -> None:
         """Squeeze the shape and extents so that it only has the dimension with length > 1."""
@@ -839,7 +839,7 @@ class Calculator(object):
         """Gte the windows for the most brightest Bragg peaks."""
         self._check_attr("peaks")
         if self.peaks.shape[0] == 0:
-            raise CalculatorError("There is no peak found on the image. Please check your peaks table.")
+            raise CrystalMapperError("There is no peak found on the image. Please check your peaks table.")
         df = self.peaks.nlargest(max_num, "mass")
         self.windows = create_windows_from_width2(df, width)
         return
@@ -959,7 +959,7 @@ class Calculator(object):
         elif frames.ndim == 2:
             return frames
         else:
-            raise CalculatorError("The dimension of the frame is {}. Require 2 or 3.".format(frames.ndim))
+            raise CrystalMapperError("The dimension of the frame is {}. Require 2 or 3.".format(frames.ndim))
 
     def show_frame(self, index: int, *args, **kwargs) -> FacetGrid:
         """Show the frame at that index."""
@@ -1070,20 +1070,20 @@ class Calculator(object):
         self.calc_intensity_in_windows()
         try:
             self.calc_coords()
-        except CalculatorError as e:
+        except CrystalMapperError as e:
             print(e)
         try:
             self.assign_q_values()
             self.assign_d_values()
-        except CalculatorError as e:
+        except CrystalMapperError as e:
             print(e)
         try:
             self.calc_hkls(*dspacing_tolerance)
-        except CalculatorError as e:
+        except CrystalMapperError as e:
             print(e)
         try:
             self.reshape_intensity()
-        except CalculatorError as e:
+        except CrystalMapperError as e:
             print(e)
         return
 
@@ -1146,7 +1146,7 @@ class Calculator(object):
         dmin = self.windows["d"].min()
         dhkls = sorted(self.cell.d_spacing(dmin).values())
         if len(dhkls) == 0:
-            raise CalculatorError(
+            raise CrystalMapperError(
                 "There is no matching d-spacing. Please check the cell attribute."
             )
         ds = []
