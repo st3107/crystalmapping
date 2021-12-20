@@ -1,78 +1,40 @@
-
-
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8">
-  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Use new algorithm to run the batch processing &mdash; crystalmapping 0.0.1 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="_static/plot_directive.css" type="text/css" />
+      <link rel="stylesheet" href="_static/copybutton.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
-
-  
-  
-  
-  
-
-  
-  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
-  
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
         <script src="_static/clipboard.min.js"></script>
         <script src="_static/copybutton.js"></script>
-    
-    <script type="text/javascript" src="_static/js/theme.js"></script>
-
-    
-
-  
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/plot_directive.css" type="text/css" />
-  <link rel="stylesheet" href="_static/copybutton.css" type="text/css" />
+    <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="API Documents" href="apis.html" />
     <link rel="prev" title="Use the old peak tracking algorithm in streaming data processing" href="old_algorithm.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-          
-
-          
             <a href="index.html" class="icon icon-home"> crystalmapping
-          
-
-          
           </a>
-
-          
-            
-            
               <div class="version">
                 0.0.1
               </div>
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -80,17 +42,7 @@
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="experiment.html">Run experiments at NSLS-II</a></li>
@@ -108,71 +60,33 @@
 <li class="toctree-l1"><a class="reference internal" href="min_versions.html">Minimum Version of Python and NumPy</a></li>
 </ul>
 
-            
-          
         </div>
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">crystalmapping</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
-      <li><a href="index.html">Docs</a> &raquo;</li>
-        
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
       <li>Use new algorithm to run the batch processing</li>
-    
-    
       <li class="wy-breadcrumbs-aside">
-        
-            
             <a href="_sources/new_algorithm.rst.txt" rel="nofollow"> View page source</a>
-          
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
-  <section id="use-new-algorithm-to-run-the-batch-processing">
+             
+  <div class="section" id="use-new-algorithm-to-run-the-batch-processing">
 <h1>Use new algorithm to run the batch processing<a class="headerlink" href="#use-new-algorithm-to-run-the-batch-processing" title="Permalink to this headline">¶</a></h1>
-<section id="create-the-calculator">
+<div class="section" id="create-the-calculator">
 <h2>Create the calculator<a class="headerlink" href="#create-the-calculator" title="Permalink to this headline">¶</a></h2>
 <p>All the data processing is done by the <code class="docutils literal notranslate"><span class="pre">Calculator</span></code>. The input data
 and output data are stored in its attributes.</p>
@@ -181,8 +95,8 @@ and output data are stored in its attributes.</p>
 <span class="n">calculator</span> <span class="o">=</span> <span class="n">Calculator</span><span class="p">()</span>
 </pre></div>
 </div>
-</section>
-<section id="load-the-experiment-data">
+</div>
+<div class="section" id="load-the-experiment-data">
 <h2>Load the experiment Data<a class="headerlink" href="#load-the-experiment-data" title="Permalink to this headline">¶</a></h2>
 <p>In this example, we load the data from a database. You can also use your
 data source as long as there is an <code class="docutils literal notranslate"><span class="pre">DataArray</span></code> of the exposure images.</p>
@@ -1382,8 +1296,8 @@ calculate the Q value of the peaks. This is optional.</p>
 <span class="n">calculator</span><span class="o">.</span><span class="n">ai</span> <span class="o">=</span> <span class="n">AzimuthalIntegrator</span><span class="p">(</span><span class="n">dist</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">wavelength</span><span class="o">=</span><span class="mf">0.186</span><span class="p">,</span> <span class="n">detector</span><span class="o">=</span><span class="s2">&quot;dexela2923&quot;</span><span class="p">,</span> <span class="n">poni1</span><span class="o">=</span><span class="mi">1536</span><span class="p">,</span> <span class="n">poni2</span><span class="o">=</span><span class="mi">1944</span><span class="p">)</span>
 </pre></div>
 </div>
-</section>
-<section id="process-the-data">
+</div>
+<div class="section" id="process-the-data">
 <h2>Process the data<a class="headerlink" href="#process-the-data" title="Permalink to this headline">¶</a></h2>
 <p>The simplest way to use the calculator is to use the <code class="docutils literal notranslate"><span class="pre">auto_process</span></code>.
 It takes three necessary parameters. You will find the meaning of them
@@ -1425,8 +1339,8 @@ of the calculation of the crystal maps.</p>
 100%|██████████| 101/101 [00:28&lt;00:00,  3.53it/s]
 </pre></div>
 </div>
-</section>
-<section id="visualize-the-data">
+</div>
+<div class="section" id="visualize-the-data">
 <h2>Visualize the data<a class="headerlink" href="#visualize-the-data" title="Permalink to this headline">¶</a></h2>
 <p>All the final, intermediate and raw data can be visualized. The methods
 to visualize them starts with “show”. Here, we show two examples.</p>
@@ -1441,8 +1355,8 @@ dimensional crystal maps.</p>
 </pre></div>
 </div>
 <img alt="_images/01_analysis_example_code_22_0.png" src="_images/01_analysis_example_code_22_0.png" />
-</section>
-<section id="save-the-data">
+</div>
+<div class="section" id="save-the-data">
 <h2>Save the data<a class="headerlink" href="#save-the-data" title="Permalink to this headline">¶</a></h2>
 <p>The data can be converted to <code class="docutils literal notranslate"><span class="pre">DataSet</span></code> and you can save it in multiple
 formats.</p>
@@ -1907,8 +1821,8 @@ need to be cleaned.</p>
 <span class="n">ds</span><span class="o">.</span><span class="n">to_netcdf</span><span class="p">(</span><span class="s2">&quot;data/example.nc&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-</section>
-<section id="load-the-dataset-and-visualize-it">
+</div>
+<div class="section" id="load-the-dataset-and-visualize-it">
 <h2>Load the dataset and visualize it<a class="headerlink" href="#load-the-dataset-and-visualize-it" title="Permalink to this headline">¶</a></h2>
 <p>The data can be loaded and visualized again after the data processing
 session is over.</p>
@@ -1921,56 +1835,38 @@ session is over.</p>
 </pre></div>
 </div>
 <img alt="_images/01_analysis_example_code_29_0.png" src="_images/01_analysis_example_code_29_0.png" />
-</section>
-</section>
+</div>
+</div>
 
 
            </div>
-           
           </div>
-          <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="apis.html" class="btn btn-neutral float-right" title="API Documents" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="old_algorithm.html" class="btn btn-neutral float-left" title="Use the old peak tracking algorithm in streaming data processing" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="old_algorithm.html" class="btn btn-neutral float-left" title="Use the old peak tracking algorithm in streaming data processing" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="apis.html" class="btn btn-neutral float-right" title="API Documents" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
-  
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        &copy; Copyright 2021, Songsheng Tao
-
-    </p>
+    <p>&#169; Copyright 2021, Songsheng Tao.</p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
-
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-
-  
-  
-    
-   
+  </script> 
 
 </body>
 </html>

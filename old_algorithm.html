@@ -1,78 +1,40 @@
-
-
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8">
-  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Use the old peak tracking algorithm in streaming data processing &mdash; crystalmapping 0.0.1 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="_static/plot_directive.css" type="text/css" />
+      <link rel="stylesheet" href="_static/copybutton.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
-
-  
-  
-  
-  
-
-  
-  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
-  
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
         <script src="_static/clipboard.min.js"></script>
         <script src="_static/copybutton.js"></script>
-    
-    <script type="text/javascript" src="_static/js/theme.js"></script>
-
-    
-
-  
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/plot_directive.css" type="text/css" />
-  <link rel="stylesheet" href="_static/copybutton.css" type="text/css" />
+    <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Use new algorithm to run the batch processing" href="new_algorithm.html" />
     <link rel="prev" title="Run experiments at NSLS-II" href="experiment.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-          
-
-          
             <a href="index.html" class="icon icon-home"> crystalmapping
-          
-
-          
           </a>
-
-          
-            
-            
               <div class="version">
                 0.0.1
               </div>
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -80,17 +42,7 @@
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="experiment.html">Run experiments at NSLS-II</a></li>
@@ -106,69 +58,31 @@
 <li class="toctree-l1"><a class="reference internal" href="min_versions.html">Minimum Version of Python and NumPy</a></li>
 </ul>
 
-            
-          
         </div>
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">crystalmapping</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
-      <li><a href="index.html">Docs</a> &raquo;</li>
-        
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
       <li>Use the old peak tracking algorithm in streaming data processing</li>
-    
-    
       <li class="wy-breadcrumbs-aside">
-        
-            
             <a href="_sources/old_algorithm.rst.txt" rel="nofollow"> View page source</a>
-          
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
-  <section id="use-the-old-peak-tracking-algorithm-in-streaming-data-processing">
+             
+  <div class="section" id="use-the-old-peak-tracking-algorithm-in-streaming-data-processing">
 <h1>Use the old peak tracking algorithm in streaming data processing<a class="headerlink" href="#use-the-old-peak-tracking-algorithm-in-streaming-data-processing" title="Permalink to this headline">¶</a></h1>
 <p>The package also offers the infrastructure for the streaming data
 processing old way, where the peaks are tracked on each image in
@@ -179,7 +93,7 @@ intensity in the zero background.</p>
 data is obtained from the database and we will use <code class="docutils literal notranslate"><span class="pre">databroker</span></code> as the
 interface to the database. In real use cases, the data will be from the
 <code class="docutils literal notranslate"><span class="pre">RunEngine</span></code>.</p>
-<section id="take-a-look-at-the-raw-data">
+<div class="section" id="take-a-look-at-the-raw-data">
 <h2>Take a look at the raw data<a class="headerlink" href="#take-a-look-at-the-raw-data" title="Permalink to this headline">¶</a></h2>
 <p>First, we take a look at what our data is like. This is a grid scan on a
 crystal rod. At each pixel in the grid, there are multiple frames of
@@ -208,8 +122,8 @@ images in this scan.</p>
 </pre></div>
 </div>
 <img alt="_images/process_streaming_data_8_0.png" src="_images/process_streaming_data_8_0.png" />
-</section>
-<section id="use-callbacks-to-process-the-event-stream">
+</div>
+<div class="section" id="use-callbacks-to-process-the-event-stream">
 <h2>Use callbacks to process the event stream<a class="headerlink" href="#use-callbacks-to-process-the-event-stream" title="Permalink to this headline">¶</a></h2>
 <p>Here, we use the callbacks to process the data in a stream. The frames
 will be first go into the <code class="docutils literal notranslate"><span class="pre">ImageProcessor</span></code>. The frames will be
@@ -252,8 +166,8 @@ more information.</p>
         <span class="n">ip</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">doc</span><span class="p">)</span>
 </pre></div>
 </div>
-</section>
-<section id="use-servers-to-process-the-real-time-event-stream">
+</div>
+<div class="section" id="use-servers-to-process-the-real-time-event-stream">
 <h2>Use servers to process the real time event stream<a class="headerlink" href="#use-servers-to-process-the-real-time-event-stream" title="Permalink to this headline">¶</a></h2>
 <p>We are basically replaying the data processing procedure in the last
 section. In this section, we will learn how the data is processed at the
@@ -302,8 +216,8 @@ callback function in last section. An example script is show here.</p>
 <p>Then, this server will receive the data from “localhost:5568” with
 prefix “raw” and process the data using the callback defined in the
 script.</p>
-</section>
-<section id="pipe-the-data-into-the-database">
+</div>
+<div class="section" id="pipe-the-data-into-the-database">
 <h2>Pipe the data into the database<a class="headerlink" href="#pipe-the-data-into-the-database" title="Permalink to this headline">¶</a></h2>
 <p>We can also publish the data in the database to the server using
 <code class="docutils literal notranslate"><span class="pre">Publisher</span></code>. Here, we show an example to publish our data to
@@ -320,56 +234,38 @@ the beamline devices.</p>
         <span class="n">pub</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">doc</span><span class="p">)</span>
 </pre></div>
 </div>
-</section>
-</section>
+</div>
+</div>
 
 
            </div>
-           
           </div>
-          <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="new_algorithm.html" class="btn btn-neutral float-right" title="Use new algorithm to run the batch processing" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="experiment.html" class="btn btn-neutral float-left" title="Run experiments at NSLS-II" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="experiment.html" class="btn btn-neutral float-left" title="Run experiments at NSLS-II" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="new_algorithm.html" class="btn btn-neutral float-right" title="Use new algorithm to run the batch processing" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
-  
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        &copy; Copyright 2021, Songsheng Tao
-
-    </p>
+    <p>&#169; Copyright 2021, Songsheng Tao.</p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
-
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-
-  
-  
-    
-   
+  </script> 
 
 </body>
 </html>
