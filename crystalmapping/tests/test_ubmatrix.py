@@ -1,4 +1,3 @@
-import pytest
 import numpy as np
 from diffpy.structure import Lattice
 from pyFAI.azimuthalIntegrator import AzimuthalIntegrator

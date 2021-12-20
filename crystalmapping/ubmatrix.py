@@ -1,5 +1,4 @@
 import numpy as np
-import typing
 
 from diffpy.structure import Lattice, loadStructure, Structure
 from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
