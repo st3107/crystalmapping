@@ -80,7 +80,7 @@ def test_map_to_Q():
 
 
 def test_Calculator_step_by_step():
-    c = utils.Calculator()
+    c = utils.CrystalMapper()
     # load test data
     light_image: np.ndarray = plt.imread(IMAGE_FILE)
     light_image = np.expand_dims(light_image, 0)
@@ -134,7 +134,7 @@ def test_Calculator_step_by_step():
 
 
 def test_Calculator_auto_processing_and_reload():
-    c = utils.Calculator()
+    c = utils.CrystalMapper()
     # load test data
     light_image: np.ndarray = plt.imread(IMAGE_FILE)
     light_image = np.expand_dims(light_image, 0)
