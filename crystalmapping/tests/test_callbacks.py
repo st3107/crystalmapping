@@ -5,9 +5,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import trackpy as tp
-from pdfstream.callbacks.composer import gen_stream
 from pkg_resources import resource_filename
 
+from crystalmapping._vend import gen_stream
 import crystalmapping.callbacks as cbs
 
 
