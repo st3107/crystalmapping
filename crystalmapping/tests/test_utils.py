@@ -93,7 +93,7 @@ def test_Calculator_step_by_step():
         wavelength=0.168 * 1e-9,
         dist=0.01
     )
-    c.cell = utils.Cell(a=5, b=5, c=5)
+    c.cell = utils.Cell(a=50, b=50, c=50)
     # test the show frames
     c.show_frame(0)
     plt.show(block=False)
