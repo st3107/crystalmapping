@@ -1,6 +1,6 @@
-==========
+==============
 crystalmapping
-==========
+==============
 
 .. image:: https://anaconda.org/st3107/crystalmapping/badges/platforms.svg
       :target: https://anaconda.org/st3107/crystalmapping
