@@ -5,3 +5,4 @@ diffpy.structure
 # need for experiment at nsls-ii
 bluesky
 databroker
+fire
