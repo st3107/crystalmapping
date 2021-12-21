@@ -9,8 +9,6 @@ import crystalmapping.utils as utils
 
 plt.ioff()
 IMAGE_FILE = resource_filename("crystalmapping", "data/image.png")
-DEXELA_LIGHT_IMAGE_FILE = resource_filename("crystalmapping", "data/dexela_light_image.npy")
-DEXELA_DARK_IMAGE_FILE = resource_filename("crystalmapping", "data/dexela_dark_image.npy")
 
 
 def test_reshape():
