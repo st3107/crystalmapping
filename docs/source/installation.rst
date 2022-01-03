@@ -7,7 +7,7 @@ Installation from conda
 
 At the command line::
 
-    conda install -c defaults -c nsls2forge -c conda-forge -c st3107 crystalmapping
+    conda install -c conda-forge crystalmapping
 
 
 Installation from pip
