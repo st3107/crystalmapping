@@ -721,6 +721,20 @@ def set_vlim(kwargs: dict, da: xr.DataArray, alpha: float, low_lim: float = 0.,
     return
 
 
+def plot_windows(data: xr.Dataset, **kwargs) -> FacetGrid:
+    # get difference
+    diff = data["light"] - data["dark"]
+    diff.attrs = data["light"].attrs
+    # get dataframe
+    df = data[["y", "dy", "x", "dx"]].to_dataframe()
+    # plot
+    facet = diff.plot.imshow(**kwargs)
+    draw_windows(df, facet.axes)
+    # use real aspect
+    set_real_aspect(facet.axes)
+    return facet
+
+
 class CrystalMapperError(Exception):
     pass
 
