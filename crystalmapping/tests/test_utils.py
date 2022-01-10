@@ -125,7 +125,9 @@ def test_Calculator_step_by_step():
     # test the calculation of the coordinates
     c.calc_coords()
     # test the hkl indexing
-    c.calc_hkls(0.99, 1.01)
+    c.calc_hkls_in_a_range(0.99, 1.01)
+    # test the hkl bounds
+    c.calc_hkls()
     # test export dataset
     ds = c.to_dataset()
     print(ds)
