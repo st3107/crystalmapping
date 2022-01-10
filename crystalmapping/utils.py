@@ -1092,7 +1092,7 @@ class CrystalMapper(object):
         except CrystalMapperError as e:
             print(e)
         try:
-            self.calc_hkls(*dspacing_tolerance)
+            self.calc_hkls_in_a_range(*dspacing_tolerance)
         except CrystalMapperError as e:
             print(e)
         try:
@@ -1131,7 +1131,8 @@ class CrystalMapper(object):
         self.cell = Cell(a=lat.a, b=lat.b, c=lat.c, alpha=lat.alpha, beta=lat.beta, gamma=lat.gamma)
         return
 
-    def calc_hkls(self, lb: float, rb: float):
+    def calc_hkls_in_a_range(self, lb: float, rb: float):
+        """Calculate the hkl in a range of Q value."""
         self._check_attr("windows")
         self._check_attr("cell")
         if "d" not in self.windows.columns:
