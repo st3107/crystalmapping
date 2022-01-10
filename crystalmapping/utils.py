@@ -1051,7 +1051,7 @@ class CrystalMapper(object):
         wins_width: int = 25,
         kernel_radius: int = 25,
         index_filter: slice = None,
-        dspacing_tolerance: typing.Tuple[float, float] = (0.99, 1.01),
+        dspacing_tolerance: typing.Tuple[float, float] = None,
         **kwargs
     ) -> None:
         """Automatically process the data in the standard protocol.
@@ -1091,8 +1091,13 @@ class CrystalMapper(object):
             self.assign_d_values()
         except CrystalMapperError as e:
             print(e)
+        if dspacing_tolerance is not None:
+            try:
+                self.calc_hkls_in_a_range(*dspacing_tolerance)
+            except CrystalMapperError as e:
+                print(e)
         try:
-            self.calc_hkls_in_a_range(*dspacing_tolerance)
+            self.calc_hkls()
         except CrystalMapperError as e:
             print(e)
         try:
@@ -1185,6 +1190,37 @@ class CrystalMapper(object):
     def _search_hkls_idx(self, d: float, lb: float, rb: float) -> typing.Tuple[int, int]:
         ratio = np.divide(self.all_dspacing, d)
         return bisect.bisect(ratio, lb), bisect.bisect(ratio, rb)
+
+    def calc_hkls(self):
+        """Calculate hkls and assign them to the peaks.
+
+        Find the upper and lower bound of the Q for each Q value in the dataframe. The hkls that have the upper
+        and lower bound values are the possible hkls for that peak. The index of the Q value is the index of the
+        group of possible hkls. The index is recorded in the dataframe for both upper and lower bound.
+        """
+        self._check_attr("windows")
+        self._check_attr("cell")
+        if "d" not in self.windows.columns:
+            if "Q" not in self.windows.columns:
+                self.assign_q_values()
+            self.assign_d_values()
+        if self.all_dspacing is None:
+            self._calc_ds_and_hkls()
+        uppers, lowers = [], []
+        for d in self.windows["d"]:
+            l, u = self._search_bounds(d)
+            uppers.append(u)
+            lowers.append(l)
+        self.windows["upper_idx"] = uppers
+        self.windows["lower_idx"] = lowers
+        return
+
+    def _search_bounds(self, d_val: float) -> typing.Tuple[float, float]:
+        n = len(self.all_dspacing)
+        idx = bisect.bisect_left(self.all_dspacing, d_val)
+        right = idx if idx < n else np.nan
+        left = idx - 1 if idx >= 1 else np.nan
+        return left, right
 
 
 def pad_array(arr: np.ndarray, shape: typing.Sequence[int]) -> np.ndarray:
