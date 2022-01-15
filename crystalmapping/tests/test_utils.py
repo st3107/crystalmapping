@@ -135,7 +135,7 @@ def test_Calculator_step_by_step():
     print(ds)
 
 
-def test_indexing_peaks():
+def test_index_peaks_in_one_grain():
     c = utils.CrystalMapper()
     # load test data
     light_image: np.ndarray = plt.imread(IMAGE_FILE)
@@ -159,8 +159,8 @@ def test_indexing_peaks():
     # test the window drawing
     c.calc_windows_from_peaks(4, 2)
     # run the indexing of peaks
-    c.index_peaks_in_one_grain(c.windows.index[:3])
-    return
+    returned = c.index_peaks_in_one_grain(c.windows.index[:3])
+    assert np.all(np.logical_not(np.isnan(returned)))
 
 
 def test_Calculator_auto_processing_and_reload():
