@@ -18,6 +18,8 @@ from xarray.plot import FacetGrid
 from pyFAI.calibrant import Cell
 from diffpy.structure import loadStructure, Structure, Lattice
 
+from .ubmatrix import UBMatrix
+
 _VERBOSE = 1
 COLORS = list(plt.rcParams['axes.prop_cycle'].by_key()['color'])
 
@@ -815,6 +817,8 @@ class CrystalMapper(object):
         self.cell: typing[None, Cell] = None
         # column names of the windows
         self.window_names = frozenset(["x", "y", "dx", "dy", "d", "Q"])
+        # UBmatrix object
+        self.ubmatrix: UBMatrix = UBMatrix()
 
     def _check_attr(self, name: str):
         if getattr(self, name) is None:
@@ -1107,7 +1111,9 @@ class CrystalMapper(object):
         return
 
     def load_ai(self, filename: str) -> None:
-        self.ai = pyFAI.load(filename)
+        ai = pyFAI.load(filename)
+        self.ai = ai
+        self.ubmatrix.geo = ai
         return
 
     def load_frames_arr(self, filename: str) -> None:
@@ -1246,6 +1252,13 @@ class CrystalMapper(object):
         right = idx if idx < n else -1
         left = idx - 1 if idx >= 1 else -1
         return left, right
+
+    def load_structure(self, cif_file: str):
+        """Load the structure of the sample. The `cell` and `ubmatrix.lattice` will be loaded."""
+        self.ubmatrix.set_lat_from_cif(cif_file)
+        lat = self.ubmatrix.lat
+        self.cell = Cell(a=lat.a, b=lat.b, c=lat.c, alpha=lat.alpha, beta=lat.beta, gamma=lat.gamma)
+        return
 
 
 def pad_array(arr: np.ndarray, shape: typing.Sequence[int]) -> np.ndarray:
