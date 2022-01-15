@@ -803,7 +803,7 @@ class CrystalMapper(object):
         self.ai: typing.Union[None, AzimuthalIntegrator] = None
         # dims: all d spacings
         self.all_dspacing: typing.Union[None, np.ndarray] = None
-        # dims: all d spacings, hkl idx, hkl
+        # dims: all d spacings, hkl, element in hkl
         self.all_hkl: typing.Union[None, np.ndarray] = None
         # dims: all d spacings
         self.all_n_hkl: typing.Union[None, np.ndarray] = None
@@ -1259,6 +1259,103 @@ class CrystalMapper(object):
         lat = self.ubmatrix.lat
         self.cell = Cell(a=lat.a, b=lat.b, c=lat.c, alpha=lat.alpha, beta=lat.beta, gamma=lat.gamma)
         return
+
+    def search_two_peaks(self, peaks: typing.List[int]) -> typing.Tuple[int, int]:
+        """Find the two peaks that have the smallest difference between the measured dspacings and those in
+        structure. Return their index.
+
+        Parameters
+        ----------
+        peaks
+
+        Returns
+        -------
+
+        """
+        self._check_attr("windows")
+        # check
+        if "diff_spacing" not in self.windows.columns or "closet_idx" not in self.windows.columns:
+            self.calc_hkls()
+        # get
+        df = self.windows.loc[peaks]
+        # run
+        sel_df: pd.DataFrame = df.nsmallest(2, columns=["diff_dspacing"])
+        if sel_df.shape[0] < 2:
+            raise CrystalMapperError(
+                "There are less than 2 peaks found. Please check the `windows` dataframe."
+            )
+        return tuple(sel_df.index.tolist())
+
+    def index_peaks(self, peak1: int, peak2: int, others: typing.List[int]) -> xr.DataArray:
+        """Use the hkls of two peaks to calculate U matrixs and use them to index other peaks. Return the hkls.
+
+        Parameters
+        ----------
+        peak1
+        peak2
+        others
+
+        Returns
+        -------
+
+        """
+        self._check_attr("all_n_hkl")
+        self._check_attr("all_hkl")
+        self._check_attr("windows")
+        row1 = self.windows.loc[peak1]
+        row2 = self.windows.loc[peak2]
+        idx1 = int(row1["closet_idx"])
+        idx2 = int(row2["closet_idx"])
+        # a list of hkls, zero padded
+        hkls1 = self.all_hkl[idx1]
+        hkls2 = self.all_hkl[idx2]
+        # x and y
+        xy1 = np.array([row1["x"], row2["y"]])
+        xy2 = np.array([row1["x"], row2["y"]])
+        self.ubmatrix.set_u1_from_xy(xy1)
+        self.ubmatrix.set_u2_from_xy(xy2)
+        # number of real hkls in the list
+        n1 = self.all_n_hkl[idx1]
+        n2 = self.all_n_hkl[idx2]
+        # index the hkls
+        ress = []
+        for i in range(n1):
+            for j in range(n2):
+                self.ubmatrix.set_h1_from_hkl(hkls1[i])
+                self.ubmatrix.set_h2_from_hkl(hkls2[j])
+                self.ubmatrix.get_U()
+                res = [hkls1[i], hkls2[j]]
+                for k in others:
+                    row = self.windows.loc[k]
+                    xy = np.array([row["x"], row["y"]])
+                    u = self.ubmatrix.xy_to_lab(xy)
+                    v = self.ubmatrix.lab_to_cart(u)
+                    hkl = self.ubmatrix.cart_to_reci(v)
+                    res.append(hkl)
+                res = np.array(res)
+                ress.append(res)
+        ress = np.array(ress)
+        # get the dim
+        peaks = np.array([peak1, peak2] + others)
+        return xr.DataArray(ress, coords={"peak": peaks}, dims=["comb", "peak", "hkl"])
+
+    def index_peaks_in_one_grain(self, peaks: typing.List[int]) -> xr.DataArray:
+        """Find the two peaks that have the smallest difference between the measured dspacings and those in
+        structure. Use the hkls of two peaks to calculate U matrixs and use them to index other peaks.
+        Return the hkls.
+
+        Parameters
+        ----------
+        peaks
+
+        Returns
+        -------
+
+        """
+        peak1, peak2 = self.search_two_peaks(peaks)
+        s = {peak1, peak2}
+        others = [p for p in peaks if p not in s]
+        return self.index_peaks(peak1, peak2, others)
 
 
 def pad_array(arr: np.ndarray, shape: typing.Sequence[int]) -> np.ndarray:

@@ -135,6 +135,34 @@ def test_Calculator_step_by_step():
     print(ds)
 
 
+def test_indexing_peaks():
+    c = utils.CrystalMapper()
+    # load test data
+    light_image: np.ndarray = plt.imread(IMAGE_FILE)
+    light_image = np.expand_dims(light_image, 0)
+    dark_image: np.ndarray = np.zeros_like(light_image)
+    # give the data to the calculator
+    c.frames_arr = xr.DataArray([light_image, light_image, dark_image, dark_image])
+    c.metadata = {"shape": [2, 2], "extents": [(0, 1), (0, 1)], "snaking": (False, False)}
+    ai = utils.AzimuthalIntegrator(
+        detector="dexela2923",
+        wavelength=0.168 * 1e-9,
+        dist=0.01
+    )
+    c.ai = ai
+    c.ubmatrix.geo = ai
+    c.cell = utils.Cell(a=50, b=50, c=50)
+    c.ubmatrix.lat = utils.Lattice(a=50, b=50, c=50, alpha=90, beta=90, gamma=90)
+    # find peaks
+    c.calc_dark_and_light_from_frames_arr()
+    c.calc_peaks_from_dk_sub_frame(2, invert=True)
+    # test the window drawing
+    c.calc_windows_from_peaks(4, 2)
+    # run the indexing of peaks
+    c.index_peaks_in_one_grain(c.windows.index[:3])
+    return
+
+
 def test_Calculator_auto_processing_and_reload():
     c = utils.CrystalMapper()
     # load test data
