@@ -9,6 +9,8 @@ import crystalmapping.utils as utils
 
 plt.ioff()
 IMAGE_FILE = resource_filename("crystalmapping", "data/image.png")
+CIF_FILE = resource_filename("crystalmapping", "data/Ni.cif")
+PONI_FILE = resource_filename("crystalmapping", "data/Ni.poni")
 
 
 def test_reshape():
@@ -169,3 +171,13 @@ def test_Calculator_auto_processing_and_reload():
     plt.clf()
     # check the ds
     print(ds)
+
+
+def test_load_structure():
+    cm = utils.CrystalMapper()
+    cm.load_structure(CIF_FILE)
+
+
+def test_load_ai():
+    cm = utils.CrystalMapper()
+    cm.load_ai(PONI_FILE)
