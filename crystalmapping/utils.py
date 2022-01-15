@@ -1310,8 +1310,8 @@ class CrystalMapper(object):
         hkls1 = self.all_hkl[idx1]
         hkls2 = self.all_hkl[idx2]
         # x and y
-        xy1 = np.array([row1["x"], row2["y"]])
-        xy2 = np.array([row1["x"], row2["y"]])
+        xy1 = np.array([row1["x"], row1["y"]])
+        xy2 = np.array([row2["x"], row2["y"]])
         self.ubmatrix.set_u1_from_xy(xy1)
         self.ubmatrix.set_u2_from_xy(xy2)
         # number of real hkls in the list
