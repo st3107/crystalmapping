@@ -427,7 +427,7 @@ def create_grain_maps(frames: xr.DataArray, windows: pd.DataFrame, metadata: dic
 
 
 def select_frames(
-    image_sum_data: xr.DataArray, metadata: dict, start_row: int = 0, end_row: int = None, **kwargs
+        image_sum_data: xr.DataArray, metadata: dict, start_row: int = 0, end_row: int = None, **kwargs
 ) -> None:
     """Select the frames according to the summation of the intensity on the image."""
     image_sum_matrix = reshape_to_xarray(image_sum_data, metadata)
@@ -594,10 +594,10 @@ def limit_3std(da: xr.DataArray) -> typing.Tuple[float, float]:
 
 
 def plot_crystal_maps(
-    da: xr.DataArray,
-    limit_func: typing.Callable = None,
-    invert_y: bool = False,
-    **kwargs
+        da: xr.DataArray,
+        limit_func: typing.Callable = None,
+        invert_y: bool = False,
+        **kwargs
 ) -> FacetGrid:
     """Plot the crystal maps.
 
@@ -653,10 +653,10 @@ def plot_rocking_curves(da: xr.DataArray, **kwargs) -> FacetGrid:
 
 
 def auto_plot(
-    da: xr.DataArray,
-    title: typing.Tuple[str, str] = None,
-    invert_y: bool = False,
-    **kwargs
+        da: xr.DataArray,
+        title: typing.Tuple[str, str] = None,
+        invert_y: bool = False,
+        **kwargs
 ) -> FacetGrid:
     """Automatically detect the data type and plot the data array.
 
@@ -695,11 +695,11 @@ def auto_plot(
 
 
 def auto_plot_dataset(
-    ds: xr.Dataset,
-    key: str = "intensity",
-    title: typing.Tuple[str, str] = None,
-    invert_y: bool = False,
-    **kwargs
+        ds: xr.Dataset,
+        key: str = "intensity",
+        title: typing.Tuple[str, str] = None,
+        invert_y: bool = False,
+        **kwargs
 ):
     facet = auto_plot(ds[key], title=None, invert_y=invert_y, **kwargs)
     if title is not None:
@@ -1036,23 +1036,23 @@ class CrystalMapper(object):
 
     @staticmethod
     def auto_visualize(
-        ds: xr.Dataset,
-        key: str = "intensity",
-        title: typing.Tuple[str, str] = None,
-        invert_y: bool = False,
-        **kwargs
+            ds: xr.Dataset,
+            key: str = "intensity",
+            title: typing.Tuple[str, str] = None,
+            invert_y: bool = False,
+            **kwargs
     ) -> FacetGrid:
         """Automatically plot the intensity array in the dataset."""
         return auto_plot_dataset(ds, key, title, invert_y, **kwargs)
 
     def auto_process(
-        self,
-        num_wins: int = 100,
-        wins_width: int = 25,
-        kernel_radius: int = 25,
-        index_filter: slice = None,
-        dspacing_tolerance: typing.Tuple[float, float] = None,
-        **kwargs
+            self,
+            num_wins: int = 100,
+            wins_width: int = 25,
+            kernel_radius: int = 25,
+            index_filter: slice = None,
+            dspacing_tolerance: typing.Tuple[float, float] = None,
+            **kwargs
     ) -> None:
         """Automatically process the data in the standard protocol.
 
@@ -1191,7 +1191,7 @@ class CrystalMapper(object):
         ratio = np.divide(self.all_dspacing, d)
         return bisect.bisect(ratio, lb), bisect.bisect(ratio, rb)
 
-    def calc_hkls(self):
+    def calc_hkls_lower_and_upper(self) -> None:
         """Calculate hkls and assign them to the peaks.
 
         Find the upper and lower bound of the Q for each Q value in the dataframe. The hkls that have the upper
@@ -1215,11 +1215,36 @@ class CrystalMapper(object):
         self.windows["lower_idx"] = lowers
         return
 
-    def _search_bounds(self, d_val: float) -> typing.Tuple[float, float]:
+    def calc_closest_dspacing(self) -> None:
+        idxs = []
+        diffs = []
+        for d, l, u in zip(self.windows["d"], self.windows["lower_idx"], self.windows["upper_idx"]):
+            l_d = self.all_dspacing[l] if l >= 0 else float("-inf")
+            u_d = self.all_dspacing[u] if u >= 0 else float("inf")
+            l_diff, u_diff = d - l_d, u_d - d
+            idx, diff = (l, l_diff) if l_diff <= u_diff else (u, u_diff)
+            idxs.append(idx)
+            diffs.append(diff)
+        self.windows["closet_idx"] = idxs
+        self.windows["diff_dspacing"] = diffs
+        return
+
+    def calc_hkls(self) -> None:
+        """Find the losest d spacing for each peak and record its index. Use the dspacing to find possible hkls.
+
+        Returns
+        -------
+        None. The results are saved in self.windows.
+        """
+        self.calc_hkls_lower_and_upper()
+        self.calc_closest_dspacing()
+        return
+
+    def _search_bounds(self, d_val: float) -> typing.Tuple[int, int]:
         n = len(self.all_dspacing)
         idx = bisect.bisect_left(self.all_dspacing, d_val)
-        right = idx if idx < n else np.nan
-        left = idx - 1 if idx >= 1 else np.nan
+        right = idx if idx < n else -1
+        left = idx - 1 if idx >= 1 else -1
         return left, right
 
 
