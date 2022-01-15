@@ -115,6 +115,7 @@ class UBMatrix:
         self.u2 = u2
         self._lat = lat
         self.geo = geo
+        self.invB = None
         self.U = self.get_U() if self.able_to_get_U() else None
         self.B = self.get_B() if self.able_to_get_B() else None
 
@@ -141,6 +142,7 @@ class UBMatrix:
         if not self.able_to_get_B():
             raise UBMatrixError("Not able to get B matrix. Attributes are missing.")
         self.B = get_B_from_cell(self._lat)
+        self.invB = np.linalg.inv(self.B)
         return
 
     def set_u1_from_xy(self, xy: np.ndarray) -> None:
@@ -184,17 +186,30 @@ class UBMatrix:
             raise UBMatrixError("`self.geo` is None.")
         return get_u_from_geo(xy[0], xy[1], self.geo)
 
-    def reci_to_cart(self, v: np.ndarray) -> np.ndarray:
+    def reci_to_cart(self, hkl: np.ndarray) -> np.ndarray:
         """Transform a vector from reciprocal space (hkl) frame to crystal cartesian frame."""
         if self.B is None:
             raise UBMatrixError("`self.B` is None.")
-        return np.matmul(self.B, v.T).T
+        return np.matmul(self.B, hkl.T).T
 
     def cart_to_lab(self, v: np.ndarray) -> np.ndarray:
         """Transform a vector from cartesian crystal frame to lab frame."""
         if self.U is None:
             raise UBMatrixError("`self.U` is None")
         return np.matmul(self.U, v.T).T
+
+    def lab_to_cart(self, u: np.ndarray) -> np.ndarray:
+        """Transform a vector from the lab frame to cartesian crystal frame."""
+        if self.U is None:
+            raise UBMatrixError("`self.U` is None.")
+        # U^T is the U^{-1}
+        return np.matmul(self.U.T, u.T).T
+
+    def cart_to_reci(self, v: np.ndarray) -> np.ndarray:
+        """Transform a vector from the cartesian crystal frame to reciprocal space (hkl)."""
+        if self.invB is None:
+            raise UBMatrixError("`self.B` is None.")
+        return np.matmul(self.invB, v.T).T
 
     def get_U_from_two_points(self, xy1: np.ndarray, hkl1: np.ndarray, xy2: np.ndarray, hkl2: np.ndarray) -> None:
         """Get the U matrix from two x, y pixel coordinates on the detector and their hkl."""
