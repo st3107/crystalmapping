@@ -1339,6 +1339,33 @@ class CrystalMapper(object):
         peaks = np.array([peak1, peak2] + others)
         return xr.DataArray(ress, coords={"peak": peaks}, dims=["comb", "peak", "hkl"])
 
+    def find_close_to_int(self, hkls_arr: xr.DataArray) -> int:
+        """Find the hkl that is closest to an integar series.
+
+        Parameters
+        ----------
+        hkls_arr
+
+        Returns
+        -------
+
+        """
+
+        def _loss(hkls: np.ndarray) -> float:
+            hkls2 = np.around(hkls)
+            vs = self.ubmatrix.reci_to_cart(hkls)
+            vs2 = self.ubmatrix.reci_to_cart(hkls2)
+            return float(np.sum(np.square(vs2 - vs)))
+
+        values = hkls_arr.values
+        n = values.shape[0]
+        vmin, idx = float("inf"), -1
+        for i in range(n):
+            v = _loss(values[i])
+            if v < vmin:
+                vmin, idx = v, i
+        return idx
+
     def index_peaks_in_one_grain(self, peaks: typing.List[int]) -> xr.DataArray:
         """Find the two peaks that have the smallest difference between the measured dspacings and those in
         structure. Use the hkls of two peaks to calculate U matrixs and use them to index other peaks.
@@ -1355,7 +1382,9 @@ class CrystalMapper(object):
         peak1, peak2 = self.search_two_peaks(peaks)
         s = {peak1, peak2}
         others = [p for p in peaks if p not in s]
-        return self.index_peaks(peak1, peak2, others)
+        hkls_arr = self.index_peaks(peak1, peak2, others)
+        idx = self.find_close_to_int(hkls_arr)
+        return hkls_arr[idx]
 
 
 def pad_array(arr: np.ndarray, shape: typing.Sequence[int]) -> np.ndarray:
