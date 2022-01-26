@@ -1,4 +1,5 @@
 import bisect
+import itertools
 import math
 import pathlib
 import typing
@@ -801,6 +802,8 @@ class CrystalMapper(object):
         self.metadata: typing.Union[None, dict] = None
         # pyFAI
         self.ai: typing.Union[None, AzimuthalIntegrator] = None
+        # dims: all two theta
+        self.all_twotheta: typing.Union[None, np.ndarray] = None
         # dims: all d spacings
         self.all_dspacing: typing.Union[None, np.ndarray] = None
         # dims: all d spacings, hkl, element in hkl
@@ -878,12 +881,27 @@ class CrystalMapper(object):
         """Assign the values to the windows dataframe."""
         self._check_attr("ai")
         self._check_attr("windows")
+        # change the unit of Q to inverse A
         qa = self.ai.qArray() / 10.
         self.windows["Q"] = [qa[row.y, row.x] for row in self.windows.itertuples()]
         return
 
     def assign_d_values(self) -> None:
         self.windows["d"] = 2. * math.pi / self.windows["Q"]
+        return
+
+    def _Q_to_twotheta(self, Q: np.ndarray):
+        self._check_attr("ai")
+        # change wavelength unit to A
+        w = self.ai.wavelength * 1e10
+        return np.rad2deg(2. * np.arcsin(Q * w / (4. * math.pi)))
+
+    def _d_to_twotheta(self, d: np.ndarray):
+        return self._Q_to_twotheta(2. * math.pi / d)
+
+    def assign_twotheta_values(self) -> None:
+        # wavelength meter, Q inverse nanometer
+        self.windows["twotheta"] = self._Q_to_twotheta(self.windows["Q"])
         return
 
     def reshape_intensity(self) -> None:
@@ -1101,10 +1119,6 @@ class CrystalMapper(object):
             except CrystalMapperError as e:
                 print(e)
         try:
-            self.calc_hkls()
-        except CrystalMapperError as e:
-            print(e)
-        try:
             self.reshape_intensity()
         except CrystalMapperError as e:
             print(e)
@@ -1188,69 +1202,78 @@ class CrystalMapper(object):
         for i, hkl in enumerate(hkls):
             # pad the hkls to be the same number of rows
             hkls[i] = pad_array(hkl, (max_row, 3))
-        self.all_dspacing = np.asarray(ds)
-        self.all_hkl = np.asarray(hkls)
-        self.all_n_hkl = np.asarray(rows)
+        # reverse the order to make sure the two theta is increasing
+        self.all_dspacing = np.asarray(ds[::-1])
+        self.all_twotheta = self._d_to_twotheta(self.all_dspacing)
+        self.all_hkl = np.asarray(hkls[::-1])
+        self.all_n_hkl = np.asarray(rows[::-1])
         return
 
     def _search_hkls_idx(self, d: float, lb: float, rb: float) -> typing.Tuple[int, int]:
         ratio = np.divide(self.all_dspacing, d)
         return bisect.bisect(ratio, lb), bisect.bisect(ratio, rb)
 
-    def calc_hkls_lower_and_upper(self) -> None:
+    def calc_hkls_lower_and_upper(self, two_theta_tolerance: float) -> None:
         """Calculate hkls and assign them to the peaks.
 
         Find the upper and lower bound of the Q for each Q value in the dataframe. The hkls that have the upper
         and lower bound values are the possible hkls for that peak. The index of the Q value is the index of the
         group of possible hkls. The index is recorded in the dataframe for both upper and lower bound.
         """
+        dtt = two_theta_tolerance
+        del two_theta_tolerance
         self._check_attr("windows")
         self._check_attr("cell")
-        if "d" not in self.windows.columns:
+        if "twotheta" not in self.windows.columns:
             if "Q" not in self.windows.columns:
                 self.assign_q_values()
             self.assign_d_values()
+            self.assign_twotheta_values()
         if self.all_dspacing is None:
             self._calc_ds_and_hkls()
         uppers, lowers = [], []
-        for d in self.windows["d"]:
-            l, u = self._search_bounds(d)
+        for tt in self.windows["twotheta"]:
+            l, u = self._search_bounds(tt - dtt, tt + dtt)
             uppers.append(u)
             lowers.append(l)
-        self.windows["upper_idx"] = uppers
         self.windows["lower_idx"] = lowers
+        self.windows["upper_idx"] = uppers
         return
 
-    def calc_closest_dspacing(self) -> None:
+    def calc_diff_2theta(self) -> None:
         idxs = []
         diffs = []
-        for d, l, u in zip(self.windows["d"], self.windows["lower_idx"], self.windows["upper_idx"]):
-            l_d = self.all_dspacing[l] if l >= 0 else float("-inf")
-            u_d = self.all_dspacing[u] if u >= 0 else float("inf")
-            l_diff, u_diff = d - l_d, u_d - d
+        for tt, l, u in zip(self.windows["twotheta"], self.windows["lower_idx"], self.windows["upper_idx"]):
+            ltt = self.all_twotheta[l] if l >= 0 else float("-inf")
+            utt = self.all_twotheta[u] if u >= 0 else float("inf")
+            l_diff, u_diff = tt - ltt, utt - tt
             idx, diff = (l, l_diff) if l_diff <= u_diff else (u, u_diff)
             idxs.append(idx)
             diffs.append(diff)
         self.windows["closet_idx"] = idxs
-        self.windows["diff_dspacing"] = diffs
+        self.windows["diff"] = diffs
         return
 
-    def calc_hkls(self) -> None:
+    def calc_hkls(self, two_theta_tolerance: float) -> None:
         """Find the losest d spacing for each peak and record its index. Use the dspacing to find possible hkls.
 
         Returns
         -------
         None. The results are saved in self.windows.
         """
-        self.calc_hkls_lower_and_upper()
-        self.calc_closest_dspacing()
+        self.calc_hkls_lower_and_upper(two_theta_tolerance)
         return
 
-    def _search_bounds(self, d_val: float) -> typing.Tuple[int, int]:
-        n = len(self.all_dspacing)
-        idx = bisect.bisect_left(self.all_dspacing, d_val)
-        right = idx if idx < n else -1
-        left = idx - 1 if idx >= 1 else -1
+    def _search_bounds(self, lower_tt: float, upper_tt: float) -> typing.Tuple[int, int]:
+        left = np.searchsorted(self.all_twotheta, lower_tt, side="left")
+        right = max(np.searchsorted(self.all_twotheta, upper_tt, side="right") - 1, 0)
+        # if no peaks found, use the closet
+        if right < left:
+            d1, d2 = lower_tt - self.all_twotheta[right], upper_tt - self.all_twotheta[left]
+            if d1 < d2:
+                left = right
+            else:
+                right = left
         return left, right
 
     def load_structure(self, cif_file: str):
@@ -1274,8 +1297,8 @@ class CrystalMapper(object):
         """
         self._check_attr("windows")
         # check
-        if "diff_spacing" not in self.windows.columns or "closet_idx" not in self.windows.columns:
-            self.calc_hkls()
+        if "diff" not in self.windows.columns or "closet_idx" not in self.windows.columns:
+            raise CrystalMapperError("Please run calc_hkls first.")
         # get
         df = self.windows.loc[peaks]
         # run
@@ -1286,7 +1309,12 @@ class CrystalMapper(object):
             )
         return tuple(sel_df.index.tolist())
 
-    def index_peaks(self, peak1: int, peak2: int, others: typing.List[int]) -> xr.DataArray:
+    def _get_hkls(self, l: int, r: int):
+        ns = self.all_n_hkl[l:r+1]
+        hklss = self.all_hkl[l:r+1]
+        return np.concatenate([hkls[:n] for n, hkls in zip(ns, hklss)])
+
+    def index_peaks(self, peak1: int, peak2: int, others: typing.List[int]) -> xr.Dataset:
         """Use the hkls of two peaks to calculate U matrixs and use them to index other peaks. Return the hkls.
 
         Parameters
@@ -1299,26 +1327,33 @@ class CrystalMapper(object):
         -------
 
         """
+
+        def _loss(hkls: np.ndarray) -> float:
+            rhkls = np.around(hkls)
+            vs = self.ubmatrix.reci_to_cart(hkls)
+            rvs = self.ubmatrix.reci_to_cart(rhkls)
+            cost = np.sum((rvs - vs) ** 2 / np.sum(vs ** 2, axis=0), axis=0)
+            return np.min(cost)
+
         self._check_attr("all_n_hkl")
         self._check_attr("all_hkl")
         self._check_attr("windows")
         row1 = self.windows.loc[peak1]
         row2 = self.windows.loc[peak2]
-        idx1 = int(row1["closet_idx"])
-        idx2 = int(row2["closet_idx"])
+        l1, r1 = int(row1["lower_idx"]), int(row1["upper_idx"])
+        l2, r2 = int(row2["lower_idx"]), int(row2["upper_idx"])
         # a list of hkls, zero padded
-        hkls1 = self.all_hkl[idx1]
-        hkls2 = self.all_hkl[idx2]
+        hkls1 = self._get_hkls(l1, r1)
+        hkls2 = self._get_hkls(l2, r2)
         # x and y
         xy1 = np.array([row1["x"], row1["y"]])
         xy2 = np.array([row2["x"], row2["y"]])
         self.ubmatrix.set_u1_from_xy(xy1)
         self.ubmatrix.set_u2_from_xy(xy2)
-        # number of real hkls in the list
-        n1 = self.all_n_hkl[idx1]
-        n2 = self.all_n_hkl[idx2]
         # index the hkls
-        ress = []
+        min_res = None
+        min_lval = float("inf")
+        n1, n2 = hkls1.shape[0], hkls2.shape[0]
         for i in range(n1):
             for j in range(n2):
                 self.ubmatrix.set_h1_from_hkl(hkls1[i])
@@ -1332,41 +1367,24 @@ class CrystalMapper(object):
                     v = self.ubmatrix.lab_to_cart(u)
                     hkl = self.ubmatrix.cart_to_reci(v)
                     res.append(hkl)
-                res = np.array(res)
-                ress.append(res)
-        ress = np.array(ress)
+                res = np.asarray(res)
+                lval = _loss(res[2:])
+                if lval < min_lval:
+                    min_lval = lval
+                    min_res = res
+        if min_res is None:
+            raise CrystalMapperError("Best indexing results not found.")
         # get the dim
         peaks = np.array([peak1, peak2] + others)
-        return xr.DataArray(ress, coords={"peak": peaks}, dims=["comb", "peak", "hkl"])
+        return xr.Dataset(
+            {
+                "hkls": (["peak", "hkl"], min_res),
+                "loss": min_lval
+            },
+            coords={"peak": peaks}
+        )
 
-    def find_close_to_int(self, hkls_arr: xr.DataArray) -> int:
-        """Find the hkl that is closest to an integar series.
-
-        Parameters
-        ----------
-        hkls_arr
-
-        Returns
-        -------
-
-        """
-
-        def _loss(hkls: np.ndarray) -> float:
-            hkls2 = np.around(hkls)
-            vs = self.ubmatrix.reci_to_cart(hkls)
-            vs2 = self.ubmatrix.reci_to_cart(hkls2)
-            return float(np.sum(np.square(vs2 - vs)))
-
-        values = hkls_arr.values
-        n = values.shape[0]
-        vmin, idx = float("inf"), -1
-        for i in range(n):
-            v = _loss(values[i])
-            if v < vmin:
-                vmin, idx = v, i
-        return idx
-
-    def index_peaks_in_one_grain(self, peaks: typing.List[int]) -> xr.DataArray:
+    def index_peaks_in_one_grain(self, peaks: typing.List[int]) -> xr.Dataset:
         """Find the two peaks that have the smallest difference between the measured dspacings and those in
         structure. Use the hkls of two peaks to calculate U matrixs and use them to index other peaks.
         Return the hkls.
@@ -1379,12 +1397,17 @@ class CrystalMapper(object):
         -------
 
         """
-        peak1, peak2 = self.search_two_peaks(peaks)
-        s = {peak1, peak2}
-        others = [p for p in peaks if p not in s]
-        hkls_arr = self.index_peaks(peak1, peak2, others)
-        idx = self.find_close_to_int(hkls_arr)
-        return hkls_arr[idx]
+        min_res, min_loss = None, float("inf")
+        for p1, p2 in itertools.combinations(peaks, 2):
+            others = [p for p in peaks if p != p1 and p != p2]
+            res = self.index_peaks(p1, p2, others)
+            loss = res["loss"].item()
+            if loss < min_loss:
+                min_res = res
+                min_loss = loss
+        if min_res is None:
+            raise CrystalMapperError("Best indexing not found.")
+        return min_res
 
 
 def pad_array(arr: np.ndarray, shape: typing.Sequence[int]) -> np.ndarray:

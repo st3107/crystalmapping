@@ -129,7 +129,7 @@ def test_Calculator_step_by_step():
     # test the hkl indexing
     c.calc_hkls_in_a_range(0.99, 1.01)
     # test the hkl bounds
-    c.calc_hkls()
+    c.calc_hkls(0.2)
     # test export dataset
     ds = c.to_dataset()
     print(ds)
@@ -159,8 +159,9 @@ def test_index_peaks_in_one_grain():
     # test the window drawing
     c.calc_windows_from_peaks(4, 2)
     # run the indexing of peaks
+    c.calc_hkls(0.0001)
     returned = c.index_peaks_in_one_grain(c.windows.index[:3])
-    assert np.all(np.logical_not(np.isnan(returned)))
+    assert np.all(np.logical_not(np.isnan(returned["hkls"])))
 
 
 def test_Calculator_auto_processing_and_reload():
@@ -209,3 +210,22 @@ def test_load_structure():
 def test_load_ai():
     cm = utils.CrystalMapper()
     cm.load_ai(PONI_FILE)
+
+
+@pytest.mark.skip
+def test_locally():
+    """A local test. Skip in CI."""
+    DATA_FILE = "/Users/sst/project/analysis/st_crystalmapping/notebooks/data/CG_0046_full_range_grid_scan_90_degree_40_p_20_w.nc"
+    CIF_FILE_ = "/Users/sst/project/analysis/st_crystalmapping/notebooks/data/tio2_rutile.cif"
+    PONI_FILE_ = "/Users/sst/project/analysis/st_crystalmapping/notebooks/data/CeO2_0.25x0.25_beam.poni"
+    cm = utils.CrystalMapper()
+    raw_data = xr.open_dataset(DATA_FILE)
+    cm.windows = raw_data[["y", "dy", "x", "dx", "Q"]].to_dataframe()
+    # convert unit
+    cm.windows["Q"] /= 10.
+    cm.windows["d"] = 2 * np.pi / cm.windows["Q"]
+    cm.load_structure(CIF_FILE_)
+    cm.load_ai(PONI_FILE_)
+    cm.calc_hkls(0.1)
+    GROUP2 = [16, 59, 0, 48, 37, 11]
+    cm.index_peaks_in_one_grain(GROUP2)
