@@ -11,6 +11,15 @@ def test_UBMatrix_get_B():
     assert np.allclose(ub.B, expect_B)
 
 
+def test_UBMatrix_get_B_2():
+    ub = ubmatrix.UBMatrix()
+    ub.lat = Lattice(3., 1., 2., 90., 60., 60.)
+    for i in range(3):
+        for j in range(i + 1, 3):
+            inner = np.dot(ub.B[i], ub.B[j])
+            assert inner < 1e-8
+
+
 def test_UBMatrix_get_U():
     ub = ubmatrix.UBMatrix()
     ub.geo = AzimuthalIntegrator(dist=1., pixel1=1., pixel2=1.)
