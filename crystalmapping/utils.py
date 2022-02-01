@@ -1314,7 +1314,12 @@ class CrystalMapper(object):
         hklss = self.all_hkl[l:r+1]
         return np.concatenate([hkls[:n] for n, hkls in zip(ns, hklss)])
 
-    def index_peaks(self, peak1: int, peak2: int, others: typing.List[int]) -> xr.Dataset:
+    def index_peaks(
+            self,
+            peak1: int,
+            peak2: int,
+            others: typing.List[int]
+    ) -> typing.Generator[xr.Dataset, None, None]:
         """Use the hkls of two peaks to calculate U matrixs and use them to index other peaks. Return the hkls.
 
         Parameters
@@ -1351,8 +1356,7 @@ class CrystalMapper(object):
         self.ubmatrix.set_u1_from_xy(xy1)
         self.ubmatrix.set_u2_from_xy(xy2)
         # index the hkls
-        min_res = None
-        min_lval = float("inf")
+        peaks = np.array([peak1, peak2] + others)
         n1, n2 = hkls1.shape[0], hkls2.shape[0]
         for i in range(n1):
             for j in range(n2):
@@ -1369,22 +1373,17 @@ class CrystalMapper(object):
                     res.append(hkl)
                 res = np.asarray(res)
                 lval = _loss(res[2:])
-                if lval < min_lval:
-                    min_lval = lval
-                    min_res = res
-        if min_res is None:
-            raise CrystalMapperError("Best indexing results not found.")
-        # get the dim
-        peaks = np.array([peak1, peak2] + others)
-        return xr.Dataset(
-            {
-                "hkls": (["peak", "hkl"], min_res),
-                "loss": min_lval
-            },
-            coords={"peak": peaks}
-        )
+                ds = xr.Dataset(
+                    {
+                        "hkls": (["peak", "hkl"], res),
+                        "loss": lval
+                    },
+                    coords={"peak": peaks}
+                )
+                yield ds
+        return
 
-    def index_peaks_in_one_grain(self, peaks: typing.List[int]) -> xr.Dataset:
+    def index_peaks_in_one_grain(self, peaks: typing.List[int]) -> typing.Generator[xr.Dataset, None, None]:
         """Find the two peaks that have the smallest difference between the measured dspacings and those in
         structure. Use the hkls of two peaks to calculate U matrixs and use them to index other peaks.
         Return the hkls.
@@ -1397,17 +1396,10 @@ class CrystalMapper(object):
         -------
 
         """
-        min_res, min_loss = None, float("inf")
         for p1, p2 in itertools.combinations(peaks, 2):
             others = [p for p in peaks if p != p1 and p != p2]
-            res = self.index_peaks(p1, p2, others)
-            loss = res["loss"].item()
-            if loss < min_loss:
-                min_res = res
-                min_loss = loss
-        if min_res is None:
-            raise CrystalMapperError("Best indexing not found.")
-        return min_res
+            yield from self.index_peaks(p1, p2, others)
+        return
 
 
 def pad_array(arr: np.ndarray, shape: typing.Sequence[int]) -> np.ndarray:
