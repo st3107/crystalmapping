@@ -1314,6 +1314,15 @@ class CrystalMapper(object):
         hklss = self.all_hkl[l:r+1]
         return np.concatenate([hkls[:n] for n, hkls in zip(ns, hklss)])
 
+    def _loss(self, hkls: np.ndarray) -> float:
+        rhkls = np.around(hkls)
+        vs = self.ubmatrix.reci_to_cart(hkls)
+        rvs = self.ubmatrix.reci_to_cart(rhkls)
+        diffs_sq = np.sum((rvs - vs) ** 2, axis=1)
+        lens_sq = np.sum(vs ** 2, axis=1)
+        cost = np.sqrt(diffs_sq / lens_sq)
+        return np.min(cost)
+
     def index_peaks(
             self,
             peak1: int,
@@ -1332,14 +1341,6 @@ class CrystalMapper(object):
         -------
 
         """
-
-        def _loss(hkls: np.ndarray) -> float:
-            rhkls = np.around(hkls)
-            vs = self.ubmatrix.reci_to_cart(hkls)
-            rvs = self.ubmatrix.reci_to_cart(rhkls)
-            cost = np.sum((rvs - vs) ** 2 / np.sum(vs ** 2, axis=0), axis=0)
-            return np.min(cost)
-
         self._check_attr("all_n_hkl")
         self._check_attr("all_hkl")
         self._check_attr("windows")
@@ -1372,7 +1373,7 @@ class CrystalMapper(object):
                     hkl = self.ubmatrix.cart_to_reci(v)
                     res.append(hkl)
                 res = np.asarray(res)
-                lval = _loss(res[2:])
+                lval = self._loss(res[2:])
                 ds = xr.Dataset(
                     {
                         "hkls": (["peak", "hkl"], res),
