@@ -227,5 +227,6 @@ def test_locally():
     cm.load_structure(CIF_FILE_)
     cm.load_ai(PONI_FILE_)
     cm.calc_hkls(0.1)
-    GROUP2 = [16, 59, 0, 48, 37, 11]
-    cm.index_peaks_in_one_grain(GROUP2)
+    GROUP4 = [49, 15, 51]
+    for _ in cm.index_peaks_in_one_grain(GROUP4):
+        pass
