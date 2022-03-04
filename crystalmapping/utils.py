@@ -247,7 +247,7 @@ def invert_yaxis(axes: typing.Union[plt.Axes, typing.Iterable[plt.Axes]]) -> Non
 
 def pixel_to_Q(d1: np.ndarray, d2: np.ndarray, ai: AzimuthalIntegrator) -> xr.DataArray:
     """Map pixel position (d1, d2) to Q in nm-1."""
-    arr = xr.DataArray(ai.qCornerFunct(d1, d2))
+    arr = xr.DataArray(ai.qFunction(d1, d2))
     arr.attrs["standard_name"] = "Q"
     arr.attrs["units"] = "nm$^{-1}$"
     return arr
@@ -1344,45 +1344,56 @@ class CrystalMapper(object):
         self._check_attr("all_n_hkl")
         self._check_attr("all_hkl")
         self._check_attr("windows")
-        row1 = self.windows.loc[peak1]
-        row2 = self.windows.loc[peak2]
-        l1, r1 = int(row1["lower_idx"]), int(row1["upper_idx"])
-        l2, r2 = int(row2["lower_idx"]), int(row2["upper_idx"])
-        # a list of hkls, zero padded
-        hkls1 = self._get_hkls(l1, r1)
-        hkls2 = self._get_hkls(l2, r2)
-        # x and y
-        xy1 = np.array([row1["x"], row1["y"]])
-        xy2 = np.array([row2["x"], row2["y"]])
-        self.ubmatrix.set_u1_from_xy(xy1)
-        self.ubmatrix.set_u2_from_xy(xy2)
+        self._set_us_for_peaks(peak1, peak2)
+        hkls1 = self._get_hkls_for_peak(peak1)
+        hkls2 = self._get_hkls_for_peak(peak2)
         # index the hkls
         peaks = np.array([peak1, peak2] + others)
         n1, n2 = hkls1.shape[0], hkls2.shape[0]
         for i in range(n1):
             for j in range(n2):
-                self.ubmatrix.set_h1_from_hkl(hkls1[i])
-                self.ubmatrix.set_h2_from_hkl(hkls2[j])
-                self.ubmatrix.get_U()
-                res = [hkls1[i], hkls2[j]]
-                for k in others:
-                    row = self.windows.loc[k]
-                    xy = np.array([row["x"], row["y"]])
-                    u = self.ubmatrix.xy_to_lab(xy)
-                    v = self.ubmatrix.lab_to_cart(u)
-                    hkl = self.ubmatrix.cart_to_reci(v)
-                    res.append(hkl)
-                res = np.asarray(res)
-                lval = self._loss(res[2:])
-                ds = xr.Dataset(
-                    {
-                        "hkls": (["peak", "hkl"], res),
-                        "loss": lval
-                    },
-                    coords={"peak": peaks}
-                )
+                ds = self._index_others(hkls1[i], hkls2[j], others)
+                ds = ds.assign_coords({"peak": peaks})
                 yield ds
         return
+
+    def _get_hkls_for_peak(self, peak1: int) -> np.ndarray:
+        row1 = self.windows.loc[peak1]
+        l1, r1 = int(row1["lower_idx"]), int(row1["upper_idx"])
+        # a list of hkls, zero padded
+        hkls1 = self._get_hkls(l1, r1)
+        return hkls1
+
+    def _set_us_for_peaks(self, peak1: int, peak2: int) -> None:
+        row1 = self.windows.loc[peak1]
+        row2 = self.windows.loc[peak2]
+        xy1 = np.array([row1["x"], row1["y"]])
+        xy2 = np.array([row2["x"], row2["y"]])
+        self.ubmatrix.set_u1_from_xy(xy1)
+        self.ubmatrix.set_u2_from_xy(xy2)
+        return
+
+    def _index_others(self, h1: np.ndarray, h2: np.ndarray, others: typing.List[int]) -> xr.Dataset:
+        self.ubmatrix.set_h1_from_hkl(h1)
+        self.ubmatrix.set_h2_from_hkl(h2)
+        self.ubmatrix.get_U()
+        res = [h1, h2]
+        for k in others:
+            row = self.windows.loc[k]
+            xy = np.array([row["x"], row["y"]])
+            u = self.ubmatrix.xy_to_lab(xy)
+            v = self.ubmatrix.lab_to_cart(u)
+            hkl = self.ubmatrix.cart_to_reci(v)
+            res.append(hkl)
+        res = np.asarray(res)
+        lval = self._loss(res[2:])
+        ds = xr.Dataset(
+            {
+                "hkls": (["peak", "hkl"], res),
+                "loss": lval
+            }
+        )
+        return ds
 
     def index_peaks_in_one_grain(self, peaks: typing.List[int]) -> typing.Generator[xr.Dataset, None, None]:
         """Find the two peaks that have the smallest difference between the measured dspacings and those in

@@ -54,23 +54,24 @@ def get_B_from_cell(lat: Lattice) -> np.ndarray:
         [
             [lat.ar, lat.br * cos(lat.gammar), lat.cr * cos(lat.betar)],
             [0., lat.br * sin(lat.gammar), -lat.cr * sin(lat.betar) * cos(lat.alpha)],
-            [0., 0., 1. / lat.c]
+            [0., 0., lat.cr * sin(lat.betar) * sin(lat.alphar)]
         ]
     )
 
 
 def get_vout_from_geo(x: float, y: float, geo: AzimuthalIntegrator) -> np.ndarray:
     """Get the output beam vector. A vector form sample to the diffraction spot."""
-    return np.concatenate(geo.calc_pos_zyx(None, np.array([y]), np.array([x])))[::-1]
+    xyz = np.concatenate(geo.calc_pos_zyx(None, np.array([y]), np.array([x]))).squeeze()[::-1]
+    return xyz / np.linalg.norm(xyz)
 
 
 def get_u_from_geo(x: float, y: float, geo: AzimuthalIntegrator) -> np.ndarray:
     """Get the unit vector of the Q."""
     vout = get_vout_from_geo(x, y, geo)
-    vin = np.zeros_like(vout)
-    vin[-1] = np.linalg.norm(vout)
-    vdiff = vout - vin
-    return vdiff / np.linalg.norm(vdiff)
+    vin = np.array([0., 0., 1.])
+    # wavelength unit: m, vdiff unit: A.
+    vdiff = (vout - vin) * 2. * np.pi / (geo.wavelength * 1e10)
+    return vdiff
 
 
 def load_lat(cif_file: str) -> Lattice:
