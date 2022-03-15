@@ -13,18 +13,6 @@ CIF_FILE = resource_filename("crystalmapping", "data/Ni.cif")
 PONI_FILE = resource_filename("crystalmapping", "data/Ni.poni")
 
 
-def test_reshape():
-    """Test reshape in a snaking axes case."""
-    ds = xr.Dataset({"array_data": [0, 0, 0, 1, 0, 0, 0, 0, 0]})
-    ds.attrs["shape"] = (3, 3)
-    ds.attrs["extents"] = [(-1, 1), (-1, 1)]
-    ds.attrs["snaking"] = [False, True]
-    res = utils.reshape(ds, "array_data")
-    expected = np.zeros((3, 3))
-    expected[1, 2] = 1
-    assert np.array_equal(res.values, expected)
-
-
 def test_plot_real_aspect():
     """Test plot_real_aspect on a zero image."""
     data = xr.DataArray(np.zeros((5, 5)))
