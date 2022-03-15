@@ -35,18 +35,6 @@ def my_print(*args, **kwargs) -> None:
         print(*args, **kwargs)
 
 
-def reshape(dataset: xr.Dataset, name: str, inverted: bool = True) -> xr.DataArray:
-    """
-    Reshape the xarray dataset[name] into two dimensional array. Return a reshape data array with coordinates.
-
-    Use `shape`, `snaking`, `extents` in the dataset.attrs. The axis axis will be converted to the relative
-    position to samples so that the coordinate is the negative motor position.
-    """
-    reshaped = _reshape(dataset[name].values, dataset.attrs["shape"], dataset.attrs["snaking"])
-    coords = _get_coords(dataset.attrs, inverted=inverted)
-    return xr.DataArray(reshaped, coords=coords, dims=list(coords.keys()))
-
-
 def _reshape(arr: np.ndarray, shape: typing.List[int], snaking: typing.List[bool]) -> np.ndarray:
     reshaped = arr.reshape(shape)
     if len(snaking) > 1 and snaking[1]:
