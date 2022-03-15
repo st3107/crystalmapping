@@ -4,70 +4,70 @@ from diffpy.structure import Lattice, loadStructure, Structure
 from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
 
 
-def cross_product(v1: np.ndarray, v2: np.ndarray) -> np.ndarray:
+def _cross_product(v1: np.ndarray, v2: np.ndarray) -> np.ndarray:
     return np.cross(v1, v2)
 
 
-def gram_schmidt(vs: np.ndarray) -> np.ndarray:
+def _gram_schmidt(vs: np.ndarray) -> np.ndarray:
     us = []
     # iterate column vectors
     for v in vs.transpose():
         n = len(us)
         u = v
         for i in range(n):
-            u -= project(us[i], v)
+            u -= _project(us[i], v)
         u /= np.linalg.norm(u)
         us.append(u)
     return np.column_stack(us)
 
 
-def project(u, v) -> np.ndarray:
+def _project(u, v) -> np.ndarray:
     """Project v on the unit vector u."""
     return np.inner(u, v) * u
 
 
-def cos(deg: float) -> float:
+def _cos(deg: float) -> float:
     return np.cos(np.deg2rad(deg))
 
 
-def sin(deg: float) -> float:
+def _sin(deg: float) -> float:
     return np.sin(np.deg2rad(deg))
 
 
-def get_U_from_cart_and_inst(h1: np.ndarray, h2: np.ndarray, u1: np.ndarray, u2: np.ndarray) -> np.ndarray:
+def _get_U_from_cart_and_inst(h1: np.ndarray, h2: np.ndarray, u1: np.ndarray, u2: np.ndarray) -> np.ndarray:
     """Calculate the U matrix from the h vectors in crystal cartesian coordinates and instrument coordinate."""
     # get the third vector perpendicular to the plane
-    h3 = cross_product(h1, h2)
-    u3 = cross_product(u1, u2)
+    h3 = _cross_product(h1, h2)
+    u3 = _cross_product(u1, u2)
     # gram schmidt process (with normalization)
     Tc = np.column_stack([h1, h2, h3])
     Tphi = np.column_stack([u1, u2, u3])
-    Tc = gram_schmidt(Tc)
-    Tphi = gram_schmidt(Tphi)
+    Tc = _gram_schmidt(Tc)
+    Tphi = _gram_schmidt(Tphi)
     # multiplication
     return np.matmul(Tphi, Tc.T)
 
 
-def get_B_from_cell(lat: Lattice) -> np.ndarray:
+def _get_B_from_cell(lat: Lattice) -> np.ndarray:
     """Calculate the B matrix according to the unit cell."""
     return np.array(
         [
-            [lat.ar, lat.br * cos(lat.gammar), lat.cr * cos(lat.betar)],
-            [0., lat.br * sin(lat.gammar), -lat.cr * sin(lat.betar) * cos(lat.alpha)],
-            [0., 0., lat.cr * sin(lat.betar) * sin(lat.alphar)]
+            [lat.ar, lat.br * _cos(lat.gammar), lat.cr * _cos(lat.betar)],
+            [0., lat.br * _sin(lat.gammar), -lat.cr * _sin(lat.betar) * _cos(lat.alpha)],
+            [0., 0., lat.cr * _sin(lat.betar) * _sin(lat.alphar)]
         ]
     )
 
 
-def get_vout_from_geo(x: float, y: float, geo: AzimuthalIntegrator) -> np.ndarray:
+def _get_vout_from_geo(x: float, y: float, geo: AzimuthalIntegrator) -> np.ndarray:
     """Get the output beam vector. A vector form sample to the diffraction spot."""
     xyz = np.concatenate(geo.calc_pos_zyx(None, np.array([y]), np.array([x]))).squeeze()[::-1]
     return xyz
 
 
-def get_u_from_geo(x: float, y: float, geo: AzimuthalIntegrator) -> np.ndarray:
+def _get_u_from_geo(x: float, y: float, geo: AzimuthalIntegrator) -> np.ndarray:
     """Get the unit vector of the Q."""
-    vout = get_vout_from_geo(x, y, geo)
+    vout = _get_vout_from_geo(x, y, geo)
     vout /= np.linalg.norm(vout)
     vin = np.array([0., 0., 1.])
     # wavelength unit: m, vdiff unit: A.
@@ -75,7 +75,7 @@ def get_u_from_geo(x: float, y: float, geo: AzimuthalIntegrator) -> np.ndarray:
     return vdiff
 
 
-def load_lat(cif_file: str) -> Lattice:
+def _load_lat(cif_file: str) -> Lattice:
     stru: Structure = loadStructure(cif_file)
     return stru.lattice
 
@@ -136,14 +136,14 @@ class UBMatrix:
         """Fill in the self.U attribute."""
         if not self.able_to_get_U():
             raise UBMatrixError("Not able to get U matrix. Attributes are missing.")
-        self.U = get_U_from_cart_and_inst(self.h1, self.h2, self.u1, self.u2)
+        self.U = _get_U_from_cart_and_inst(self.h1, self.h2, self.u1, self.u2)
         return
 
     def get_B(self) -> None:
         """Fill in the self.B attribute."""
         if not self.able_to_get_B():
             raise UBMatrixError("Not able to get B matrix. Attributes are missing.")
-        self.B = get_B_from_cell(self._lat)
+        self.B = _get_B_from_cell(self._lat)
         self.invB = np.linalg.inv(self.B)
         return
 
@@ -179,14 +179,14 @@ class UBMatrix:
 
     def set_lat_from_cif(self, cif_file: str) -> None:
         """Set self.lat by cif file."""
-        self.lat = load_lat(cif_file)
+        self.lat = _load_lat(cif_file)
         return
 
     def xy_to_lab(self, xy: np.ndarray) -> np.ndarray:
         """Transform x, y pixel coordinate to a unit vector in lab frame."""
         if self.geo is None:
             raise UBMatrixError("`self.geo` is None.")
-        return get_u_from_geo(xy[0], xy[1], self.geo)
+        return _get_u_from_geo(xy[0], xy[1], self.geo)
 
     def reci_to_cart(self, hkl: np.ndarray) -> np.ndarray:
         """Transform a vector from reciprocal space (hkl) frame to crystal cartesian frame."""
