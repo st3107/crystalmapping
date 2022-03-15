@@ -22,51 +22,6 @@ def test_plot_real_aspect():
     plt.clf()
 
 
-@pytest.mark.skip
-def test_annotate_peaks():
-    """Test annotate_peaks in a toy case."""
-    df = pd.DataFrame(
-        {"y": [2], "x": [2], "mass": [1], "size": [1], "ecc": [1], "signal": [1], "raw_mass": [1], "frame": [0]}
-    )
-    image = xr.DataArray(np.zeros((5, 5)))
-    image[2, 2] = 1
-    utils.annotate_peaks(df, image)
-    # plt.show()
-    plt.clf()
-
-
-@pytest.mark.skip
-def test_create_atlas():
-    """Test create_atlas by plotting the figure out. Test assign_Q_to_atlas"""
-    df = pd.DataFrame(
-        {"y": [1, 2], "x": [1, 2], "mass": [1, 2], "size": [1, 2], "ecc": [1, 2], "signal": [1, 2],
-         "raw_mass": [1, 2], "frame": [1, 3], "particle": [0, 1]}
-    )
-    df.attrs["shape"] = (2, 2)
-    df.attrs["extents"] = [(-3, 3), (-1, 1)]
-    df.attrs["snaking"] = (False, True)
-    ds = utils.create_atlas(df)
-    # print(ds)
-    facet = utils.plot_grain_maps(ds)
-    facet.fig.set_size_inches(4, 4)
-    # facet.fig.show()
-    plt.clf()
-    # test
-    ai = utils.AzimuthalIntegrator(detector="Perkin", wavelength=2 * np.pi)
-    ds2 = utils.assign_Q_to_atlas(ds, ai)
-    print(ds2)
-
-
-def test_map_to_Q():
-    """Test map_to_Q_vector."""
-    # test numpy
-    d1 = np.array([0, 1])
-    d2 = np.array([0, 1])
-    ai = utils.AzimuthalIntegrator(detector="Perkin", wavelength=2 * np.pi)
-    q = utils.pixel_to_Q(d1, d2, ai)
-    assert q.shape == (2,)
-
-
 def test_Calculator_step_by_step():
     c = utils.CrystalMapper()
     # load test data
@@ -84,7 +39,7 @@ def test_Calculator_step_by_step():
     c.cell = utils.Cell(a=50, b=50, c=50)
     # test the show frames
     c.show_frame(0)
-    plt.show(block=False)
+    # plt.show(block=False)
     plt.clf()
     # test calculation of the light and dark
     c.calc_dark_and_light_from_frames_arr()
@@ -92,10 +47,10 @@ def test_Calculator_step_by_step():
     assert np.array_equal(c.light, np.squeeze(light_image))
     # test the visualization of light and dark
     c.show_dark()
-    plt.show(block=False)
+    # plt.show(block=False)
     plt.clf()
     c.show_light()
-    plt.show(block=False)
+    # plt.show(block=False)
     plt.clf()
     # test the peak tracking
     c.calc_peaks_from_dk_sub_frame(2, invert=True)
@@ -103,14 +58,14 @@ def test_Calculator_step_by_step():
     c.calc_windows_from_peaks(4, 2)
     # test the visualization of windows
     c.show_windows()
-    plt.show(block=False)
+    # plt.show(block=False)
     plt.clf()
     # test the calculation of the intensity
     c.calc_intensity_in_windows()
     c.reshape_intensity()
     # test the visualization of the intensity
     c.show_intensity()
-    plt.show(block=False)
+    # plt.show(block=False)
     plt.clf()
     # test the calculation of the coordinates
     c.calc_coords()
@@ -176,15 +131,15 @@ def test_Calculator_auto_processing_and_reload():
     assert ds2.equals(ds)
     # check the frame
     c.show_frame(0)
-    plt.show(block=False)
+    # plt.show(block=False)
     plt.clf()
     # check the frame
     c.show_windows()
-    plt.show(block=False)
+    # plt.show(block=False)
     plt.clf()
     # check the intensity
     c.show_intensity()
-    plt.show(block=False)
+    # plt.show(block=False)
     plt.clf()
     # check the ds
     print(ds)
