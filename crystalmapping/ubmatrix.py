@@ -62,15 +62,16 @@ def get_B_from_cell(lat: Lattice) -> np.ndarray:
 def get_vout_from_geo(x: float, y: float, geo: AzimuthalIntegrator) -> np.ndarray:
     """Get the output beam vector. A vector form sample to the diffraction spot."""
     xyz = np.concatenate(geo.calc_pos_zyx(None, np.array([y]), np.array([x]))).squeeze()[::-1]
-    return xyz / np.linalg.norm(xyz)
+    return xyz
 
 
 def get_u_from_geo(x: float, y: float, geo: AzimuthalIntegrator) -> np.ndarray:
     """Get the unit vector of the Q."""
     vout = get_vout_from_geo(x, y, geo)
+    vout /= np.linalg.norm(vout)
     vin = np.array([0., 0., 1.])
     # wavelength unit: m, vdiff unit: A.
-    vdiff = (vout - vin) * 2. * np.pi / (geo.wavelength * 1e10)
+    vdiff = (vout - vin) / (geo.wavelength * 1e10)
     return vdiff
 
 
