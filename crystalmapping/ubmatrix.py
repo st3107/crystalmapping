@@ -54,7 +54,7 @@ def _get_B_from_cell(lat: Lattice) -> np.ndarray:
         [
             [lat.ar, lat.br * _cos(lat.gammar), lat.cr * _cos(lat.betar)],
             [0., lat.br * _sin(lat.gammar), -lat.cr * _sin(lat.betar) * _cos(lat.alpha)],
-            [0., 0., lat.cr * _sin(lat.betar) * _sin(lat.alphar)]
+            [0., 0., 1 / lat.c]
         ]
     )
 
