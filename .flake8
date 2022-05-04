@@ -8,4 +8,5 @@ exclude =
     crystalmapping/_version.py,
     docs/source/conf.py
     notebooks/*
+    __init__.py
 max-line-length = 115
