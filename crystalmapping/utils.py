@@ -1,10 +1,10 @@
 import bisect
+from dataclasses import dataclass
 import itertools
 import math
 import pathlib
 import typing
 
-import fabio
 import pyFAI
 import yaml
 import matplotlib.patches as patches
@@ -23,6 +23,7 @@ from .ubmatrix import UBMatrix
 
 _VERBOSE = 1
 COLORS = list(plt.rcParams['axes.prop_cycle'].by_key()['color'])
+HKL = np.ndarray
 
 
 def set_verbose(level: int) -> None:
@@ -330,6 +331,11 @@ def plot_windows(data: xr.Dataset, **kwargs) -> FacetGrid:
     _set_real_aspect(facet.axes)
     return facet
 
+
+def _get_anlge(v1: np.ndarray, v2: np.ndarray) -> float:
+    inner = np.dot(v1, v2)
+    inner /= np.linalg.norm(v1) * np.linalg.norm(v2)
+    return np.rad2deg(np.arccos(inner))
 
 class CrystalMapperError(Exception):
     pass
@@ -1023,3 +1029,71 @@ class CrystalMapper(object):
         max_shape = self._get_max_shape(arrs)
         arrs = [self._pad_array(a, max_shape) for a in arrs]
         return np.stack(arrs)
+
+    def _get_angle_in_sample_frame(self) -> float:
+        return _get_anlge(self.ubmatrix.u1, self.ubmatrix.u2)
+
+    def _get_anlge_in_grain_frame(self) -> float:
+        return _get_anlge(self.ubmatrix.h1, self.ubmatrix.h2)
+
+    def _get_anlge_h1_h2(self, peak1: int, peak2: int) -> typing.Generator[tuple, None, None]:
+        hkls1 = self._get_hkls_for_peak(peak1)
+        hkls2 = self._get_hkls_for_peak(peak2)
+        self._set_us_for_peaks(peak1, peak2)
+        angle0 = self._get_angle_in_sample_frame()
+        n1 = hkls1.shape[0]
+        n2 = hkls2.shape[1]
+        for i in range(n1):
+            for j in range(n2):
+                self.ubmatrix.set_h1_from_hkl(hkls1[i])
+                self.ubmatrix.set_h2_from_hkl(hkls2[j])
+                angle = self._get_anlge_in_grain_frame()
+                if 1e-8 < abs(angle) < (180. - 1e-8):
+                    yield abs(angle - angle0), angle0, angle, self.ubmatrix.h1, self.ubmatrix.h2
+        return
+
+    def _get_hkl_for_a_peak(self, peak: int) -> HKL:
+        row = self.windows.loc[peak]
+        xy = np.array([row["x"], row["y"]])
+        u = self.ubmatrix.xy_to_lab(xy)
+        v = self.ubmatrix.lab_to_cart(u)
+        hkl = self.ubmatrix.cart_to_reci(v)
+        return hkl
+
+    def _get_indexing_result_for_peaks(self, peaks: typing.List[int]) -> np.ndarray:
+        return np.stack([self._get_hkl_for_a_peak(peak) for peak in peaks])
+
+    def _index_peaks2(self, peak1: int, peak2: int, peaks: typing.List[int]) -> typing.Generator[xr.Dataset, None, None]:
+        lst = sorted(self._get_anlge_h1_h2(peak1, peak2), key=(lambda tup: tup[0]))
+        for da, a0, a, h1, h2 in lst:
+            self.ubmatrix.h1 = h1
+            self.ubmatrix.h2 = h2
+            self.ubmatrix.get_U()
+            hkls = self._get_indexing_result_for_peaks(peaks)
+            loss = self._loss(hkls)
+            yield xr.Dataset(
+                {
+                    "hkls": (["peak", "hkl"], hkls),
+                    "loss": loss,
+                    "angle_sample": a0,
+                    "angle_grain": a,
+                    "diff_angle": da,
+                    "peak1": peak1,
+                    "peak2": peak2
+                }
+            )
+        return
+
+    def index_peaks_in_one_grain2(self, peaks: typing.List[int], first_n: int) -> xr.Dataset:
+        n = len(peaks)
+
+        def _gen():
+            for i, j in itertools.permutations(range(n), 2):
+                for m, result in enumerate(self._index_peaks2(peaks[i], peaks[j], peaks)):
+                    if m > first_n - 1:
+                        break
+                    yield result.expand_dims("candidate")
+        
+        final = xr.concat(_gen(), dim="candidate")
+        final = final.assign_coords({"peak": peaks})
+        return final
