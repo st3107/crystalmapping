@@ -1084,16 +1084,17 @@ class CrystalMapper(object):
             )
         return
 
-    def index_peaks_in_one_grain2(self, peaks: typing.List[int], first_n: int) -> xr.Dataset:
+    def index_peaks_in_one_grain2(self, peaks: typing.List[int], first_n: int, index_all: bool = False) -> xr.Dataset:
         n = len(peaks)
+        all_peaks = self.windows.index.values if index_all else peaks
 
         def _gen():
             for i, j in itertools.permutations(range(n), 2):
-                for m, result in enumerate(self._index_peaks2(peaks[i], peaks[j], peaks)):
+                for m, result in enumerate(self._index_peaks2(peaks[i], peaks[j], all_peaks)):
                     if m > first_n - 1:
                         break
                     yield result.expand_dims("candidate")
         
         final = xr.concat(_gen(), dim="candidate")
-        final = final.assign_coords({"peak": peaks})
+        final = final.assign_coords({"peak": all_peaks})
         return final
