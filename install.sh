@@ -1,7 +1,7 @@
 #!/bin/bash
 
 set -e
-read -p -r "Please give a name for the conda environment: " env
+read -p "Please give a name for the conda environment: " env
 echo "Download crystalmapping repo ..."
 git clone https://github.com/st3107/crystalmapping.git
 cd crystalmapping
