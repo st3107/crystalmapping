@@ -1,9 +1,9 @@
 import bisect
-from dataclasses import dataclass
 import itertools
 import math
 import pathlib
 import typing
+from collections import defaultdict
 
 import pyFAI
 import yaml
@@ -24,6 +24,26 @@ from .ubmatrix import UBMatrix
 _VERBOSE = 1
 COLORS = list(plt.rcParams['axes.prop_cycle'].by_key()['color'])
 HKL = np.ndarray
+
+
+def _tableize(df):
+    if not isinstance(df, pd.DataFrame):
+        return
+    df_columns = df.columns.tolist() 
+    max_len_in_lst = lambda lst: len(sorted(lst, reverse=True, key=len)[0])
+    align_center = lambda st, sz: "{0}{1}{0}".format(" "*(1+(sz-len(st))//2), st)[:sz] if len(st) < sz else st
+    align_right = lambda st, sz: "{0}{1} ".format(" "*(sz-len(st)-1), st) if len(st) < sz else st
+    max_col_len = max_len_in_lst(df_columns)
+    max_val_len_for_col = dict([(col, max_len_in_lst(df.iloc[:,idx].astype('str'))) for idx, col in enumerate(df_columns)])
+    col_sizes = dict([(col, 2 + max(max_val_len_for_col.get(col, 0), max_col_len)) for col in df_columns])
+    build_hline = lambda row: '+'.join(['-' * col_sizes[col] for col in row]).join(['+', '+'])
+    build_data = lambda row, align: "|".join([align(str(val), col_sizes[df_columns[idx]]) for idx, val in enumerate(row)]).join(['|', '|'])
+    hline = build_hline(df_columns)
+    out = [hline, build_data(df_columns, align_center), hline]
+    for _, row in df.iterrows():
+        out.append(build_data(row.tolist(), align_right))
+    out.append(hline)
+    return "\n".join(out)
 
 
 def set_verbose(level: int) -> None:
@@ -421,6 +441,8 @@ class CrystalMapper(object):
         self.window_names = frozenset(["x", "y", "dx", "dy", "d", "Q"])
         # UBmatrix object
         self.ubmatrix: UBMatrix = UBMatrix()
+        # Result of peak indexing
+        self.peak_indexes = None
 
     def _check_attr(self, name: str):
         if getattr(self, name) is None:
@@ -1085,6 +1107,21 @@ class CrystalMapper(object):
         return
 
     def index_peaks_in_one_grain2(self, peaks: typing.List[int], first_n: int, index_all: bool = False) -> xr.Dataset:
+        """Guess the index of the peaks in one grain.
+
+        Parameters
+        ----------
+        peaks : typing.List[int]
+            The index of the peaks in the table.
+        first_n : int
+            The number of the best guess to record for each combination of peaks.
+        index_all : bool, optional
+            If True, index all the peaks dataset. Else, index only the input peaks from one grain. by default False
+
+        Returns
+        -------
+        A xarray dataset contain the guess. It contains candidate, peaks and hkls dimensions. The candidate is one possible guess. The peaks are rows of all hkls. And the hkls are the h, k and l index in that row.
+        """
         n = len(peaks)
         all_peaks = self.windows.index.values if index_all else peaks
 
@@ -1097,4 +1134,63 @@ class CrystalMapper(object):
         
         final = xr.concat(_gen(), dim="candidate")
         final = final.assign_coords({"peak": all_peaks})
+        self.peak_indexes = final
         return final
+
+    def _print_group(self, data: xr.Dataset) -> None:
+        print(
+            "Use peak {} and peak {} in the indexing.".format(
+                data["peak1"].item(), data["peak2"].item()
+            )
+        )
+        dct = defaultdict(list)
+        dct["angle in sample frame"].append("{:.2f}".format(data["angle_sample"].item()))
+        dct["angle in grain frame"].append("{:.2f}".format(data["angle_grain"].item()))
+        dct["difference in angles"].append("{:.2f}".format(data["diff_angle"].item()))
+        dct["badness of the prediction"].append("{:.4f}".format(data["loss"].item()))
+        df = pd.DataFrame(dct)
+        print(_tableize(df))
+        print("Below is the prediction.")
+        dct = defaultdict(list)
+        n = data.sizes["peak"]
+        for i in range(n):
+            sel = data.isel({"peak": i})
+            dct["peak"].append(sel["peak"].item())
+            dct["predicted hkl"].append("{:.2f}, {:.2f}, {:.2f}".format(*sel["hkls"].values))
+            dct["rounded predicted hkl"].append("{:.0f}, {:.0f}, {:.0f}".format(*sel["hkls"].values))
+        df = pd.DataFrame(dct)
+        print(_tableize(df))
+        print()
+        return
+
+    def print_indexing_result(self, data: xr.Dataset) -> None:
+        """Print out the indexing results.
+
+        Parameters
+        ----------
+        data : xr.Dataset
+            The data set of returned by the index_peaks_in_one_grain2.
+        """
+        data = data.sortby("loss")
+        n = data.sizes["candidate"]
+        for i in range(n):
+            sel = data.isel({"candidate": i})
+            self._print_group(sel)
+        return
+
+    def show_peaks(self, data: xr.Dataset, peaks: typing.List[int], size: float = 5.) -> None:
+        """Show the crystal maps of certain peaks.
+
+        Parameters
+        ----------
+        peaks : typing.List[int]
+            A list of integer of the peaks.
+        size: float
+            The size of one cystal map.
+        """
+        sel = data.sel({"grain": peaks})
+        shape = data["intensity"].shape
+        facet = auto_plot_dataset(sel, invert_y=True, col_wrap=10, aspect=shape[2] / shape[1], size=size)
+        facet.fig.tight_layout()
+        plt.show()
+        return
