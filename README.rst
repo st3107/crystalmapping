@@ -27,7 +27,7 @@ Run the following commands to update.
 
 ``python -m pip install .``
 
-If some of the dependencies are out of date.
+If some of the dependencies are out of date,
 
 ``conda install -c conda-forge --file requirements-dev.txt --yes``
 
