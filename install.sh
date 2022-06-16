@@ -1,5 +1,3 @@
-#!/bin/bash
-
 set -e
 read -p "Please give a name for the conda environment: " env
 echo "Download crystalmapping repo ..."
