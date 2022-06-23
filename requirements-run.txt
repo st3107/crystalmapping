@@ -2,7 +2,11 @@
 trackpy
 pyfai
 diffpy.structure
+xarray
+netcdf4
 # need for experiment at nsls-ii
 bluesky
 databroker
 fire
+pymongo
+mongodb
