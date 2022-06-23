@@ -1064,7 +1064,7 @@ class CrystalMapper(object):
         self._set_us_for_peaks(peak1, peak2)
         angle0 = self._get_angle_in_sample_frame()
         n1 = hkls1.shape[0]
-        n2 = hkls2.shape[1]
+        n2 = hkls2.shape[0]
         for i in range(n1):
             for j in range(n2):
                 self.ubmatrix.set_h1_from_hkl(hkls1[i])
