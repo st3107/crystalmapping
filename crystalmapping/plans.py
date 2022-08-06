@@ -618,7 +618,7 @@ def grid_scan_nd(
     return (yield from plan)
 
 
-def grid_scan_no_dark(
+def grid_scan_optional_dark(
     detectors: list,
     *args,
     snake: typing.Union[list, bool] = None,
@@ -627,7 +627,7 @@ def grid_scan_no_dark(
     shutter: object,
     shutter_open: typing.Any,
     shutter_close: typing.Any,
-    shutter_wait_open: float = 0.,
+    shutter_wait: float = 0.,
     md=None
 ) -> typing.Generator:
     """Scan over a mesh; each motor is on an independent trajectory.
@@ -663,8 +663,8 @@ def grid_scan_no_dark(
         The value of the shutter in open state.
     shutter_close : typing.Any
         The value of the shutter in close state.
-    shutter_wait_open : float, optional
-        The time between the shutter open and the start of the light image collection, by default 0.
+    shutter_wait : float, optional
+        The time between the shutter open and close, by default 0.
     md : [type], optional
         The dictionary of the metadata to added into the plan, by default None, by default None
 
@@ -706,16 +706,21 @@ def grid_scan_no_dark(
     }
     _md.update(md)
 
-    plan = bp.grid_scan(detectors, *args, snake_axes=snake, md=_md)
-    plan = bpp.pchain(bps.mv(shutter, shutter_open), bps.sleep(shutter_wait_open), plan)
+    plan = bpp.pchain(
+        bps.mv(shutter, shutter_close),
+        bps.sleep(shutter_wait),
+        dark_plan(detectors[0]),
+        bps.mv(shutter, shutter_open),
+        bps.sleep(shutter_wait),
+        bp.grid_scan(detectors, *args, snake_axes=snake, md=_md)
+    )
     plan = bpp.finalize_wrapper(plan, bps.mv(shutter, shutter_close))
     return (yield from plan)
 
 
-def loop_until(motor: ophyd.Device, left: float, right: float, t: float) -> typing.Generic:
+def loop_forever(motor: ophyd.Device, left: float, right: float) -> typing.Generator[typing.Any, None, None]:
     """Move motor from left to right and right to left repeatedly until t seconds pass"""
-    t0 = time.time()
-    while time.time() - t0 < t:
+    while True:
         yield from bps.mv(motor, left)
         yield from bps.mv(motor, right)
     return

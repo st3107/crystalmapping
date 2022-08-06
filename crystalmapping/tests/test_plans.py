@@ -85,4 +85,4 @@ def test_grid_scan_2d():
 def test_loop_until():
     motor_x = sim.DelayedSynAxis(name="motor_x")
     motor_x.configure({"velocity": 10.})
-    plans.loop_until(motor_x, 0, 1, 0.2)
+    plans.loop_forever(motor_x, 0, 1, 0.2)
