@@ -1,9 +1,11 @@
+import typing
 import numpy as np
 
 try:
     from diffpy.structure import Lattice, loadStructure, Structure
 except ImportError:
-    pass
+    Structure = typing.Any
+    Lattice = typing.Any
 from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
 
 

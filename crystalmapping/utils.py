@@ -20,7 +20,8 @@ from pyFAI.calibrant import Cell
 try:
     from diffpy.structure import loadStructure, Structure, Lattice
 except ImportError:
-    pass
+    Structure = typing.Any
+    Lattice = typing.Any
 
 from .ubmatrix import UBMatrix
 
