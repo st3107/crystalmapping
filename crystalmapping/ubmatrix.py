@@ -1,6 +1,9 @@
 import numpy as np
 
-from diffpy.structure import Lattice, loadStructure, Structure
+try:
+    from diffpy.structure import Lattice, loadStructure, Structure
+except ImportError:
+    pass
 from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
 
 

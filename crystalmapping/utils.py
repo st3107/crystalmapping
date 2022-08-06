@@ -17,7 +17,10 @@ import xarray as xr
 from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
 from xarray.plot import FacetGrid
 from pyFAI.calibrant import Cell
-from diffpy.structure import loadStructure, Structure, Lattice
+try:
+    from diffpy.structure import loadStructure, Structure, Lattice
+except ImportError:
+    pass
 
 from .ubmatrix import UBMatrix
 
