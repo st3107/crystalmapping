@@ -1,12 +1,15 @@
 # need for analysis after the experiments
-trackpy
-pyfai
 diffpy.structure
-xarray
+matplotlib
 netcdf4
+numpy
+pyfai
+trackpy
+xarray
 # need for experiment at nsls-ii
 bluesky
-databroker
+databroker <2.0.0a
+databroker-pack
 fire
-pymongo
 mongodb
+pymongo
