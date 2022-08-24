@@ -1,9 +1,6 @@
 import pytest
-import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 import xarray as xr
-from pkg_resources import resource_filename
 
 import crystalmapping.utils as utils
 
@@ -11,7 +8,10 @@ import crystalmapping.utils as utils
 @pytest.mark.skip
 def test_locally():
     """A local test. Skip in CI."""
-    DATA_FILE = "/Users/sst/project/analysis/st_crystalmapping/notebooks/data/CG_0046_full_range_grid_scan_90_degree_40_p_20_w.nc"
+    DATA_FILE = (
+        "/Users/sst/project/analysis/st_crystalmapping/notebooks/data/"
+        "CG_0046_full_range_grid_scan_90_degree_40_p_20_w.nc"
+    )
     CIF_FILE_ = "/Users/sst/project/analysis/st_crystalmapping/notebooks/data/tio2_rutile.cif"
     PONI_FILE_ = "/Users/sst/project/analysis/st_crystalmapping/notebooks/data/CeO2_0.25x0.25_beam.poni"
     cm = utils.CrystalMapper()

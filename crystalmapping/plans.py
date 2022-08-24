@@ -1,6 +1,5 @@
 import itertools
 import math
-import time
 import typing
 import uuid
 
@@ -10,11 +9,12 @@ import bluesky.preprocessors as bpp
 import numpy as np
 import ophyd
 from bluesky.utils import short_uid
-from ophyd import Signal, Kind
+from ophyd import Kind, Signal
 
 
 class TomoPlanError(Exception):
     """Error in the plans."""
+
     pass
 
 
@@ -34,7 +34,9 @@ def _extarct_motor_pos(mtr):
 def configure_area_det(detector, exposure, acq_time):
     """Configure exposure time of a detector in continuous acquisition mode."""
     if exposure < acq_time:
-        raise TomoPlanError("exposure time < frame acquisition time: {} < {}".format(exposure, acq_time))
+        raise TomoPlanError(
+            "exposure time < frame acquisition time: {} < {}".format(exposure, acq_time)
+        )
     yield from bps.mv(detector.cam.acquire_time, acq_time)
     res = yield from bps.read(detector.cam.acquire_time)
     real_acq_time = res[detector.cam.acquire_time.name]["value"] if res else 1
@@ -81,11 +83,11 @@ def fly_scan_nd(
     shutter: object,
     shutter_open: typing.Any,
     shutter_close: typing.Any,
-    shutter_wait_open: float = 0.,
-    shutter_wait_close: float = 0.,
+    shutter_wait_open: float = 0.0,
+    shutter_wait_close: float = 0.0,
     take_dark: bool = True,
     md: dict = None,
-    backoff: float = 0.,
+    backoff: float = 0.0,
     snake: bool = False,
 ) -> typing.Generator:
     """Move on a grid and do a fly scan at each point in the grid.
@@ -172,10 +174,12 @@ def fly_scan_nd(
     if len(args) < 8:
         raise TomoPlanError(
             "There must be at least 8 arguments for the motors, like ``motor1, start1, end1, number1, motor2, "
-            "start2, end2, number2`.")
+            "start2, end2, number2`."
+        )
     if len(args) % 4 != 0:
         raise TomoPlanError(
-            "The arguments must be in format `motor1, start1, end1, number1, motor2, start2, end2, number2, ...`")
+            "The arguments must be in format `motor1, start1, end1, number1, motor2, start2, end2, number2, ...`"
+        )
 
     # get the motors and positions
     fly_motor = args[-4]
@@ -209,13 +213,15 @@ def fly_scan_nd(
         "plan_args": {},
         "map_size": (fly_pixels,) + nums,
         "hints": {},
-        "extents": [(fly_start, fly_stop)] + [(start, end) for start, end in zip(starts, ends)],
+        "extents": [(fly_start, fly_stop)]
+        + [(start, end) for start, end in zip(starts, ends)],
         **{f"sp_{k}": v for k, v in sp.items()},
     }
     _md.update(md or {})
     _md["hints"].setdefault(
         "dimensions",
-        [((f"start_{fly_motor.name}",), "primary")] + [((motor.name,), "primary") for motor in motors],
+        [((f"start_{fly_motor.name}",), "primary")]
+        + [((motor.name,), "primary") for motor in motors],
     )
     # soft signal to use for tracking pixel edges
     px_start = Signal(name=f"start_{fly_motor.name}", kind=Kind.normal)
@@ -226,11 +232,15 @@ def fly_scan_nd(
     # check the speed
     low, high = sorted(fly_motor.velocity.limits)
     if speed < low or speed > high:
-        raise ValueError("The fly scan velocity is {}. ".format(speed) +
-                         "It is out of the range of the motor speed: ({}, {}).".format(low, high))
+        raise ValueError(
+            "The fly scan velocity is {}. ".format(speed)
+            + "It is out of the range of the motor speed: ({}, {}).".format(low, high)
+        )
     if move_velocity < low or move_velocity > high:
-        raise ValueError("The move velocity is {}. ".format(move_velocity) +
-                         "It is out of the range of the motor speed: ({}, {}).".format(low, high))
+        raise ValueError(
+            "The move velocity is {}. ".format(move_velocity)
+            + "It is out of the range of the motor speed: ({}, {}).".format(low, high)
+        )
 
     @bpp.reset_positions_decorator([fly_motor.velocity])
     @bpp.set_run_key_decorator(f"xrd_map_{uuid.uuid4()}")
@@ -303,11 +313,11 @@ def fly_scan_nd_no_shutter(
     shutter: object,
     shutter_open: typing.Any,
     shutter_close: typing.Any,
-    shutter_wait_open: float = 0.,
-    shutter_wait_close: float = 0.,
+    shutter_wait_open: float = 0.0,
+    shutter_wait_close: float = 0.0,
     take_dark: bool = True,
     md: dict = None,
-    backoff: float = 0.,
+    backoff: float = 0.0,
     snake: bool = False,
 ) -> typing.Generator:
     """Move on a grid and do a fly scan at each point in the grid.
@@ -373,10 +383,12 @@ def fly_scan_nd_no_shutter(
     if len(args) < 8:
         raise TomoPlanError(
             "There must be at least 8 arguments for the motors, like ``motor1, start1, end1, number1, motor2, "
-            "start2, end2, number2`.")
+            "start2, end2, number2`."
+        )
     if len(args) % 4 != 0:
         raise TomoPlanError(
-            "The arguments must be in format `motor1, start1, end1, number1, motor2, start2, end2, number2, ...`")
+            "The arguments must be in format `motor1, start1, end1, number1, motor2, start2, end2, number2, ...`"
+        )
 
     # get the motors and positions
     fly_motor = args[-4]
@@ -411,13 +423,15 @@ def fly_scan_nd_no_shutter(
         "map_size": (fly_pixels,) + nums,
         "shape": (fly_pixels,) + nums,
         "hints": {},
-        "extents": [(fly_start, fly_stop)] + [(start, end) for start, end in zip(starts, ends)],
+        "extents": [(fly_start, fly_stop)]
+        + [(start, end) for start, end in zip(starts, ends)],
         **{f"sp_{k}": v for k, v in sp.items()},
     }
     _md.update(md or {})
     _md["hints"].setdefault(
         "dimensions",
-        [((f"start_{fly_motor.name}",), "primary")] + [((motor.name,), "primary") for motor in motors],
+        [((f"start_{fly_motor.name}",), "primary")]
+        + [((motor.name,), "primary") for motor in motors],
     )
     # soft signal to use for tracking pixel edges
     px_start = Signal(name=f"start_{fly_motor.name}", kind=Kind.normal)
@@ -428,11 +442,15 @@ def fly_scan_nd_no_shutter(
     # check the speed
     low, high = sorted(fly_motor.velocity.limits)
     if speed < low or speed > high:
-        raise ValueError("The fly scan velocity is {}. ".format(speed) +
-                         "It is out of the range of the motor speed: ({}, {}).".format(low, high))
+        raise ValueError(
+            "The fly scan velocity is {}. ".format(speed)
+            + "It is out of the range of the motor speed: ({}, {}).".format(low, high)
+        )
     if move_velocity < low or move_velocity > high:
-        raise ValueError("The move velocity is {}. ".format(move_velocity) +
-                         "It is out of the range of the motor speed: ({}, {}).".format(low, high))
+        raise ValueError(
+            "The move velocity is {}. ".format(move_velocity)
+            + "It is out of the range of the motor speed: ({}, {}).".format(low, high)
+        )
 
     @bpp.reset_positions_decorator([fly_motor.velocity])
     @bpp.set_run_key_decorator(f"xrd_map_{uuid.uuid4()}")
@@ -506,10 +524,10 @@ def grid_scan_nd(
     shutter: object,
     shutter_open: typing.Any,
     shutter_close: typing.Any,
-    shutter_wait_open: float = 0.,
-    shutter_wait_close: float = 0.,
+    shutter_wait_open: float = 0.0,
+    shutter_wait_close: float = 0.0,
     take_dark: bool = True,
-    md=None
+    md=None,
 ) -> typing.Generator:
     """Scan over a mesh; each motor is on an independent trajectory.
 
@@ -573,7 +591,8 @@ def grid_scan_nd(
         raise TomoPlanError("Missing arguments for the motors.")
     if len(args) % 4 != 0:
         raise TomoPlanError(
-            "The arguments must be in format `motor1, start1, end1, number1, motor2, start2, end2, number2, ...`")
+            "The arguments must be in format `motor1, start1, end1, number1, motor2, start2, end2, number2, ...`"
+        )
     if len(detectors) == 0:
         raise TomoPlanError("dets cannot be an empty list.")
 
@@ -613,7 +632,9 @@ def grid_scan_nd(
 
     plan = bp.grid_scan(detectors, *args, snake_axes=snake, per_step=_per_step, md=_md)
     if not take_dark:
-        plan = bpp.pchain(bps.mv(shutter, shutter_open), bps.sleep(shutter_wait_open), plan)
+        plan = bpp.pchain(
+            bps.mv(shutter, shutter_open), bps.sleep(shutter_wait_open), plan
+        )
     plan = bpp.finalize_wrapper(plan, bps.mv(shutter, shutter_close))
     return (yield from plan)
 
@@ -627,8 +648,8 @@ def grid_scan_optional_dark(
     shutter: object,
     shutter_open: typing.Any,
     shutter_close: typing.Any,
-    shutter_wait: float = 0.,
-    md=None
+    shutter_wait: float = 0.0,
+    md=None,
 ) -> typing.Generator:
     """Scan over a mesh; each motor is on an independent trajectory.
 
@@ -688,7 +709,8 @@ def grid_scan_optional_dark(
         raise TomoPlanError("Missing arguments for the motors.")
     if len(args) % 4 != 0:
         raise TomoPlanError(
-            "The arguments must be in format `motor1, start1, end1, number1, motor2, start2, end2, number2, ...`")
+            "The arguments must be in format `motor1, start1, end1, number1, motor2, start2, end2, number2, ...`"
+        )
     if len(detectors) == 0:
         raise TomoPlanError("dets cannot be an empty list.")
 
@@ -712,13 +734,15 @@ def grid_scan_optional_dark(
         dark_plan(detectors[0]),
         bps.mv(shutter, shutter_open),
         bps.sleep(shutter_wait),
-        bp.grid_scan(detectors, *args, snake_axes=snake, md=_md)
+        bp.grid_scan(detectors, *args, snake_axes=snake, md=_md),
     )
     plan = bpp.finalize_wrapper(plan, bps.mv(shutter, shutter_close))
     return (yield from plan)
 
 
-def loop_forever(motor: ophyd.Device, left: float, right: float) -> typing.Generator[typing.Any, None, None]:
+def loop_forever(
+    motor: ophyd.Device, left: float, right: float
+) -> typing.Generator[typing.Any, None, None]:
     """Move motor from left to right and right to left repeatedly until t seconds pass"""
     while True:
         yield from bps.mv(motor, left)
