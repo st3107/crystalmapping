@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Run experiments at NSLS-II &mdash; crystalmapping 0.0.1 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -15,6 +16,7 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
         <script src="_static/clipboard.min.js"></script>
         <script src="_static/copybutton.js"></script>
@@ -89,12 +91,12 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="section" id="run-experiments-at-nsls-ii">
-<h1>Run experiments at NSLS-II<a class="headerlink" href="#run-experiments-at-nsls-ii" title="Permalink to this headline">¶</a></h1>
+  <section id="run-experiments-at-nsls-ii">
+<h1>Run experiments at NSLS-II<a class="headerlink" href="#run-experiments-at-nsls-ii" title="Permalink to this heading">¶</a></h1>
 <p>Here, we demonstrate the example code to run the fly scan and grid scan
 experiment at the NSLS-II.</p>
-<div class="section" id="simulated-motors-and-detectors">
-<h2>Simulated motors and detectors<a class="headerlink" href="#simulated-motors-and-detectors" title="Permalink to this headline">¶</a></h2>
+<section id="simulated-motors-and-detectors">
+<h2>Simulated motors and detectors<a class="headerlink" href="#simulated-motors-and-detectors" title="Permalink to this heading">¶</a></h2>
 <p>To demonstrate the example, we set up some simulated motors and
 detectors for better description. During the beamtime, these objects
 will be connected to the real devices.</p>
@@ -112,9 +114,9 @@ will be connected to the real devices.</p>
 <span class="n">shutter</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">SynSignal</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;shutter&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="fly-scan">
-<h2>Fly scan<a class="headerlink" href="#fly-scan" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="fly-scan">
+<h2>Fly scan<a class="headerlink" href="#fly-scan" title="Permalink to this heading">¶</a></h2>
 <p>A fly scan is to move to a position in the motor positions space, start
 the movement of a fly motor and take light images for specific times
 during the non-stopping movement and then move to the next point and
@@ -205,8 +207,8 @@ fly_scan_nd(detectors: list, *args, move_velocity: float, time_per_point: float,
         Wrong motor positions format.
 </pre></div>
 </div>
-<div class="section" id="fly-scan-in-rows">
-<h3>Fly scan in rows<a class="headerlink" href="#fly-scan-in-rows" title="Permalink to this headline">¶</a></h3>
+<section id="fly-scan-in-rows">
+<h3>Fly scan in rows<a class="headerlink" href="#fly-scan-in-rows" title="Permalink to this heading">¶</a></h3>
 <p>Here is an example of fly scan in rows.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plan</span> <span class="o">=</span> <span class="n">plans</span><span class="o">.</span><span class="n">fly_scan_nd</span><span class="p">(</span>
     <span class="p">[</span><span class="n">detector</span><span class="p">],</span>
@@ -314,9 +316,9 @@ beam aiming at a lower part of the sample.</p>
 </pre></div>
 </div>
 <img alt="_images/experiment1_11_0.png" src="_images/experiment1_11_0.png" />
-</div>
-<div class="section" id="fly-scan-in-rocking-curves-on-a-grid">
-<h3>Fly scan in rocking curves on a grid<a class="headerlink" href="#fly-scan-in-rocking-curves-on-a-grid" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="fly-scan-in-rocking-curves-on-a-grid">
+<h3>Fly scan in rocking curves on a grid<a class="headerlink" href="#fly-scan-in-rocking-curves-on-a-grid" title="Permalink to this heading">¶</a></h3>
 <p>A more complicated example is to move the sample in a grid and fly in
 the rotation.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plan</span> <span class="o">=</span> <span class="n">plans</span><span class="o">.</span><span class="n">fly_scan_nd</span><span class="p">(</span>
@@ -355,10 +357,10 @@ scan in the phi axis.</p>
 </pre></div>
 </div>
 <img alt="_images/experiment1_16_1.png" src="_images/experiment1_16_1.png" />
-</div>
-</div>
-<div class="section" id="grid-scan">
-<h2>Grid scan<a class="headerlink" href="#grid-scan" title="Permalink to this headline">¶</a></h2>
+</section>
+</section>
+<section id="grid-scan">
+<h2>Grid scan<a class="headerlink" href="#grid-scan" title="Permalink to this heading">¶</a></h2>
 <p>A grid scan is to move to a point in the motor positions space, stay
 there, collect one image at that point and then move to the next point
 and repeat.</p>
@@ -431,8 +433,8 @@ grid_scan_nd(detectors: list, *args, snake: Union[list, bool] = None, time_per_p
         Wrong motor positions format.
 </pre></div>
 </div>
-<div class="section" id="grid-scan-in-x-y-plane">
-<h3>Grid scan in (x, y) plane<a class="headerlink" href="#grid-scan-in-x-y-plane" title="Permalink to this headline">¶</a></h3>
+<section id="grid-scan-in-x-y-plane">
+<h3>Grid scan in (x, y) plane<a class="headerlink" href="#grid-scan-in-x-y-plane" title="Permalink to this heading">¶</a></h3>
 <p>Below is an example to do grid scan in rows.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plan</span> <span class="o">=</span> <span class="n">plans</span><span class="o">.</span><span class="n">grid_scan_nd</span><span class="p">(</span>
     <span class="p">[</span><span class="n">detector</span><span class="p">],</span>
@@ -517,9 +519,9 @@ grid_scan_nd(detectors: list, *args, snake: Union[list, bool] = None, time_per_p
 </pre></div>
 </div>
 <img alt="_images/experiment1_25_0.png" src="_images/experiment1_25_0.png" />
-</div>
-<div class="section" id="grid-scan-in-phi-x-y-space">
-<h3>Grid scan in (phi, x, y) space<a class="headerlink" href="#grid-scan-in-phi-x-y-space" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="grid-scan-in-phi-x-y-space">
+<h3>Grid scan in (phi, x, y) space<a class="headerlink" href="#grid-scan-in-phi-x-y-space" title="Permalink to this heading">¶</a></h3>
 <p>We can use arbitrary number of the motors in a grid scan. Here, we show
 an example to do a scan in a three dimensional space.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plan</span> <span class="o">=</span> <span class="n">plans</span><span class="o">.</span><span class="n">grid_scan_nd</span><span class="p">(</span>
@@ -559,9 +561,9 @@ there is a scan at three points along phi axis.</p>
 </pre></div>
 </div>
 <img alt="_images/experiment1_30_0.png" src="_images/experiment1_30_0.png" />
-</div>
-</div>
-</div>
+</section>
+</section>
+</section>
 
 
            </div>
