@@ -82,6 +82,7 @@ def test_grid_scan_2d():
         summarize_plan(plan)
 
 
+@pytest.mark.skip
 def test_loop_until():
     motor_x = sim.DelayedSynAxis(name="motor_x")
     motor_x.configure({"velocity": 10.})

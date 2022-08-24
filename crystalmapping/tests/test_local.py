@@ -8,7 +8,7 @@ from pkg_resources import resource_filename
 import crystalmapping.utils as utils
 
 
-#@pytest.mark.skip
+@pytest.mark.skip
 def test_locally():
     """A local test. Skip in CI."""
     DATA_FILE = "/Users/sst/project/analysis/st_crystalmapping/notebooks/data/CG_0046_full_range_grid_scan_90_degree_40_p_20_w.nc"
