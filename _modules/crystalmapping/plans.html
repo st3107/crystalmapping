@@ -78,7 +78,6 @@
   <h1>Source code for crystalmapping.plans</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">itertools</span>
 <span class="kn">import</span> <span class="nn">math</span>
-<span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">import</span> <span class="nn">typing</span>
 <span class="kn">import</span> <span class="nn">uuid</span>
 
@@ -88,11 +87,12 @@
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">ophyd</span>
 <span class="kn">from</span> <span class="nn">bluesky.utils</span> <span class="kn">import</span> <span class="n">short_uid</span>
-<span class="kn">from</span> <span class="nn">ophyd</span> <span class="kn">import</span> <span class="n">Signal</span><span class="p">,</span> <span class="n">Kind</span>
+<span class="kn">from</span> <span class="nn">ophyd</span> <span class="kn">import</span> <span class="n">Kind</span><span class="p">,</span> <span class="n">Signal</span>
 
 
 <div class="viewcode-block" id="TomoPlanError"><a class="viewcode-back" href="../../apis.html#crystalmapping.plans.TomoPlanError">[docs]</a><span class="k">class</span> <span class="nc">TomoPlanError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Error in the plans.&quot;&quot;&quot;</span>
+
     <span class="k">pass</span></div>
 
 
@@ -112,7 +112,9 @@
 <div class="viewcode-block" id="configure_area_det"><a class="viewcode-back" href="../../apis.html#crystalmapping.plans.configure_area_det">[docs]</a><span class="k">def</span> <span class="nf">configure_area_det</span><span class="p">(</span><span class="n">detector</span><span class="p">,</span> <span class="n">exposure</span><span class="p">,</span> <span class="n">acq_time</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Configure exposure time of a detector in continuous acquisition mode.&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">exposure</span> <span class="o">&lt;</span> <span class="n">acq_time</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">TomoPlanError</span><span class="p">(</span><span class="s2">&quot;exposure time &lt; frame acquisition time: </span><span class="si">{}</span><span class="s2"> &lt; </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">exposure</span><span class="p">,</span> <span class="n">acq_time</span><span class="p">))</span>
+        <span class="k">raise</span> <span class="n">TomoPlanError</span><span class="p">(</span>
+            <span class="s2">&quot;exposure time &lt; frame acquisition time: </span><span class="si">{}</span><span class="s2"> &lt; </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">exposure</span><span class="p">,</span> <span class="n">acq_time</span><span class="p">)</span>
+        <span class="p">)</span>
     <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">mv</span><span class="p">(</span><span class="n">detector</span><span class="o">.</span><span class="n">cam</span><span class="o">.</span><span class="n">acquire_time</span><span class="p">,</span> <span class="n">acq_time</span><span class="p">)</span>
     <span class="n">res</span> <span class="o">=</span> <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">detector</span><span class="o">.</span><span class="n">cam</span><span class="o">.</span><span class="n">acquire_time</span><span class="p">)</span>
     <span class="n">real_acq_time</span> <span class="o">=</span> <span class="n">res</span><span class="p">[</span><span class="n">detector</span><span class="o">.</span><span class="n">cam</span><span class="o">.</span><span class="n">acquire_time</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;value&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="n">res</span> <span class="k">else</span> <span class="mi">1</span>
@@ -159,11 +161,11 @@
     <span class="n">shutter</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span>
     <span class="n">shutter_open</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">,</span>
     <span class="n">shutter_close</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">,</span>
-    <span class="n">shutter_wait_open</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">,</span>
-    <span class="n">shutter_wait_close</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">,</span>
+    <span class="n">shutter_wait_open</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">shutter_wait_close</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
     <span class="n">take_dark</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">md</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">backoff</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">,</span>
+    <span class="n">backoff</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
     <span class="n">snake</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">Generator</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Move on a grid and do a fly scan at each point in the grid.</span>
@@ -250,10 +252,12 @@
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">8</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">TomoPlanError</span><span class="p">(</span>
             <span class="s2">&quot;There must be at least 8 arguments for the motors, like ``motor1, start1, end1, number1, motor2, &quot;</span>
-            <span class="s2">&quot;start2, end2, number2`.&quot;</span><span class="p">)</span>
+            <span class="s2">&quot;start2, end2, number2`.&quot;</span>
+        <span class="p">)</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">%</span> <span class="mi">4</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">TomoPlanError</span><span class="p">(</span>
-            <span class="s2">&quot;The arguments must be in format `motor1, start1, end1, number1, motor2, start2, end2, number2, ...`&quot;</span><span class="p">)</span>
+            <span class="s2">&quot;The arguments must be in format `motor1, start1, end1, number1, motor2, start2, end2, number2, ...`&quot;</span>
+        <span class="p">)</span>
 
     <span class="c1"># get the motors and positions</span>
     <span class="n">fly_motor</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="o">-</span><span class="mi">4</span><span class="p">]</span>
@@ -287,13 +291,15 @@
         <span class="s2">&quot;plan_args&quot;</span><span class="p">:</span> <span class="p">{},</span>
         <span class="s2">&quot;map_size&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">fly_pixels</span><span class="p">,)</span> <span class="o">+</span> <span class="n">nums</span><span class="p">,</span>
         <span class="s2">&quot;hints&quot;</span><span class="p">:</span> <span class="p">{},</span>
-        <span class="s2">&quot;extents&quot;</span><span class="p">:</span> <span class="p">[(</span><span class="n">fly_start</span><span class="p">,</span> <span class="n">fly_stop</span><span class="p">)]</span> <span class="o">+</span> <span class="p">[(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span> <span class="k">for</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">starts</span><span class="p">,</span> <span class="n">ends</span><span class="p">)],</span>
+        <span class="s2">&quot;extents&quot;</span><span class="p">:</span> <span class="p">[(</span><span class="n">fly_start</span><span class="p">,</span> <span class="n">fly_stop</span><span class="p">)]</span>
+        <span class="o">+</span> <span class="p">[(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span> <span class="k">for</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">starts</span><span class="p">,</span> <span class="n">ends</span><span class="p">)],</span>
         <span class="o">**</span><span class="p">{</span><span class="sa">f</span><span class="s2">&quot;sp_</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">sp</span><span class="o">.</span><span class="n">items</span><span class="p">()},</span>
     <span class="p">}</span>
     <span class="n">_md</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">md</span> <span class="ow">or</span> <span class="p">{})</span>
     <span class="n">_md</span><span class="p">[</span><span class="s2">&quot;hints&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span>
         <span class="s2">&quot;dimensions&quot;</span><span class="p">,</span>
-        <span class="p">[((</span><span class="sa">f</span><span class="s2">&quot;start_</span><span class="si">{</span><span class="n">fly_motor</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,),</span> <span class="s2">&quot;primary&quot;</span><span class="p">)]</span> <span class="o">+</span> <span class="p">[((</span><span class="n">motor</span><span class="o">.</span><span class="n">name</span><span class="p">,),</span> <span class="s2">&quot;primary&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">motor</span> <span class="ow">in</span> <span class="n">motors</span><span class="p">],</span>
+        <span class="p">[((</span><span class="sa">f</span><span class="s2">&quot;start_</span><span class="si">{</span><span class="n">fly_motor</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,),</span> <span class="s2">&quot;primary&quot;</span><span class="p">)]</span>
+        <span class="o">+</span> <span class="p">[((</span><span class="n">motor</span><span class="o">.</span><span class="n">name</span><span class="p">,),</span> <span class="s2">&quot;primary&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">motor</span> <span class="ow">in</span> <span class="n">motors</span><span class="p">],</span>
     <span class="p">)</span>
     <span class="c1"># soft signal to use for tracking pixel edges</span>
     <span class="n">px_start</span> <span class="o">=</span> <span class="n">Signal</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;start_</span><span class="si">{</span><span class="n">fly_motor</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="n">Kind</span><span class="o">.</span><span class="n">normal</span><span class="p">)</span>
@@ -304,11 +310,15 @@
     <span class="c1"># check the speed</span>
     <span class="n">low</span><span class="p">,</span> <span class="n">high</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">fly_motor</span><span class="o">.</span><span class="n">velocity</span><span class="o">.</span><span class="n">limits</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">speed</span> <span class="o">&lt;</span> <span class="n">low</span> <span class="ow">or</span> <span class="n">speed</span> <span class="o">&gt;</span> <span class="n">high</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The fly scan velocity is </span><span class="si">{}</span><span class="s2">. &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">speed</span><span class="p">)</span> <span class="o">+</span>
-                         <span class="s2">&quot;It is out of the range of the motor speed: (</span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">).&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">))</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;The fly scan velocity is </span><span class="si">{}</span><span class="s2">. &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">speed</span><span class="p">)</span>
+            <span class="o">+</span> <span class="s2">&quot;It is out of the range of the motor speed: (</span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">).&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">)</span>
+        <span class="p">)</span>
     <span class="k">if</span> <span class="n">move_velocity</span> <span class="o">&lt;</span> <span class="n">low</span> <span class="ow">or</span> <span class="n">move_velocity</span> <span class="o">&gt;</span> <span class="n">high</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The move velocity is </span><span class="si">{}</span><span class="s2">. &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">move_velocity</span><span class="p">)</span> <span class="o">+</span>
-                         <span class="s2">&quot;It is out of the range of the motor speed: (</span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">).&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">))</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;The move velocity is </span><span class="si">{}</span><span class="s2">. &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">move_velocity</span><span class="p">)</span>
+            <span class="o">+</span> <span class="s2">&quot;It is out of the range of the motor speed: (</span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">).&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">)</span>
+        <span class="p">)</span>
 
     <span class="nd">@bpp</span><span class="o">.</span><span class="n">reset_positions_decorator</span><span class="p">([</span><span class="n">fly_motor</span><span class="o">.</span><span class="n">velocity</span><span class="p">])</span>
     <span class="nd">@bpp</span><span class="o">.</span><span class="n">set_run_key_decorator</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;xrd_map_</span><span class="si">{</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -381,11 +391,11 @@
     <span class="n">shutter</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span>
     <span class="n">shutter_open</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">,</span>
     <span class="n">shutter_close</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">,</span>
-    <span class="n">shutter_wait_open</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">,</span>
-    <span class="n">shutter_wait_close</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">,</span>
+    <span class="n">shutter_wait_open</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">shutter_wait_close</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
     <span class="n">take_dark</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">md</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">backoff</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">,</span>
+    <span class="n">backoff</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
     <span class="n">snake</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">Generator</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Move on a grid and do a fly scan at each point in the grid.</span>
@@ -451,10 +461,12 @@
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">8</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">TomoPlanError</span><span class="p">(</span>
             <span class="s2">&quot;There must be at least 8 arguments for the motors, like ``motor1, start1, end1, number1, motor2, &quot;</span>
-            <span class="s2">&quot;start2, end2, number2`.&quot;</span><span class="p">)</span>
+            <span class="s2">&quot;start2, end2, number2`.&quot;</span>
+        <span class="p">)</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">%</span> <span class="mi">4</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">TomoPlanError</span><span class="p">(</span>
-            <span class="s2">&quot;The arguments must be in format `motor1, start1, end1, number1, motor2, start2, end2, number2, ...`&quot;</span><span class="p">)</span>
+            <span class="s2">&quot;The arguments must be in format `motor1, start1, end1, number1, motor2, start2, end2, number2, ...`&quot;</span>
+        <span class="p">)</span>
 
     <span class="c1"># get the motors and positions</span>
     <span class="n">fly_motor</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="o">-</span><span class="mi">4</span><span class="p">]</span>
@@ -489,13 +501,15 @@
         <span class="s2">&quot;map_size&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">fly_pixels</span><span class="p">,)</span> <span class="o">+</span> <span class="n">nums</span><span class="p">,</span>
         <span class="s2">&quot;shape&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">fly_pixels</span><span class="p">,)</span> <span class="o">+</span> <span class="n">nums</span><span class="p">,</span>
         <span class="s2">&quot;hints&quot;</span><span class="p">:</span> <span class="p">{},</span>
-        <span class="s2">&quot;extents&quot;</span><span class="p">:</span> <span class="p">[(</span><span class="n">fly_start</span><span class="p">,</span> <span class="n">fly_stop</span><span class="p">)]</span> <span class="o">+</span> <span class="p">[(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span> <span class="k">for</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">starts</span><span class="p">,</span> <span class="n">ends</span><span class="p">)],</span>
+        <span class="s2">&quot;extents&quot;</span><span class="p">:</span> <span class="p">[(</span><span class="n">fly_start</span><span class="p">,</span> <span class="n">fly_stop</span><span class="p">)]</span>
+        <span class="o">+</span> <span class="p">[(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span> <span class="k">for</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">starts</span><span class="p">,</span> <span class="n">ends</span><span class="p">)],</span>
         <span class="o">**</span><span class="p">{</span><span class="sa">f</span><span class="s2">&quot;sp_</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">sp</span><span class="o">.</span><span class="n">items</span><span class="p">()},</span>
     <span class="p">}</span>
     <span class="n">_md</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">md</span> <span class="ow">or</span> <span class="p">{})</span>
     <span class="n">_md</span><span class="p">[</span><span class="s2">&quot;hints&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span>
         <span class="s2">&quot;dimensions&quot;</span><span class="p">,</span>
-        <span class="p">[((</span><span class="sa">f</span><span class="s2">&quot;start_</span><span class="si">{</span><span class="n">fly_motor</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,),</span> <span class="s2">&quot;primary&quot;</span><span class="p">)]</span> <span class="o">+</span> <span class="p">[((</span><span class="n">motor</span><span class="o">.</span><span class="n">name</span><span class="p">,),</span> <span class="s2">&quot;primary&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">motor</span> <span class="ow">in</span> <span class="n">motors</span><span class="p">],</span>
+        <span class="p">[((</span><span class="sa">f</span><span class="s2">&quot;start_</span><span class="si">{</span><span class="n">fly_motor</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,),</span> <span class="s2">&quot;primary&quot;</span><span class="p">)]</span>
+        <span class="o">+</span> <span class="p">[((</span><span class="n">motor</span><span class="o">.</span><span class="n">name</span><span class="p">,),</span> <span class="s2">&quot;primary&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">motor</span> <span class="ow">in</span> <span class="n">motors</span><span class="p">],</span>
     <span class="p">)</span>
     <span class="c1"># soft signal to use for tracking pixel edges</span>
     <span class="n">px_start</span> <span class="o">=</span> <span class="n">Signal</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;start_</span><span class="si">{</span><span class="n">fly_motor</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="n">Kind</span><span class="o">.</span><span class="n">normal</span><span class="p">)</span>
@@ -506,11 +520,15 @@
     <span class="c1"># check the speed</span>
     <span class="n">low</span><span class="p">,</span> <span class="n">high</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">fly_motor</span><span class="o">.</span><span class="n">velocity</span><span class="o">.</span><span class="n">limits</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">speed</span> <span class="o">&lt;</span> <span class="n">low</span> <span class="ow">or</span> <span class="n">speed</span> <span class="o">&gt;</span> <span class="n">high</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The fly scan velocity is </span><span class="si">{}</span><span class="s2">. &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">speed</span><span class="p">)</span> <span class="o">+</span>
-                         <span class="s2">&quot;It is out of the range of the motor speed: (</span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">).&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">))</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;The fly scan velocity is </span><span class="si">{}</span><span class="s2">. &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">speed</span><span class="p">)</span>
+            <span class="o">+</span> <span class="s2">&quot;It is out of the range of the motor speed: (</span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">).&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">)</span>
+        <span class="p">)</span>
     <span class="k">if</span> <span class="n">move_velocity</span> <span class="o">&lt;</span> <span class="n">low</span> <span class="ow">or</span> <span class="n">move_velocity</span> <span class="o">&gt;</span> <span class="n">high</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The move velocity is </span><span class="si">{}</span><span class="s2">. &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">move_velocity</span><span class="p">)</span> <span class="o">+</span>
-                         <span class="s2">&quot;It is out of the range of the motor speed: (</span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">).&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">))</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;The move velocity is </span><span class="si">{}</span><span class="s2">. &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">move_velocity</span><span class="p">)</span>
+            <span class="o">+</span> <span class="s2">&quot;It is out of the range of the motor speed: (</span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">).&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">)</span>
+        <span class="p">)</span>
 
     <span class="nd">@bpp</span><span class="o">.</span><span class="n">reset_positions_decorator</span><span class="p">([</span><span class="n">fly_motor</span><span class="o">.</span><span class="n">velocity</span><span class="p">])</span>
     <span class="nd">@bpp</span><span class="o">.</span><span class="n">set_run_key_decorator</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;xrd_map_</span><span class="si">{</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -584,10 +602,10 @@
     <span class="n">shutter</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span>
     <span class="n">shutter_open</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">,</span>
     <span class="n">shutter_close</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">,</span>
-    <span class="n">shutter_wait_open</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">,</span>
-    <span class="n">shutter_wait_close</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">,</span>
+    <span class="n">shutter_wait_open</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">shutter_wait_close</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
     <span class="n">take_dark</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="n">md</span><span class="o">=</span><span class="kc">None</span>
+    <span class="n">md</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">Generator</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Scan over a mesh; each motor is on an independent trajectory.</span>
 
@@ -651,7 +669,8 @@
         <span class="k">raise</span> <span class="n">TomoPlanError</span><span class="p">(</span><span class="s2">&quot;Missing arguments for the motors.&quot;</span><span class="p">)</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">%</span> <span class="mi">4</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">TomoPlanError</span><span class="p">(</span>
-            <span class="s2">&quot;The arguments must be in format `motor1, start1, end1, number1, motor2, start2, end2, number2, ...`&quot;</span><span class="p">)</span>
+            <span class="s2">&quot;The arguments must be in format `motor1, start1, end1, number1, motor2, start2, end2, number2, ...`&quot;</span>
+        <span class="p">)</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">detectors</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">TomoPlanError</span><span class="p">(</span><span class="s2">&quot;dets cannot be an empty list.&quot;</span><span class="p">)</span>
 
@@ -691,7 +710,9 @@
 
     <span class="n">plan</span> <span class="o">=</span> <span class="n">bp</span><span class="o">.</span><span class="n">grid_scan</span><span class="p">(</span><span class="n">detectors</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">snake_axes</span><span class="o">=</span><span class="n">snake</span><span class="p">,</span> <span class="n">per_step</span><span class="o">=</span><span class="n">_per_step</span><span class="p">,</span> <span class="n">md</span><span class="o">=</span><span class="n">_md</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">take_dark</span><span class="p">:</span>
-        <span class="n">plan</span> <span class="o">=</span> <span class="n">bpp</span><span class="o">.</span><span class="n">pchain</span><span class="p">(</span><span class="n">bps</span><span class="o">.</span><span class="n">mv</span><span class="p">(</span><span class="n">shutter</span><span class="p">,</span> <span class="n">shutter_open</span><span class="p">),</span> <span class="n">bps</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">shutter_wait_open</span><span class="p">),</span> <span class="n">plan</span><span class="p">)</span>
+        <span class="n">plan</span> <span class="o">=</span> <span class="n">bpp</span><span class="o">.</span><span class="n">pchain</span><span class="p">(</span>
+            <span class="n">bps</span><span class="o">.</span><span class="n">mv</span><span class="p">(</span><span class="n">shutter</span><span class="p">,</span> <span class="n">shutter_open</span><span class="p">),</span> <span class="n">bps</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">shutter_wait_open</span><span class="p">),</span> <span class="n">plan</span>
+        <span class="p">)</span>
     <span class="n">plan</span> <span class="o">=</span> <span class="n">bpp</span><span class="o">.</span><span class="n">finalize_wrapper</span><span class="p">(</span><span class="n">plan</span><span class="p">,</span> <span class="n">bps</span><span class="o">.</span><span class="n">mv</span><span class="p">(</span><span class="n">shutter</span><span class="p">,</span> <span class="n">shutter_close</span><span class="p">))</span>
     <span class="k">return</span> <span class="p">(</span><span class="k">yield from</span> <span class="n">plan</span><span class="p">)</span></div>
 
@@ -705,8 +726,8 @@
     <span class="n">shutter</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span>
     <span class="n">shutter_open</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">,</span>
     <span class="n">shutter_close</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">,</span>
-    <span class="n">shutter_wait</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">,</span>
-    <span class="n">md</span><span class="o">=</span><span class="kc">None</span>
+    <span class="n">shutter_wait</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">md</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">Generator</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Scan over a mesh; each motor is on an independent trajectory.</span>
 
@@ -766,7 +787,8 @@
         <span class="k">raise</span> <span class="n">TomoPlanError</span><span class="p">(</span><span class="s2">&quot;Missing arguments for the motors.&quot;</span><span class="p">)</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">%</span> <span class="mi">4</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">TomoPlanError</span><span class="p">(</span>
-            <span class="s2">&quot;The arguments must be in format `motor1, start1, end1, number1, motor2, start2, end2, number2, ...`&quot;</span><span class="p">)</span>
+            <span class="s2">&quot;The arguments must be in format `motor1, start1, end1, number1, motor2, start2, end2, number2, ...`&quot;</span>
+        <span class="p">)</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">detectors</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">TomoPlanError</span><span class="p">(</span><span class="s2">&quot;dets cannot be an empty list.&quot;</span><span class="p">)</span>
 
@@ -790,13 +812,15 @@
         <span class="n">dark_plan</span><span class="p">(</span><span class="n">detectors</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
         <span class="n">bps</span><span class="o">.</span><span class="n">mv</span><span class="p">(</span><span class="n">shutter</span><span class="p">,</span> <span class="n">shutter_open</span><span class="p">),</span>
         <span class="n">bps</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">shutter_wait</span><span class="p">),</span>
-        <span class="n">bp</span><span class="o">.</span><span class="n">grid_scan</span><span class="p">(</span><span class="n">detectors</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">snake_axes</span><span class="o">=</span><span class="n">snake</span><span class="p">,</span> <span class="n">md</span><span class="o">=</span><span class="n">_md</span><span class="p">)</span>
+        <span class="n">bp</span><span class="o">.</span><span class="n">grid_scan</span><span class="p">(</span><span class="n">detectors</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">snake_axes</span><span class="o">=</span><span class="n">snake</span><span class="p">,</span> <span class="n">md</span><span class="o">=</span><span class="n">_md</span><span class="p">),</span>
     <span class="p">)</span>
     <span class="n">plan</span> <span class="o">=</span> <span class="n">bpp</span><span class="o">.</span><span class="n">finalize_wrapper</span><span class="p">(</span><span class="n">plan</span><span class="p">,</span> <span class="n">bps</span><span class="o">.</span><span class="n">mv</span><span class="p">(</span><span class="n">shutter</span><span class="p">,</span> <span class="n">shutter_close</span><span class="p">))</span>
     <span class="k">return</span> <span class="p">(</span><span class="k">yield from</span> <span class="n">plan</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="loop_forever"><a class="viewcode-back" href="../../apis.html#crystalmapping.plans.loop_forever">[docs]</a><span class="k">def</span> <span class="nf">loop_forever</span><span class="p">(</span><span class="n">motor</span><span class="p">:</span> <span class="n">ophyd</span><span class="o">.</span><span class="n">Device</span><span class="p">,</span> <span class="n">left</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">right</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">Generator</span><span class="p">[</span><span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+<div class="viewcode-block" id="loop_forever"><a class="viewcode-back" href="../../apis.html#crystalmapping.plans.loop_forever">[docs]</a><span class="k">def</span> <span class="nf">loop_forever</span><span class="p">(</span>
+    <span class="n">motor</span><span class="p">:</span> <span class="n">ophyd</span><span class="o">.</span><span class="n">Device</span><span class="p">,</span> <span class="n">left</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">right</span><span class="p">:</span> <span class="nb">float</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">Generator</span><span class="p">[</span><span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
     <span class="sd">&quot;&quot;&quot;Move motor from left to right and right to left repeatedly until t seconds pass&quot;&quot;&quot;</span>
     <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
         <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">mv</span><span class="p">(</span><span class="n">motor</span><span class="p">,</span> <span class="n">left</span><span class="p">)</span>
