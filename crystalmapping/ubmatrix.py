@@ -1,11 +1,6 @@
-import typing
 import numpy as np
 
-try:
-    from diffpy.structure import Lattice, loadStructure, Structure
-except ImportError:
-    Structure = typing.Any
-    Lattice = typing.Any
+from diffpy.structure import Lattice, loadStructure, Structure
 from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
 
 
@@ -39,7 +34,9 @@ def _sin(deg: float) -> float:
     return np.sin(np.deg2rad(deg))
 
 
-def _get_U_from_cart_and_inst(h1: np.ndarray, h2: np.ndarray, u1: np.ndarray, u2: np.ndarray) -> np.ndarray:
+def _get_U_from_cart_and_inst(
+    h1: np.ndarray, h2: np.ndarray, u1: np.ndarray, u2: np.ndarray
+) -> np.ndarray:
     """Calculate the U matrix from the h vectors in crystal cartesian coordinates and instrument coordinate."""
     # get the third vector perpendicular to the plane
     h3 = _cross_product(h1, h2)
@@ -58,15 +55,21 @@ def _get_B_from_cell(lat: Lattice) -> np.ndarray:
     return np.array(
         [
             [lat.ar, lat.br * _cos(lat.gammar), lat.cr * _cos(lat.betar)],
-            [0., lat.br * _sin(lat.gammar), -lat.cr * _sin(lat.betar) * _cos(lat.alpha)],
-            [0., 0., 1 / lat.c]
+            [
+                0.0,
+                lat.br * _sin(lat.gammar),
+                -lat.cr * _sin(lat.betar) * _cos(lat.alpha),
+            ],
+            [0.0, 0.0, 1 / lat.c],
         ]
     )
 
 
 def _get_vout_from_geo(x: float, y: float, geo: AzimuthalIntegrator) -> np.ndarray:
     """Get the output beam vector. A vector form sample to the diffraction spot."""
-    xyz = np.concatenate(geo.calc_pos_zyx(None, np.array([y]), np.array([x]))).squeeze()[::-1]
+    xyz = np.concatenate(
+        geo.calc_pos_zyx(None, np.array([y]), np.array([x]))
+    ).squeeze()[::-1]
     return xyz
 
 
@@ -74,7 +77,7 @@ def _get_u_from_geo(x: float, y: float, geo: AzimuthalIntegrator) -> np.ndarray:
     """Get the unit vector of the Q."""
     vout = _get_vout_from_geo(x, y, geo)
     vout /= np.linalg.norm(vout)
-    vin = np.array([0., 0., 1.])
+    vin = np.array([0.0, 0.0, 1.0])
     # wavelength unit: m, vdiff unit: A.
     vdiff = (vout - vin) / (geo.wavelength * 1e10)
     return vdiff
@@ -114,13 +117,20 @@ class UBMatrix:
         The B matrix for column vectors.
     """
 
-    def __init__(self, h1: np.ndarray = None, h2: np.ndarray = None, u1: np.ndarray = None, u2: np.ndarray = None,
-                 lat: Lattice = None, geo: AzimuthalIntegrator = None):
+    def __init__(
+        self,
+        h1: np.ndarray = None,
+        h2: np.ndarray = None,
+        u1: np.ndarray = None,
+        u2: np.ndarray = None,
+        lat: Lattice = None,
+        geo: AzimuthalIntegrator = None,
+    ):
         self.h1 = h1
         self.h2 = h2
         self.u1 = u1
         self.u2 = u2
-        self._lat = lat
+        self._lat: Lattice = lat
         self.geo = geo
         self.invB = None
         self.U = self.get_U() if self.able_to_get_U() else None
@@ -173,7 +183,7 @@ class UBMatrix:
         return
 
     @property
-    def lat(self):
+    def lat(self) -> Lattice:
         return self._lat
 
     @lat.setter
@@ -218,7 +228,9 @@ class UBMatrix:
             raise UBMatrixError("`self.B` is None.")
         return np.matmul(self.invB, v.T).T
 
-    def get_U_from_two_points(self, xy1: np.ndarray, hkl1: np.ndarray, xy2: np.ndarray, hkl2: np.ndarray) -> None:
+    def get_U_from_two_points(
+        self, xy1: np.ndarray, hkl1: np.ndarray, xy2: np.ndarray, hkl2: np.ndarray
+    ) -> None:
         """Get the U matrix from two x, y pixel coordinates on the detector and their hkl."""
         self.set_u1_from_xy(xy1)
         self.set_u2_from_xy(xy2)

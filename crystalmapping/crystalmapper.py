@@ -2,29 +2,42 @@ import bisect
 import itertools
 import math
 import pathlib
+import sys
 import typing
 from collections import defaultdict
+from dataclasses import dataclass
+from heapq import heappop, heappush
 
-import pyFAI
-import yaml
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import pyFAI
 import tqdm
 import trackpy as tp
 import xarray as xr
+import yaml
+from diffpy.structure import Lattice, Structure, loadStructure
 from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
-from xarray.plot import FacetGrid
 from pyFAI.calibrant import Cell
-from diffpy.structure import loadStructure, Structure, Lattice
-
+from xarray.plot import FacetGrid
 
 from .ubmatrix import UBMatrix
 
 _VERBOSE = 1
 COLORS = list(plt.rcParams["axes.prop_cycle"].by_key()["color"])
 HKL = np.ndarray
+Matrix = np.ndarray
+T = typing
+BlueskyRun = typing.Any
+
+
+def _str_matrix(data: np.ndarray) -> str:
+    s = [[str(e) for e in row] for row in data]
+    lens = [max(map(len, col)) for col in zip(*s)]
+    fmt = "\t".join("{{:{}}}".format(x) for x in lens)
+    table = [fmt.format(*row) for row in s]
+    return "\n".join(table)
 
 
 def _tableize(df):
@@ -75,6 +88,15 @@ def _tableize(df):
     return "\n".join(out)
 
 
+def _get_n_largest(lst: T.Iterable[T.Any], n: int) -> T.List[T.Tuple]:
+    res = []
+    for item in lst:
+        heappush(res, item)
+        if len(res) > n:
+            heappop(res)
+    return res
+
+
 def set_verbose(level: int) -> None:
     global _VERBOSE
     _VERBOSE = level
@@ -83,23 +105,6 @@ def set_verbose(level: int) -> None:
 def _my_print(*args, **kwargs) -> None:
     if _VERBOSE > 0:
         print(*args, **kwargs)
-
-
-def plot_real_aspect(
-    xarr: xr.DataArray, *args, alpha: float = 1.6, **kwargs
-) -> xr.plot.FacetGrid:
-    """Visualize two dimensional arr as a color map. The color ranges from median - alpha * std to median +
-    alpha * std."""
-    facet = xarr.plot(*args, **kwargs, **_get_vlim(xarr, alpha))
-    _set_real_aspect(facet.axes)
-    return facet
-
-
-def _get_vlim(xarr: xr.DataArray, alpha: float) -> dict:
-    """Get vmin, vmax using mean and std."""
-    mean = xarr.mean()
-    std = xarr.std()
-    return {"vmin": max(0.0, mean - alpha * std), "vmax": mean + alpha * std}
 
 
 def _set_real_aspect(axes: typing.Union[plt.Axes, typing.Iterable[plt.Axes]]) -> None:
@@ -246,7 +251,7 @@ def _limit_3std(da: xr.DataArray) -> typing.Tuple[float, float]:
 
     """
     m, s = da.mean(), da.std()
-    return m - 3 * s, m + 3 * s
+    return max(0.0, m - 3 * s), m + 3 * s
 
 
 def _plot_crystal_maps(
@@ -278,6 +283,10 @@ def _plot_crystal_maps(
     vmin, vmax = limit_func(da)
     kwargs.setdefault("vmax", vmax)
     kwargs.setdefault("vmin", vmin)
+    kwargs.setdefault("size", 5.0)
+    kwargs.setdefault(
+        "aspect",
+    )
     facet = da.plot.imshow(**kwargs)
     _set_real_aspect(facet.axes)
     if invert_y:
@@ -309,10 +318,7 @@ def _plot_rocking_curves(da: xr.DataArray, **kwargs) -> FacetGrid:
 
 
 def _auto_plot(
-    da: xr.DataArray,
-    title: typing.Tuple[str, str] = None,
-    invert_y: bool = False,
-    **kwargs
+    da: xr.DataArray, title: typing.Tuple[str, str], invert_y: bool, **kwargs
 ) -> FacetGrid:
     """Automatically detect the data type and plot the data array.
 
@@ -354,7 +360,7 @@ def auto_plot_dataset(
     ds: xr.Dataset,
     key: str = "intensity",
     title: typing.Tuple[str, str] = None,
-    invert_y: bool = False,
+    invert_y: bool = True,
     **kwargs
 ):
     facet = _auto_plot(ds[key], title=None, invert_y=invert_y, **kwargs)
@@ -382,286 +388,285 @@ def _set_vlim(
     return
 
 
-def plot_windows(data: xr.Dataset, **kwargs) -> FacetGrid:
-    # get difference
-    diff = data["light"] - data["dark"]
-    diff.attrs = data["light"].attrs
-    # get dataframe
-    df = data[["y", "dy", "x", "dx"]].to_dataframe()
-    # plot
-    facet = diff.plot.imshow(**kwargs)
-    _draw_windows(df, facet.axes)
-    # use real aspect
-    _set_real_aspect(facet.axes)
-    return facet
-
-
 def _get_anlge(v1: np.ndarray, v2: np.ndarray) -> float:
     inner = np.dot(v1, v2)
     inner /= np.linalg.norm(v1) * np.linalg.norm(v2)
     return np.rad2deg(np.arccos(inner))
 
 
+def _show_crystal_maps(
+    data: xr.Dataset, peaks: T.Optional[typing.List[int]], **kwargs
+) -> None:
+    if peaks is not None:
+        data = data.sel({"grain": peaks})
+    facet = auto_plot_dataset(data, **kwargs)
+    facet.fig.tight_layout()
+    return
+
+
+@dataclass
+class AngleComparsion(object):
+
+    h1: HKL
+    h2: HKL
+    angle_sample: float
+    angle_grain: float
+    diff_angle: float
+
+    def __eq__(self, __o: object) -> bool:
+        return self.diff_angle == __o.diff_angle
+
+    def __lt__(self, __o: object) -> bool:
+        return self.diff_angle > __o.diff_angle
+
+
+@dataclass
+class CrystalMapperConfig(object):
+
+    image_data_key: str = "dexela_image"
+    RoI_number: int = 100
+    RoI_half_width: int = 25
+    trackpy_kernel_size: int = 25
+    slice_of_frames: T.Optional[slice] = None
+    dspacing_bounds: T.Optional[T.Tuple[float, float]] = None
+    index_tth_tolerance: float = 0.1
+    index_best_n: int = 3
+    index_all_peaks: bool = True
+
+
 class CrystalMapperError(Exception):
     pass
 
 
+@dataclass
 class CrystalMapper(object):
     """The Calculator of the crystal maps.
-
-    Each of the attribute can be the calculated output and the input for the next step of calculation.
-
-    Attributes
-    ----------
-    frames_arr : DataArray
-        A data array of diffraction data. It is assumed to be a (N, F, Y, X) shape array, where N is the number
-        of exposure, F is the number of the frames in one exposure, the Y is the number of pixels in vertical,
-        X is the number of pixels in horizontal. It can also be (N, Y, X) shape array if there is only one
-        frame in each exposure.
-    dark : ndarray
-        The minimum values on the pixels in whole series of exposures. It is assumed to be the background.
-    light: ndarray
-        The maximum values on the pixels in the whole series of exposures. It is assumed to be a image of all
-        the Bragg peaks on the background.
-    peaks: DataFrame
-        A dataframe records all the peak positions.
-    windows: DataFrame
-        A dataframe records all the center positions and half width of the windows.
-    intensity: ndarray
-        The array of the average intensity in each of the windows in the series of exposures. It has the shape (
-        W, dim_0, dim_1, ...). The W is the number of the windows and the dim_i is the length of the dimension
-        i in the grid scan.
-    bkg_intensity : ndarray
-        The integrated background intensity in the windows.
-    coords : ndarray
-        The coordinates of the dim_0, dim_1, ... in grid scan.
-    metadata : dict
-        The dictionary to record the metadata. There are two important keys: shape, extents. The shape is the
-        number of points in each dimension in the grid scan. It should be a array like (dim_0, dim_1, ...). The
-        extents are the start and end value for each dimension. It should be array like [(start0, end0),
-        (start1, end1), ...]. These two keys are used to calculate the coordinates.
-    ai : AzimuthalIntegrator
-        The class to hold the data of the geometry of the experiments. It is used to index the Q values for each
-        window.
     """
 
-    def __init__(self):
-        # dims: time, ..., pixel_y, pixel_x
-        self.frames_arr: typing.Union[None, xr.DataArray] = None
-        # dims: pixel_y, pixel_x
-        self.dark: typing.Union[None, np.ndarray] = None
-        # dims: pixel_y, pixel_x
-        self.light: typing.Union[None, np.ndarray] = None
-        # index: all_grain
-        self.peaks: typing.Union[None, pd.DataFrame] = None
-        # index: grain
-        self.windows: typing.Union[None, pd.DataFrame] = None
-        # dims: grain, dim_1, ..., dim_n
-        self.intensity: typing.Union[None, np.ndarray] = None
-        # dims: grain
-        self.bkg_intensity: typing.Union[None, np.ndarray] = None
-        # dims: dim_1, ..., dim_n
-        self.coords: typing.Union[None, typing.List[np.ndarray]] = None
-        # keys: shape, extents, snaking
-        self.metadata: typing.Union[None, dict] = None
-        # pyFAI
-        self.ai: typing.Union[None, AzimuthalIntegrator] = None
-        # dims: all two theta
-        self.all_twotheta: typing.Union[None, np.ndarray] = None
-        # dims: all d spacings
-        self.all_dspacing: typing.Union[None, np.ndarray] = None
-        # dims: all d spacings, hkl, element in hkl
-        self.all_hkl: typing.Union[None, np.ndarray] = None
-        # dims: all d spacings
-        self.all_n_hkl: typing.Union[None, np.ndarray] = None
-        # dims: grain, d_idx
-        self.dspacing: typing.Union[None, np.ndarray] = None
-        # dims: grain, d_idx, hkl_idx ,hkl
-        self.hkl: typing.Union[None, np.ndarray] = None
-        # dims: grain, d_idx
-        self.n_hkl: typing.Union[None, np.ndarray] = None
-        # a pyFAI cell object
-        self.cell: typing[None, Cell] = None
-        # column names of the windows
-        self.window_names = frozenset(["x", "y", "dx", "dy", "d", "Q"])
-        # UBmatrix object
-        self.ubmatrix: UBMatrix = UBMatrix()
-        # Result of peak indexing
-        self.peak_indexes = None
+    # configuration
+    _config: T.Optional[CrystalMapperConfig] = None
+    # dims: time, ..., pixel_y, pixel_x
+    _frames_arr: T.Optional[xr.DataArray] = None
+    # dims: pixel_y, pixel_x
+    _dark: T.Optional[np.ndarray] = None
+    # dims: pixel_y, pixel_x
+    _light: T.Optional[np.ndarray] = None
+    # index: all_grain
+    _peaks: T.Optional[pd.DataFrame] = None
+    # index: grain
+    _windows: T.Optional[pd.DataFrame] = None
+    # dims: grain, dim_1, ..., dim_n
+    _intensity: T.Optional[np.ndarray] = None
+    # dims: grain
+    _bkg_intensity: T.Optional[np.ndarray] = None
+    # dims: dim_1, ..., dim_n
+    _coords: T.Optional[typing.List[np.ndarray]] = None
+    # keys: shape, extents, snaking
+    _metadata: T.Optional[dict] = None
+    # pyFAI
+    _ai: T.Optional[AzimuthalIntegrator] = None
+    # dims: all two theta
+    _all_twotheta: T.Optional[np.ndarray] = None
+    # dims: all d spacings
+    _all_dspacing: T.Optional[np.ndarray] = None
+    # dims: all d spacings, hkl, element in hkl
+    _all_hkl: T.Optional[np.ndarray] = None
+    # dims: all d spacings
+    _all_n_hkl: T.Optional[np.ndarray] = None
+    # dims: grain, d_idx
+    _dspacing: T.Optional[np.ndarray] = None
+    # dims: grain, d_idx, hkl_idx ,hkl
+    _hkl: T.Optional[np.ndarray] = None
+    # dims: grain, d_idx
+    _n_hkl: T.Optional[np.ndarray] = None
+    # a pyFAI cell object
+    _cell: T.Optional[Cell] = None
+    # column names of the windows
+    _window_names = frozenset(["x", "y", "dx", "dy", "d", "Q"])
+    # UBmatrix object
+    _ubmatrix: UBMatrix = UBMatrix()
+    # structure
+    _stru: T.Optional[Structure] = None
+    # crystal mapping results
+    _crystal_maps: T.Optional[xr.Dataset] = None
+    # peak indexing results
+    _peak_index: T.Optional[xr.Dataset] = None
 
     def _check_attr(self, name: str):
-        if getattr(self, name) is None:
+        if getattr(self, "_{}".format(name)) is None:
             raise CrystalMapperError(
                 "Attribute '{}' is None. Please set it.".format(name)
             )
-        if name == "metadata" and "shape" not in self.metadata:
+        if name == "metadata" and "shape" not in self._metadata:
             raise CrystalMapperError("There is no key 'shape' in the metadata.")
 
     def _squeeze_shape_and_extents(self) -> None:
         """Squeeze the shape and extents so that it only has the dimension with length > 1."""
         self._check_attr("metadata")
-        shape = self.metadata["shape"]
+        shape = self._metadata["shape"]
         n = len(shape)
         # get the index of the dimension > 1
         index = {i for i in range(n) if shape[i] > 1}
-        self.metadata["shape"] = [shape[i] for i in range(n) if i in index]
-        if "extents" in self.metadata:
-            extents = self.metadata["extents"]
-            self.metadata["extents"] = [extents[i] for i in range(n) if i in index]
+        self._metadata["shape"] = [shape[i] for i in range(n) if i in index]
+        if "extents" in self._metadata:
+            extents = self._metadata["extents"]
+            self._metadata["extents"] = [extents[i] for i in range(n) if i in index]
         return
 
-    def calc_dark_and_light_from_frames_arr(self, index_range: slice = None):
+    def _calc_dark_and_light_from_frames_arr(self, index_range: slice = None):
         """Get the light and dark frame in a series of frames."""
         self._check_attr("frames_arr")
         frames_arr = (
-            self.frames_arr[index_range] if index_range is not None else self.frames_arr
+            self._frames_arr[index_range]
+            if index_range is not None
+            else self._frames_arr
         )
-        self.dark, self.light = _min_and_max_along_time2(frames_arr)
+        self._dark, self._light = _min_and_max_along_time2(frames_arr)
         return
 
-    def calc_peaks_from_dk_sub_frame(
+    def _calc_peaks_from_dk_sub_frame(
         self, radius: typing.Union[int, tuple], *args, **kwargs
     ):
         """Get the Bragg peaks on the light frame."""
         self._check_attr("light")
-        light = self.light if self.dark is None else self.light - self.dark
-        self.peaks = tp.locate(light, 2 * radius + 1, *args, **kwargs)
+        light = self._light if self._dark is None else self._light - self._dark
+        self._peaks = tp.locate(light, 2 * radius + 1, *args, **kwargs)
         return
 
-    def calc_windows_from_peaks(self, max_num: int, width: int):
+    def _calc_windows_from_peaks(self, max_num: int, width: int):
         """Gte the windows for the most brightest Bragg peaks."""
         self._check_attr("peaks")
-        if self.peaks.shape[0] == 0:
+        if self._peaks.shape[0] == 0:
             raise CrystalMapperError(
                 "There is no peak found on the image. Please check your peaks table."
             )
-        df = self.peaks.nlargest(max_num, "mass")
-        self.windows = _create_windows_from_width(df, width)
+        df = self._peaks.nlargest(max_num, "mass")
+        self._windows = _create_windows_from_width(df, width)
         return
 
-    def calc_intensity_in_windows(self):
+    def _calc_intensity_in_windows(self):
         """Get the intensity array as a function of index of frames."""
         self._check_attr("frames_arr")
         self._check_attr("windows")
-        self.intensity = _track_peaks(self.frames_arr, self.windows)
-        if self.dark is not None:
-            self.bkg_intensity = _average_intensity(self.dark, self.windows)
-            self.intensity = (
-                self.intensity.transpose() - self.bkg_intensity
+        self._intensity = _track_peaks(self._frames_arr, self._windows)
+        if self._dark is not None:
+            self._bkg_intensity = _average_intensity(self._dark, self._windows)
+            self._intensity = (
+                self._intensity.transpose() - self._bkg_intensity
             ).transpose()
         else:
             _my_print("Attribute 'dark' is None. No background correction.")
         return
 
-    def assign_q_values(self) -> None:
+    def _assign_q_values(self) -> None:
         """Assign the values to the windows dataframe."""
         self._check_attr("ai")
         self._check_attr("windows")
         # change the unit of Q to inverse A
-        qa = self.ai.qArray() / 10.0
-        self.windows["Q"] = [qa[row.y, row.x] for row in self.windows.itertuples()]
+        qa = self._ai.qArray() / 10.0
+        self._windows["Q"] = [qa[row.y, row.x] for row in self._windows.itertuples()]
         return
 
-    def assign_d_values(self) -> None:
-        self.windows["d"] = 2.0 * math.pi / self.windows["Q"]
+    def _assign_d_values(self) -> None:
+        self._windows["d"] = 2.0 * math.pi / self._windows["Q"]
         return
 
     def _Q_to_twotheta(self, Q: np.ndarray):
         self._check_attr("ai")
         # change wavelength unit to A
-        w = self.ai.wavelength * 1e10
+        w = self._ai.wavelength * 1e10
         return np.rad2deg(2.0 * np.arcsin(Q * w / (4.0 * math.pi)))
 
     def _d_to_twotheta(self, d: np.ndarray):
         return self._Q_to_twotheta(2.0 * math.pi / d)
 
-    def assign_twotheta_values(self) -> None:
+    def _assign_twotheta_values(self) -> None:
         # wavelength meter, Q inverse nanometer
-        self.windows["twotheta"] = self._Q_to_twotheta(self.windows["Q"])
+        self._windows["twotheta"] = self._Q_to_twotheta(self._windows["Q"])
         return
 
-    def reshape_intensity(self) -> None:
+    def _reshape_intensity(self) -> None:
         """Reshape the intensity array."""
         self._check_attr("metadata")
         self._check_attr("intensity")
-        self.intensity = _reshape_to_ndarray(self.intensity, self.metadata)
+        self._intensity = _reshape_to_ndarray(self._intensity, self._metadata)
         return
 
-    def calc_coords(self) -> None:
+    def _calc_coords(self) -> None:
         """Calculate the coordinates."""
         self._check_attr("metadata")
-        self.coords = _get_coords(self.metadata)
+        self._coords = _get_coords(self._metadata)
         return
 
-    def dark_to_xarray(self) -> xr.DataArray:
+    def _dark_to_xarray(self) -> xr.DataArray:
         """Convert the dark image to DataArray."""
         self._check_attr("dark")
-        return xr.DataArray(self.dark, dims=["pixel_y", "pixel_x"])
+        return xr.DataArray(self._dark, dims=["pixel_y", "pixel_x"])
 
-    def light_to_xarray(self) -> xr.DataArray:
+    def _light_to_xarray(self) -> xr.DataArray:
         """Convert the light image to DataArray"""
         self._check_attr("light")
-        return xr.DataArray(self.light, dims=["pixel_y", "pixel_x"])
+        return xr.DataArray(self._light, dims=["pixel_y", "pixel_x"])
 
-    def intensity_to_xarray(self) -> xr.DataArray:
+    def _intensity_to_xarray(self) -> xr.DataArray:
         """Convert the intensity array to DataArray"""
         self._check_attr("intensity")
-        dims = ["dim_{}".format(i) for i in range(self.intensity.ndim - 1)]
-        arr = xr.DataArray(self.intensity, dims=["grain"] + dims)
-        if self.coords is not None:
-            coords = self.coords_to_dict()
+        dims = ["dim_{}".format(i) for i in range(self._intensity.ndim - 1)]
+        arr = xr.DataArray(self._intensity, dims=["grain"] + dims)
+        if self._coords is not None:
+            coords = self._coords_to_dict()
             arr = arr.assign_coords(coords)
         return arr
 
-    def windows_to_xarray(self) -> xr.DataArray:
+    def _windows_to_xarray(self) -> xr.DataArray:
         """Convert the windows DataFrame to xarray."""
         self._check_attr("windows")
-        return self.windows.rename_axis(index="grain").to_xarray()
+        return self._windows.rename_axis(index="grain").to_xarray()
 
-    def coords_to_dict(self) -> dict:
+    def _coords_to_dict(self) -> dict:
         """Convert the coordinates to dictionary."""
         self._check_attr("coords")
-        return {"dim_{}".format(i): coord for i, coord in enumerate(self.coords)}
+        return {"dim_{}".format(i): coord for i, coord in enumerate(self._coords)}
 
-    def dspacing_to_xarray(self) -> xr.DataArray:
+    def _dspacing_to_xarray(self) -> xr.DataArray:
         return xr.DataArray(
-            self.dspacing, dims=["grain", "d_idx"], attrs={"units": r"nm$^{-1}$"}
+            self._dspacing, dims=["grain", "d_idx"], attrs={"units": r"nm$^{-1}$"}
         )
 
-    def hkl_to_xarray(self) -> xr.DataArray:
-        return xr.DataArray(self.hkl, dims=["grain", "d_idx", "hkl_idx", "reciprocal"])
+    def _hkl_to_xarray(self) -> xr.DataArray:
+        return xr.DataArray(self._hkl, dims=["grain", "d_idx", "hkl_idx", "reciprocal"])
 
-    def n_hkl_to_xarray(self) -> xr.DataArray:
-        return xr.DataArray(self.n_hkl, dims=["grain", "d_idx"])
+    def _n_hkl_to_xarray(self) -> xr.DataArray:
+        return xr.DataArray(self._n_hkl, dims=["grain", "d_idx"])
 
-    def to_dataset(self) -> xr.Dataset:
+    def _to_dataset(self) -> xr.Dataset:
         """Convert the calculation results to DataSet."""
         dct = dict()
-        if self.dark is not None:
-            dct["dark"] = self.dark_to_xarray()
-        if self.light is not None:
-            dct["light"] = self.light_to_xarray()
-        if self.intensity is not None:
-            dct["intensity"] = self.intensity_to_xarray()
+        if self._dark is not None:
+            dct["dark"] = self._dark_to_xarray()
+        if self._light is not None:
+            dct["light"] = self._light_to_xarray()
+        if self._intensity is not None:
+            dct["intensity"] = self._intensity_to_xarray()
         ds = xr.Dataset(dct)
-        if self.windows is not None:
-            ds2 = self.windows_to_xarray()
+        if self._windows is not None:
+            ds2 = self._windows_to_xarray()
             ds = ds.merge(ds2)
-        if self.dspacing is not None:
-            ds = ds.assign({"dspacing": self.dspacing_to_xarray()})
-        if self.hkl is not None:
-            ds = ds.assign({"hkl": self.hkl_to_xarray()})
-        if self.n_hkl is not None:
-            ds = ds.assign({"n_hkl": self.n_hkl_to_xarray()})
-
-        if self.metadata is not None:
-            ds = ds.assign_attrs(**self.metadata)
+        if self._dspacing is not None:
+            ds = ds.assign({"dspacing": self._dspacing_to_xarray()})
+        if self._hkl is not None:
+            ds = ds.assign({"hkl": self._hkl_to_xarray()})
+        if self._n_hkl is not None:
+            ds = ds.assign({"n_hkl": self._n_hkl_to_xarray()})
+        if self._metadata is not None:
+            ds = ds.assign_attrs(**self._metadata)
+        self._crystal_maps = ds
         return ds
 
-    def get_frame(self, index: int) -> xr.DataArray:
+    def _get_frame(self, index: int) -> xr.DataArray:
         """Get the frame of at the index."""
         self._check_attr("frames_arr")
-        frames = self.frames_arr[index].compute()
+        frames = self._frames_arr[index].compute()
         if frames.ndim == 3:
             return frames.mean(axis=0)
         elif frames.ndim == 2:
@@ -674,7 +679,7 @@ class CrystalMapper(object):
     def show_frame(self, index: int, *args, **kwargs) -> FacetGrid:
         """Show the frame at that index."""
         self._check_attr("frames_arr")
-        frame = self.get_frame(index)
+        frame = self._get_frame(index)
         _set_vlim(kwargs, frame, 4.0)
         facet = frame.plot.imshow(*args, **kwargs)
         _set_real_aspect(facet.axes)
@@ -684,13 +689,13 @@ class CrystalMapper(object):
         """Show the windows on the frame at the index."""
         self._check_attr("windows")
         facet = self.show_frame(index, *args, **kwargs)
-        _draw_windows(self.windows, facet.axes)
+        _draw_windows(self._windows, facet.axes)
         return facet
 
     def show_dark(self, *args, **kwargs) -> FacetGrid:
         """Show the dark image."""
         self._check_attr("dark")
-        frame = self.dark_to_xarray()
+        frame = self._dark_to_xarray()
         _set_vlim(kwargs, frame, 4.0)
         facet = frame.plot.imshow(*args, **kwargs)
         _set_real_aspect(facet.axes)
@@ -699,7 +704,7 @@ class CrystalMapper(object):
     def show_light(self, *args, **kwargs) -> FacetGrid:
         """Show the light image."""
         self._check_attr("light")
-        frame = self.light_to_xarray()
+        frame = self._light_to_xarray()
         _set_vlim(kwargs, frame, 4.0)
         facet = frame.plot.imshow(*args, **kwargs)
         _set_real_aspect(facet.axes)
@@ -708,9 +713,9 @@ class CrystalMapper(object):
     def show_light_sub_dark(self, *args, **kwargs) -> FacetGrid:
         """Show the dark subtracted light image."""
         self._check_attr("light")
-        light = self.light_to_xarray()
-        if self.dark is not None:
-            dark = self.dark_to_xarray()
+        light = self._light_to_xarray()
+        if self._dark is not None:
+            dark = self._dark_to_xarray()
             light = np.subtract(light, dark)
         _set_vlim(kwargs, light, 4.0)
         facet = light.plot.imshow(*args, **kwargs)
@@ -722,13 +727,13 @@ class CrystalMapper(object):
         self._check_attr("light")
         self._check_attr("windows")
         facet = self.show_light_sub_dark(*args, **kwargs)
-        _draw_windows(self.windows, facet.axes)
+        _draw_windows(self._windows, facet.axes)
         return facet
 
     def show_intensity(self, **kwargs) -> FacetGrid:
         """Show the intensity array."""
-        arr = self.intensity_to_xarray()
-        return _auto_plot(arr, **kwargs)
+        arr = self._intensity_to_xarray()
+        return _auto_plot(arr, title=None, invert_y=True, **kwargs)
 
     @staticmethod
     def auto_visualize(
@@ -741,126 +746,226 @@ class CrystalMapper(object):
         """Automatically plot the intensity array in the dataset."""
         return auto_plot_dataset(ds, key, title, invert_y, **kwargs)
 
-    def auto_process(
-        self,
-        num_wins: int = 100,
-        wins_width: int = 25,
-        kernel_radius: int = 25,
-        index_filter: slice = None,
-        dspacing_tolerance: typing.Tuple[float, float] = None,
-        **kwargs
-    ) -> None:
-        """Automatically process the data in the standard protocol.
+    def _try_calc_q_and_d(self) -> None:
+        try:
+            self._calc_coords()
+        except CrystalMapperError as e:
+            print(e)
+        return
 
-        The calculation results are saved in attributes.
+    def auto_process(self) -> None:
+        """Automatically process the data in the standard protocol."""
+        self.find_Bragg_spots()
+        self.create_crystal_maps()
+        return
 
-        Parameters
-        ----------
-        num_wins : int
-            The number of windows.
-        wins_width : int
-            The half width of the windows in pixels.
-        kernel_radius : int
-            The radius of the kernel to use in peak finding in pixels. It must be an odd integer.
-        index_filter : slice
-            The index slice of the data to use in the calculation of the dark and light image..
-        dspacing_tolerance : tuple
-            The tolerance to find the d-spacing for ech peak. It is the ratio between the expected and real.
-        kwargs :
-            The keyword arguments of the peak finding function `trackpy.locate`.
+    def tune_RoI(self, number: int, half_width: int) -> None:
+        self._config.RoI_number = number
+        self._config.RoI_half_width = half_width
+        self._align_RoI()
+        self.show_windows()
+        return
 
-        Returns
-        -------
-        None.
-        """
+    def create_crystal_maps(self) -> None:
+        self._align_RoI()
+        self._calc_intensity_in_windows()
+        self._try_reshape_intensity()
+        self._to_dataset()
+        return
+
+    def _align_RoI(self) -> None:
+        self._calc_windows_from_peaks(
+            self._config.RoI_number, self._config.RoI_half_width
+        )
+        return
+
+    def find_Bragg_spots(self) -> None:
         self._squeeze_shape_and_extents()
-        self.calc_dark_and_light_from_frames_arr(index_filter)
-        self.calc_peaks_from_dk_sub_frame(kernel_radius, **kwargs)
-        self.calc_windows_from_peaks(num_wins, wins_width)
-        self.calc_intensity_in_windows()
+        self._calc_dark_and_light_from_frames_arr(self._config.slice_of_frames)
+        self._calc_peaks_from_dk_sub_frame(self._config.trackpy_kernel_size)
+        self._try_calc_coords()
+        self._try_calc_q_and_d()
+        self._try_find_d_spacing(self._config.dspacing_bounds)
+        return
+
+    def _try_reshape_intensity(self):
         try:
-            self.calc_coords()
+            self._reshape_intensity()
         except CrystalMapperError as e:
             print(e)
-        try:
-            self.assign_q_values()
-            self.assign_d_values()
-        except CrystalMapperError as e:
-            print(e)
+
+    def _try_find_d_spacing(self, dspacing_tolerance):
         if dspacing_tolerance is not None:
             try:
-                self.calc_hkls_in_a_range(*dspacing_tolerance)
+                self._calc_hkls_in_a_range(*dspacing_tolerance)
             except CrystalMapperError as e:
                 print(e)
+
+    def _try_calc_q_and_d(self):
         try:
-            self.reshape_intensity()
+            self._assign_q_values()
+            self._assign_d_values()
+            self._assign_twotheta_values()
         except CrystalMapperError as e:
             print(e)
+
+    def _try_calc_coords(self):
+        try:
+            self._calc_coords()
+        except CrystalMapperError as e:
+            print(e)
+
+    def load(
+        self,
+        *,
+        geometry: str = None,
+        structure: str = None,
+        crystal_maps: str = None,
+        peak_index: str = None
+    ) -> None:
+        if geometry:
+            self._load_ai(geometry)
+        if structure:
+            self._load_structure(structure)
+        if crystal_maps:
+            self._load_crystal_maps(crystal_maps)
+        if peak_index:
+            self._load_peak_index(peak_index)
         return
 
-    def load_ai(self, filename: str) -> None:
+    def _load_ai(self, filename: str) -> None:
         ai = pyFAI.load(filename)
-        self.ai = ai
-        self.ubmatrix.geo = ai
+        self._ai = ai
+        self._ubmatrix.geo = ai
         return
 
-    def load_frames_arr(self, filename: str) -> None:
-        self.frames_arr = xr.load_dataarray(filename)
+    def _load_frames_arr(self, filename: str) -> None:
+        self._frames_arr = xr.load_dataarray(filename)
         return
 
-    def load_dataset(self, ds: xr.Dataset) -> None:
+    def _load_crystal_maps(self, filename: str) -> None:
+        ds = xr.load_dataset(filename)
+        self._crystal_maps = ds
         w_names = []
         for name in ds:
-            if name not in self.window_names:
+            if name not in self._window_names:
                 self.__setattr__(str(name), ds[name].values)
             else:
                 w_names.append(name)
-        self.windows = ds[w_names].to_dataframe()
+        self._windows = ds[w_names].to_dataframe()
+        try:
+            self._assign_q_values()
+            self._assign_d_values()
+        except CrystalMapperError as error:
+            print(error)
         return
 
-    def load_cell(self, filename: str) -> None:
+    def _load_cell(self, filename: str) -> None:
         with pathlib.Path(filename).open("r") as f:
             dct = yaml.safe_load(f)
-        self.cell = Cell(**dct)
+        self._cell = Cell(**dct)
         return
 
-    def load_cell_from_cif(self, cif_file: str) -> None:
+    def _load_cell_from_cif(self, cif_file: str) -> None:
         stru: Structure = loadStructure(cif_file, fmt="cif")
         lat: Lattice = stru.lattice
-        self.cell = Cell(
+        self._set_cell_by_lat(lat)
+        return
+
+    def _set_cell_by_lat(self, lat: Lattice) -> None:
+        self._cell = Cell(
             a=lat.a, b=lat.b, c=lat.c, alpha=lat.alpha, beta=lat.beta, gamma=lat.gamma
         )
         return
 
-    def calc_hkls_in_a_range(self, lb: float, rb: float):
+    def _load_peak_index(self, nc_file: str) -> None:
+        self._peak_index = xr.load_dataset(nc_file)
+        return
+
+    def _load_structure(self, filename: str) -> None:
+        stru: Structure = loadStructure(filename)
+        self._stru = stru
+        self._ubmatrix.lat = stru.lattice
+        self._set_cell_by_lat(stru.lattice)
+        return
+
+    def load_bluesky_v1(self, run: BlueskyRun) -> None:
+        self._metadata = dict(run.start)
+        self._frames_arr = run.xarray_dask()[self._config.image_data_key]
+        return
+
+    def load_bluesky_v2(self, run: BlueskyRun) -> None:
+        self._metadata = dict(run.metadata["start"])
+        self._frames_arr = run.primary.to_dask()[self._config.image_data_key]
+        return
+
+    def save(
+        self,
+        *,
+        geometry: str = None,
+        structure: str = None,
+        crystal_maps: str = None,
+        peak_index: str = None
+    ):
+        if geometry:
+            self._check_attr("ai")
+            self._save_ai(geometry)
+        if structure:
+            self._check_attr("stru")
+            self._save_structure(structure)
+        if crystal_maps:
+            self._check_attr("crystal_maps")
+            self._save_crystal_maps(crystal_maps)
+        if peak_index:
+            self._check_attr("peak_index")
+            self._save_peak_index(peak_index)
+        return
+
+    def _save_peak_index(self, filename: str) -> None:
+        self._peak_index.to_netcdf(filename)
+        return
+
+    def _save_ai(self, poni_file: str) -> None:
+        self._ai.save(poni_file)
+        return
+
+    def _save_crystal_maps(self, filename: str) -> None:
+        self._crystal_maps.to_netcdf(filename)
+        return
+
+    def _save_structure(self, filename: str) -> None:
+        self._stru.write(filename, "cif")
+        return
+
+    def _calc_hkls_in_a_range(self, lb: float, rb: float):
         """Calculate the hkl in a range of Q value."""
         self._check_attr("windows")
         self._check_attr("cell")
-        if "d" not in self.windows.columns:
-            if "Q" not in self.windows.columns:
-                self.assign_q_values()
-            self.assign_d_values()
-        if self.all_dspacing is None:
+        if "d" not in self._windows.columns:
+            if "Q" not in self._windows.columns:
+                self._assign_q_values()
+            self._assign_d_values()
+        if self._all_dspacing is None:
             self._calc_ds_and_hkls()
         dspacings = []
         hkls = []
         n_hkls = []
-        for d in self.windows["d"]:
+        for d in self._windows["d"]:
             l_idx, r_idx = self._search_hkls_idx(d, lb, rb)
-            dspacing = self.all_dspacing[l_idx:r_idx]
+            dspacing = self._all_dspacing[l_idx:r_idx]
             dspacings.append(dspacing)
-            hkl = self.all_hkl[l_idx:r_idx]
+            hkl = self._all_hkl[l_idx:r_idx]
             hkls.append(hkl)
-            n_hkl = self.all_n_hkl[l_idx:r_idx]
+            n_hkl = self._all_n_hkl[l_idx:r_idx]
             n_hkls.append(n_hkl)
-        self.dspacing = self._stack_arrays(dspacings)
-        self.hkl = self._stack_arrays(hkls)
-        self.n_hkl = self._stack_arrays(n_hkls)
+        self._dspacing = self._stack_arrays(dspacings)
+        self._hkl = self._stack_arrays(hkls)
+        self._n_hkl = self._stack_arrays(n_hkls)
         return
 
     def _calc_ds_and_hkls(self) -> None:
-        dmin = self.windows["d"].min()
-        dhkls = sorted(self.cell.d_spacing(dmin).values())
+        dmin = self._windows["d"].min()
+        dhkls = sorted(self._cell.d_spacing(dmin).values())
         if len(dhkls) == 0:
             raise CrystalMapperError(
                 "There is no matching d-spacing. Please check the cell attribute."
@@ -879,19 +984,19 @@ class CrystalMapper(object):
             # pad the hkls to be the same number of rows
             hkls[i] = self._pad_array(hkl, (max_row, 3))
         # reverse the order to make sure the two theta is increasing
-        self.all_dspacing = np.asarray(ds[::-1])
-        self.all_twotheta = self._d_to_twotheta(self.all_dspacing)
-        self.all_hkl = np.asarray(hkls[::-1])
-        self.all_n_hkl = np.asarray(rows[::-1])
+        self._all_dspacing = np.asarray(ds[::-1])
+        self._all_twotheta = self._d_to_twotheta(self._all_dspacing)
+        self._all_hkl = np.asarray(hkls[::-1])
+        self._all_n_hkl = np.asarray(rows[::-1])
         return
 
     def _search_hkls_idx(
         self, d: float, lb: float, rb: float
     ) -> typing.Tuple[int, int]:
-        ratio = np.divide(self.all_dspacing, d)
+        ratio = np.divide(self._all_dspacing, d)
         return bisect.bisect(ratio, lb), bisect.bisect(ratio, rb)
 
-    def calc_hkls_lower_and_upper(self, two_theta_tolerance: float) -> None:
+    def _calc_hkls_lower_and_upper(self, two_theta_tolerance: float) -> None:
         """Calculate hkls and assign them to the peaks.
 
         Find the upper and lower bound of the Q for each Q value in the dataframe. The hkls that have the upper
@@ -902,60 +1007,50 @@ class CrystalMapper(object):
         del two_theta_tolerance
         self._check_attr("windows")
         self._check_attr("cell")
-        if "twotheta" not in self.windows.columns:
-            if "Q" not in self.windows.columns:
-                self.assign_q_values()
-            self.assign_d_values()
-            self.assign_twotheta_values()
-        if self.all_dspacing is None:
+        if "twotheta" not in self._windows.columns:
+            if "Q" not in self._windows.columns:
+                self._assign_q_values()
+            self._assign_d_values()
+            self._assign_twotheta_values()
+        if self._all_dspacing is None:
             self._calc_ds_and_hkls()
         uppers, lowers = [], []
-        for tt in self.windows["twotheta"]:
+        for tt in self._windows["twotheta"]:
             l, u = self._search_bounds(tt - dtt, tt + dtt)
             uppers.append(u)
             lowers.append(l)
-        self.windows["lower_idx"] = lowers
-        self.windows["upper_idx"] = uppers
+        self._windows["lower_idx"] = lowers
+        self._windows["upper_idx"] = uppers
         return
 
-    def calc_diff_2theta(self) -> None:
+    def _calc_diff_2theta(self) -> None:
         idxs = []
         diffs = []
         for tt, lower, upper in zip(
-            self.windows["twotheta"],
-            self.windows["lower_idx"],
-            self.windows["upper_idx"],
+            self._windows["twotheta"],
+            self._windows["lower_idx"],
+            self._windows["upper_idx"],
         ):
-            ltt = self.all_twotheta[lower] if lower >= 0 else float("-inf")
-            utt = self.all_twotheta[upper] if upper >= 0 else float("inf")
+            ltt = self._all_twotheta[lower] if lower >= 0 else float("-inf")
+            utt = self._all_twotheta[upper] if upper >= 0 else float("inf")
             l_diff, u_diff = tt - ltt, utt - tt
             idx, diff = (lower, l_diff) if l_diff <= u_diff else (upper, u_diff)
             idxs.append(idx)
             diffs.append(diff)
-        self.windows["closet_idx"] = idxs
-        self.windows["diff"] = diffs
-        return
-
-    def calc_hkls(self, two_theta_tolerance: float) -> None:
-        """Find the losest d spacing for each peak and record its index. Use the dspacing to find possible hkls.
-
-        Returns
-        -------
-        None. The results are saved in self.windows.
-        """
-        self.calc_hkls_lower_and_upper(two_theta_tolerance)
+        self._windows["closet_idx"] = idxs
+        self._windows["diff"] = diffs
         return
 
     def _search_bounds(
         self, lower_tt: float, upper_tt: float
     ) -> typing.Tuple[int, int]:
-        left = np.searchsorted(self.all_twotheta, lower_tt, side="left")
-        right = max(np.searchsorted(self.all_twotheta, upper_tt, side="right") - 1, 0)
+        left = np.searchsorted(self._all_twotheta, lower_tt, side="left")
+        right = max(np.searchsorted(self._all_twotheta, upper_tt, side="right") - 1, 0)
         # if no peaks found, use the closet
         if right < left:
             d1, d2 = (
-                lower_tt - self.all_twotheta[right],
-                upper_tt - self.all_twotheta[left],
+                lower_tt - self._all_twotheta[right],
+                upper_tt - self._all_twotheta[left],
             )
             if d1 < d2:
                 left = right
@@ -963,16 +1058,16 @@ class CrystalMapper(object):
                 right = left
         return left, right
 
-    def load_structure(self, cif_file: str):
+    def _load_lat_for_ubmatrix(self, cif_file: str):
         """Load the structure of the sample. The `cell` and `ubmatrix.lattice` will be loaded."""
-        self.ubmatrix.set_lat_from_cif(cif_file)
-        lat = self.ubmatrix.lat
-        self.cell = Cell(
+        self._ubmatrix.set_lat_from_cif(cif_file)
+        lat = self._ubmatrix.lat
+        self._cell = Cell(
             a=lat.a, b=lat.b, c=lat.c, alpha=lat.alpha, beta=lat.beta, gamma=lat.gamma
         )
         return
 
-    def search_two_peaks(self, peaks: typing.List[int]) -> typing.Tuple[int, int]:
+    def _search_two_peaks(self, peaks: typing.List[int]) -> typing.Tuple[int, int]:
         """Find the two peaks that have the smallest difference between the measured dspacings and those in
         structure. Return their index.
 
@@ -987,12 +1082,12 @@ class CrystalMapper(object):
         self._check_attr("windows")
         # check
         if (
-            "diff" not in self.windows.columns
-            or "closet_idx" not in self.windows.columns
+            "diff" not in self._windows.columns
+            or "closet_idx" not in self._windows.columns
         ):
             raise CrystalMapperError("Please run calc_hkls first.")
         # get
-        df = self.windows.loc[peaks]
+        df = self._windows.loc[peaks]
         # run
         sel_df: pd.DataFrame = df.nsmallest(2, columns=["diff_dspacing"])
         if sel_df.shape[0] < 2:
@@ -1002,38 +1097,27 @@ class CrystalMapper(object):
         return tuple(sel_df.index.tolist())
 
     def _get_hkls(self, left: int, right: int):
-        ns = self.all_n_hkl[left:right + 1]
-        hklss = self.all_hkl[left:right + 1]
+        ns = self._all_n_hkl[left : right + 1]
+        hklss = self._all_hkl[left : right + 1]
         return np.concatenate([hkls[:n] for n, hkls in zip(ns, hklss)])
 
     def _loss(self, hkls: np.ndarray) -> float:
         cost = self._get_losses(hkls)
         return np.min(cost)
 
-    def _get_losses(self, hkls):
+    def _get_losses(self, hkls: np.ndarray) -> np.ndarray:
         rhkls = np.around(hkls)
-        vs = self.ubmatrix.reci_to_cart(hkls)
-        rvs = self.ubmatrix.reci_to_cart(rhkls)
+        vs = self._ubmatrix.reci_to_cart(hkls)
+        rvs = self._ubmatrix.reci_to_cart(rhkls)
         diffs_sq = np.sum((rvs - vs) ** 2, axis=1)
         lens_sq = np.sum(vs**2, axis=1)
         cost = np.sqrt(diffs_sq / lens_sq)
         return cost
 
-    def index_peaks(
+    def _index_peaks(
         self, peak1: int, peak2: int, others: typing.List[int]
     ) -> typing.Generator[xr.Dataset, None, None]:
-        """Use the hkls of two peaks to calculate U matrixs and use them to index other peaks. Return the hkls.
-
-        Parameters
-        ----------
-        peak1
-        peak2
-        others
-
-        Returns
-        -------
-
-        """
+        """Use the hkls of two peaks to calculate U matrixs and use them to index other peaks. Return the hkls."""
         self._check_attr("all_n_hkl")
         self._check_attr("all_hkl")
         self._check_attr("windows")
@@ -1051,41 +1135,41 @@ class CrystalMapper(object):
         return
 
     def _get_hkls_for_peak(self, peak1: int) -> np.ndarray:
-        row1 = self.windows.loc[peak1]
+        row1 = self._windows.loc[peak1]
         l1, r1 = int(row1["lower_idx"]), int(row1["upper_idx"])
         # a list of hkls, zero padded
         hkls1 = self._get_hkls(l1, r1)
         return hkls1
 
     def _set_us_for_peaks(self, peak1: int, peak2: int) -> None:
-        row1 = self.windows.loc[peak1]
-        row2 = self.windows.loc[peak2]
+        row1 = self._windows.loc[peak1]
+        row2 = self._windows.loc[peak2]
         xy1 = np.array([row1["x"], row1["y"]])
         xy2 = np.array([row2["x"], row2["y"]])
-        self.ubmatrix.set_u1_from_xy(xy1)
-        self.ubmatrix.set_u2_from_xy(xy2)
+        self._ubmatrix.set_u1_from_xy(xy1)
+        self._ubmatrix.set_u2_from_xy(xy2)
         return
 
     def _index_others(
         self, h1: np.ndarray, h2: np.ndarray, others: typing.List[int]
     ) -> xr.Dataset:
-        self.ubmatrix.set_h1_from_hkl(h1)
-        self.ubmatrix.set_h2_from_hkl(h2)
-        self.ubmatrix.get_U()
+        self._ubmatrix.set_h1_from_hkl(h1)
+        self._ubmatrix.set_h2_from_hkl(h2)
+        self._ubmatrix.get_U()
         res = [h1, h2]
         for k in others:
-            row = self.windows.loc[k]
+            row = self._windows.loc[k]
             xy = np.array([row["x"], row["y"]])
-            u = self.ubmatrix.xy_to_lab(xy)
-            v = self.ubmatrix.lab_to_cart(u)
-            hkl = self.ubmatrix.cart_to_reci(v)
+            u = self._ubmatrix.xy_to_lab(xy)
+            v = self._ubmatrix.lab_to_cart(u)
+            hkl = self._ubmatrix.cart_to_reci(v)
             res.append(hkl)
         res = np.asarray(res)
         lval = self._loss(res[2:])
         ds = xr.Dataset({"hkls": (["peak", "hkl"], res), "loss": lval})
         return ds
 
-    def index_peaks_in_one_grain(
+    def _index_peaks_in_one_grain(
         self, peaks: typing.List[int]
     ) -> typing.Generator[xr.Dataset, None, None]:
         """Find the two peaks that have the smallest difference between the measured dspacings and those in
@@ -1102,7 +1186,7 @@ class CrystalMapper(object):
         """
         for p1, p2 in itertools.combinations(peaks, 2):
             others = [p for p in peaks if p != p1 and p != p2]
-            yield from self.index_peaks(p1, p2, others)
+            yield from self._index_peaks(p1, p2, others)
         return
 
     @staticmethod
@@ -1124,14 +1208,14 @@ class CrystalMapper(object):
         return np.stack(arrs)
 
     def _get_angle_in_sample_frame(self) -> float:
-        return _get_anlge(self.ubmatrix.u1, self.ubmatrix.u2)
+        return _get_anlge(self._ubmatrix.u1, self._ubmatrix.u2)
 
     def _get_anlge_in_grain_frame(self) -> float:
-        return _get_anlge(self.ubmatrix.h1, self.ubmatrix.h2)
+        return _get_anlge(self._ubmatrix.h1, self._ubmatrix.h2)
 
     def _get_anlge_h1_h2(
         self, peak1: int, peak2: int
-    ) -> typing.Generator[tuple, None, None]:
+    ) -> typing.Generator[AngleComparsion, None, None]:
         hkls1 = self._get_hkls_for_peak(peak1)
         hkls2 = self._get_hkls_for_peak(peak2)
         self._set_us_for_peaks(peak1, peak2)
@@ -1140,52 +1224,39 @@ class CrystalMapper(object):
         n2 = hkls2.shape[0]
         for i in range(n1):
             for j in range(n2):
-                self.ubmatrix.set_h1_from_hkl(hkls1[i])
-                self.ubmatrix.set_h2_from_hkl(hkls2[j])
+                self._ubmatrix.set_h1_from_hkl(hkls1[i])
+                self._ubmatrix.set_h2_from_hkl(hkls2[j])
                 angle = self._get_anlge_in_grain_frame()
                 if 1e-8 < abs(angle) < (180.0 - 1e-8):
-                    yield abs(
-                        angle - angle0
-                    ), angle0, angle, self.ubmatrix.h1, self.ubmatrix.h2
+                    diff = abs(angle - angle0)
+                    yield AngleComparsion(
+                        self._ubmatrix.h1, self._ubmatrix.h2, angle0, angle, diff
+                    )
         return
 
     def _get_hkl_for_a_peak(self, peak: int) -> HKL:
-        row = self.windows.loc[peak]
+        row = self._windows.loc[peak]
         xy = np.array([row["x"], row["y"]])
-        u = self.ubmatrix.xy_to_lab(xy)
-        v = self.ubmatrix.lab_to_cart(u)
-        hkl = self.ubmatrix.cart_to_reci(v)
+        u = self._ubmatrix.xy_to_lab(xy)
+        v = self._ubmatrix.lab_to_cart(u)
+        hkl = self._ubmatrix.cart_to_reci(v)
         return hkl
 
     def _get_indexing_result_for_peaks(self, peaks: typing.List[int]) -> np.ndarray:
         return np.stack([self._get_hkl_for_a_peak(peak) for peak in peaks])
 
-    def _index_peaks2(
-        self, peak1: int, peak2: int, peaks: typing.List[int]
-    ) -> typing.Generator[xr.Dataset, None, None]:
-        lst = sorted(self._get_anlge_h1_h2(peak1, peak2), key=(lambda tup: tup[0]))
-        for da, a0, a, h1, h2 in lst:
-            self.ubmatrix.h1 = h1
-            self.ubmatrix.h2 = h2
-            self.ubmatrix.get_U()
-            hkls = self._get_indexing_result_for_peaks(peaks)
-            loss = self._loss(hkls)
-            yield xr.Dataset(
-                {
-                    "hkls": (["peak", "hkl"], hkls),
-                    "loss": loss,
-                    "angle_sample": a0,
-                    "angle_grain": a,
-                    "diff_angle": da,
-                    "peak1": peak1,
-                    "peak2": peak2,
-                }
-            )
-        return
+    def _get_U(self, h1: HKL, h2: HKL) -> Matrix:
+        self._ubmatrix.h1 = h1
+        self._ubmatrix.h2 = h2
+        self._ubmatrix.get_U()
+        return self._ubmatrix.U
 
-    def index_peaks_in_one_grain2(
-        self, peaks: typing.List[int], first_n: int, index_all: bool = False
-    ) -> xr.Dataset:
+    def _guess_miller_index(
+        self,
+        peaks: typing.List[int],
+        first_n: T.Optional[int] = None,
+        index_all: bool = True,
+    ) -> None:
         """Guess the index of the peaks in one grain.
 
         Parameters
@@ -1203,80 +1274,151 @@ class CrystalMapper(object):
         The candidate is one possible guess. The peaks are rows of all hkls. And the hkls are the
         h, k and l index in that row.
         """
-        n = len(peaks)
-        all_peaks = self.windows.index.values if index_all else peaks
-
-        def _gen():
-            for i, j in itertools.permutations(range(n), 2):
-                for m, result in enumerate(
-                    self._index_peaks2(peaks[i], peaks[j], all_peaks)
-                ):
-                    if m > first_n - 1:
-                        break
-                    yield result.expand_dims("candidate")
-
-        final = xr.concat(_gen(), dim="candidate")
-        final = final.assign_coords({"peak": all_peaks})
-        self.peak_indexes = final
-        return final
-
-    def _print_group(self, data: xr.Dataset) -> None:
-        print(
-            "Use peak {} and peak {} in the indexing.".format(
-                data["peak1"].item(), data["peak2"].item()
+        if first_n is None:
+            first_n = sys.maxsize
+        N = len(peaks)
+        # collect results
+        lsts = defaultdict(list)
+        all_peaks = self._windows.index.values if index_all else np.array(peaks)
+        M = len(all_peaks)
+        # fill in the results
+        count = 0
+        for i, j in itertools.permutations(range(N), 2):
+            other = (all_peaks != peaks[i]) & (all_peaks != peaks[j])
+            results = self._get_anlge_h1_h2(peaks[i], peaks[j])
+            results: T.List[AngleComparsion] = _get_n_largest(results, first_n)
+            for ac in results:
+                u = self._get_U(ac.h1, ac.h2)
+                hkls = self._get_indexing_result_for_peaks(all_peaks)
+                losses = self._get_losses(hkls)
+                loss = np.min(losses[other])
+                lsts["U"].append(u)
+                lsts["hkls"].append(hkls)
+                lsts["losses"].append(losses)
+                lsts["loss"].append(loss)
+                lsts["angle_sample"].append(ac.angle_sample)
+                lsts["angle_grain"].append(ac.angle_grain)
+                lsts["diff_angle"].append(ac.diff_angle)
+                lsts["peak1"].append(peaks[i])
+                lsts["peak2"].append(peaks[j])
+                count += 1
+        if count == 0:
+            raise CrystalMapperError(
+                "No peaking indexing results were found. Please tune up the tth tolerance or checking the data."
             )
+        # summarize the results
+        self._peak_index = xr.Dataset(
+            {
+                "U": (["candidate", "dim_0", "dim_1"], lsts["U"]),
+                "hkls": (["candidate", "peak", "dim_1"], lsts["hkls"]),
+                "losses": (["candidate", "peak"], lsts["losses"]),
+                "loss": (["candidate"], lsts["loss"]),
+                "angle_sample": (["candidate"], lsts["angle_sample"], {"units": "deg"}),
+                "angle_grain": (["candidate"], lsts["angle_grain"], {"units": "deg"}),
+                "diff_angle": (["candidate"], lsts["diff_angle"], {"units": "deg"}),
+                "peak1": (["candidate"], lsts["peak1"]),
+                "peak2": (["candidate"], lsts["peak2"]),
+            },
+            {"peak": (["peak"], all_peaks)},
         )
-        header = self._get_header_df(data)
-        print(_tableize(header))
-        print("Below is the prediction.")
-        body = self._get_body_df(data)
-        print(_tableize(body))
-        print()
         return
 
-    def _get_body_df(self, data):
-        dct = defaultdict(list)
-        n = data.sizes["peak"]
-        for i in range(n):
-            sel = data.isel({"peak": i})
-            dct["peak"].append(sel["peak"].item())
-            dct["predicted hkl"].append(
-                "{:.2f}, {:.2f}, {:.2f}".format(*sel["hkls"].values)
-            )
-            dct["rounded predicted hkl"].append(
-                "{:.0f}, {:.0f}, {:.0f}".format(*sel["hkls"].values)
-            )
-        df = pd.DataFrame(dct)
-        return df
+    def prepare_for_indexing(self) -> None:
+        """Prepare for the peak indexing."""
+        self._calc_hkls_lower_and_upper(self._config.index_tth_tolerance)
+        return
 
-    def _get_header_df(self, data) -> pd.DataFrame:
-        dct = defaultdict(list)
-        dct["angle in sample frame"].append(
-            "{:.2f}".format(data["angle_sample"].item())
+    def guess_miller_index(self, peaks: T.List[int]) -> None:
+        """Guess the index of the peaks in one grain.
+
+        Parameters
+        ----------
+        peaks : typing.List[int]
+            The index of the peaks in the table.
+        """
+        return self._guess_miller_index(
+            peaks, self._config.index_best_n, self._config.index_all_peaks
         )
-        dct["angle in grain frame"].append("{:.2f}".format(data["angle_grain"].item()))
-        dct["difference in angles"].append("{:.2f}".format(data["diff_angle"].item()))
-        dct["badness of the prediction"].append("{:.4f}".format(data["loss"].item()))
-        df = pd.DataFrame(dct)
-        return df
 
-    def print_indexing_result(self, data: xr.Dataset) -> None:
+    def print_indexing_result(self, best_n: T.Optional[int] = None) -> None:
         """Print out the indexing results.
 
         Parameters
         ----------
-        data : xr.Dataset
-            The data set of returned by the index_peaks_in_one_grain2.
+        best_n : T.Optional[int], optional
+            Only print out best n results, by default None
         """
-        data = data.sortby("loss")
+        if not best_n:
+            best_n = self._peak_index.sizes["candidate"]
+        data = self._peak_index.sortby("loss").isel({"candidate": slice(0, best_n)})
+        return self._print_indexing_result(data)
+
+    def _print_indexing_result(self, data: xr.Dataset) -> None:
         n = data.sizes["candidate"]
         for i in range(n):
             sel = data.isel({"candidate": i})
             self._print_group(sel)
         return
 
-    def show_peaks(
-        self, data: xr.Dataset, peaks: typing.List[int], size: float = 5.0
+    def _print_group(self, data: xr.Dataset) -> None:
+        data = data.sortby("losses")
+        # part 1
+        print(
+            "Use peak '{}' and peak '{}' in the indexing.".format(
+                data["peak1"].item(), data["peak2"].item()
+            )
+        )
+        header = self._get_header_df(data)
+        print()
+        print(_tableize(header))
+        print()
+        # part 2
+        print("The U matrix is shown below.")
+        print()
+        print(_str_matrix(np.round(data["U"].data, 2)))
+        print()
+        # part 3
+        print("Below is the prediction of the hkls.")
+        print()
+        body = self._get_body_df(data)
+        print(_tableize(body))
+        print()
+        return
+
+    def _get_body_df(self, data):
+        n = data.sizes["peak"]
+        lst1 = [""] * n
+        lst2 = [""] * n
+        lst3 = [""] * n
+        lst4 = [0.0] * n
+        for i in range(n):
+            sel = data.isel({"peak": i})
+            lst1[i] = sel["peak"].item()
+            lst2[i] = "{:.2f}, {:.2f}, {:.2f}".format(*sel["hkls"].values)
+            lst3[i] = "{:.0f}, {:.0f}, {:.0f}".format(*sel["hkls"].values)
+            lst4[i] = np.round(sel["losses"].item() * 100.0, 1)
+        df = pd.DataFrame(
+            {
+                "peak ID": lst1,
+                "guessed hkl": lst2,
+                "integer hkl": lst3,
+                "indexing error [%]": lst4,
+            }
+        )
+        return df
+
+    def _get_header_df(self, data) -> pd.DataFrame:
+        dct = defaultdict(list)
+        dct["measured angle [deg]"].append("{:.2f}".format(data["angle_sample"].item()))
+        dct["predicted angle [deg]"].append("{:.2f}".format(data["angle_grain"].item()))
+        dct["min indexing error [%]"].append(
+            "{:.1f}".format(data["loss"].item() * 100.0)
+        )
+        df = pd.DataFrame(dct)
+        return df
+
+    def show_crystal_maps(
+        self, peaks: T.Optional[T.List[int]] = None, **kwargs
     ) -> None:
         """Show the crystal maps of certain peaks.
 
@@ -1287,11 +1429,4 @@ class CrystalMapper(object):
         size: float
             The size of one cystal map.
         """
-        sel = data.sel({"grain": peaks})
-        shape = data["intensity"].shape
-        facet = auto_plot_dataset(
-            sel, invert_y=True, col_wrap=10, aspect=shape[2] / shape[1], size=size
-        )
-        facet.fig.tight_layout()
-        plt.show()
-        return
+        return _show_crystal_maps(self._crystal_maps, peaks, **kwargs)

@@ -1,0 +1,158 @@
+##############################################################################
+#                                                                            #
+# O-Ti             # TiO2rut                                       # 1819970 #
+#                                                                            #
+##############################################################################
+#                                                                            #
+#                           Pearson's Crystal Data                           #
+#      Crystal Structure Database for Inorganic Compounds (on CD-ROM)        #
+#                              Release 2010/11                               #
+#                  Editors: Pierre Villars and Karin Cenzual                 #
+#                                                                            #
+#   Copyright (c) ASM International & Material Phases Data System (MPDS),    #
+# Switzerland & National Institute for Materials Science (NIMS), Japan, 2010 #
+#  (Data generated pre-2002: Copyright (c) ASM International & MPDS & NIMS;  #
+#             post-2001: Copyright (c) ASM International & MPDS)             #
+#                   All rights reserved. Version 2010.06                     #
+#                                                                            #
+#   This copy of Pearson's Crystal Data is licensed to:                      #
+#   Dr. Peter Khalifah, Stony Brook University                               #
+#                                                                            #
+##############################################################################
+
+data_1819970
+_audit_creation_date                     2021-02-24
+_audit_creation_method
+;
+Pearson's Crystal Data browser
+;
+#_database_code_PCD                      1819970
+
+# Entry summary
+
+_chemical_formula_structural             TiO2
+_chemical_formula_sum                    O2Ti
+_chemical_name_mineral                   rutile
+_chemical_compound_source                ?
+_chemical_name_structure_type            TiO2,tP6,136
+_chemical_formula_weight                 79.9
+_chemical_melting_point                  ?
+
+# Bibliographic data
+
+_publ_section_title
+;
+Study on phase relations, crystal structure and magnetic properties of Ti1-xCrxO2+-d system
+;
+_journal_coden_ASTM                      WLHPAR
+_journal_year                            2007
+_journal_volume                          56
+_journal_page_first                      3379
+_journal_page_last                       3387
+_journal_language                        Chinese
+loop_
+ _publ_author_name
+ _publ_author_address
+'Li J.'
+;
+Southwest University of Science and Technology
+School of Materials Science and Engineering
+Mianyang
+China
+;
+'Song G.B.'
+;
+Southwest University of Science and Technology
+School of Materials Science and Engineering
+Mianyang
+China
+;
+'Wang M.L.'
+;
+Southwest University of Science and Technology
+School of Materials Science and Engineering
+Mianyang
+China
+;
+'Zhang B.S.'
+;
+Southwest University of Science and Technology
+School of Materials Science and Engineering
+Mianyang
+China
+;
+
+# Standardized crystallographic data
+
+_cell_length_a                           4.5918
+_cell_length_b                           4.5918
+_cell_length_c                           2.9588
+_cell_angle_alpha                        90
+_cell_angle_beta                         90
+_cell_angle_gamma                        90
+_cell_volume                             62.4
+_cell_formula_units_Z                    2
+_symmetry_Int_Tables_number              136
+_symmetry_space_group_name_H-M           P42/mnm
+loop_
+ _symmetry_equiv_pos_site_id
+ _symmetry_equiv_pos_as_xyz
+ 1 'x, y, z'
+ 2 '0.5-x, 0.5+y, 0.5-z'
+ 3 '0.5-x, 0.5+y, 0.5+z'
+ 4 '-x, -y, -z'
+ 5 '-x, -y, z'
+ 6 '0.5-y, 0.5+x, 0.5-z'
+ 7 '0.5-y, 0.5+x, 0.5+z'
+ 8 '-y, -x, -z'
+ 9 '-y, -x, z'
+ 10 '0.5+x, 0.5-y, 0.5-z'
+ 11 '0.5+x, 0.5-y, 0.5+z'
+ 12 'x, y, -z'
+ 13 '0.5+y, 0.5-x, 0.5-z'
+ 14 '0.5+y, 0.5-x, 0.5+z'
+ 15 'y, x, -z'
+ 16 'y, x, z'
+loop_
+ _atom_type_symbol
+ _atom_type_oxidation_number
+ O 0
+ Ti 0
+loop_
+ _atom_site_label
+ _atom_site_type_symbol
+ _atom_site_Wyckoff_symbol
+ _atom_site_symmetry_multiplicity
+ _atom_site_fract_x
+ _atom_site_fract_y
+ _atom_site_fract_z
+ _atom_site_occupancy
+ O O f 4 0.305 0.305 0 1
+ Ti Ti a 2 0 0 0 1
+
+
+_exptl_crystal_colour                    ?
+_exptl_crystal_density_meas              ?
+_cell_measurement_temperature            ?
+_cell_measurement_radiation              'X-rays, Cu Ka'
+_cell_measurement_wavelength             1.54056
+_cell_measurement_reflns_used            ?
+_diffrn_ambient_temperature              ?
+_diffrn_measurement_device               'automatic diffractometer'
+_diffrn_measurement_device_type          'Rigaku D-Max'
+_diffrn_radiation_type                   'X-rays, Cu Ka'
+_diffrn_radiation_wavelength             1.54056
+_diffrn_reflns_number                    ?
+_diffrn_reflns_theta_min                 5
+_diffrn_reflns_theta_max                 45
+_exptl_absorpt_coefficient_mu            ?
+_exptl_absorpt_correction_type           ?
+_computing_structure_solution            'starting values from the literature'
+_refine_ls_number_parameters             ?
+_refine_ls_number_reflns                 ?
+_refine_ls_R_factor_all                  ?
+_refine_ls_wR_factor_all                 ?
+_computing_structure_refinement          DBWS-9411
+
+# End of data set 1819970
+
