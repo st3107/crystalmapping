@@ -13,14 +13,21 @@ crystalmapping.servers
 .. automodule:: crystalmapping.servers
    :members:
 
-crystalmapping.utils
+crystalmapping.crystalmapper
 --------------------
 
-.. automodule:: crystalmapping.utils
+.. automodule:: crystalmapping.crystalmapper
    :members:
 
 crystalmapping.callbacks
 ------------------------
 
 .. automodule:: crystalmapping.callbacks
+   :members:
+
+
+crystalmapping.peakindexer
+--------------------
+
+.. automodule:: crystalmapping.peakindexer
    :members:
