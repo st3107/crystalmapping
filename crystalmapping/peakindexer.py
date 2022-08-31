@@ -184,21 +184,17 @@ class PeakIndexer(BaseObject):
 
     def _set_pred_reciprocal(self) -> None:
         dmin = self._peaks["d"].min()
-        dhkls = sorted(self._cell.d_spacing(dmin).values())
-        if len(dhkls) == 0:
+        dhkls = sorted(self._cell.d_spacing(dmin).values(), reverse=True)
+        n = len(dhkls)
+        if n == 0:
             raise IndexerError(
                 "There is no matching d-spacing. Please check the cell attribute."
             )
-        ds = []
-        hkls = []
-        rows = []
-        for dhkl in dhkls:
-            ds.append(dhkl[0])
-            hkl = np.asarray(dhkl[1:])
-            rows.append(hkl.shape[0])
-            hkls.append(hkl)
-        # reverse the order to make sure the two theta is increasing
-        d = np.asarray(ds[::-1])
+        d = np.zeros((n,))
+        hkls = [None] * n
+        for i in range(n):
+            d[i] = float(dhkls[i][0])
+            hkls[i] = np.array(dhkls[i][1:])
         q = 2.0 * math.pi / d
         w = self._ai.wavelength * 1e10
         tth = np.rad2deg(2.0 * np.arcsin(q * w / (4.0 * math.pi)))
