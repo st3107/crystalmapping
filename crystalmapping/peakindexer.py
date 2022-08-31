@@ -285,7 +285,8 @@ class PeakIndexer(BaseObject):
         res: T.List[IndexResult] = _get_n_largest(gen(), best_n)
         if len(res) == 0:
             raise IndexerError(
-                "No peaking indexing results were found. Please tune up the tth or agl tolerance or checking the data."
+                "No peaking indexing results were found. Please tune up the tth or"
+                "agl tolerance or checking the data."
             )
         # summarize the results
         self._peak_index = xr.Dataset(

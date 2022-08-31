@@ -1,6 +1,5 @@
 from bluesky import RunEngine
 from bluesky.callbacks.best_effort import BestEffortCallback
-from bluesky.simulators import summarize_plan
 
 import crystalmapping.plans as plans
 import crystalmapping.sim as sim
