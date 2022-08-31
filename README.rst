@@ -24,7 +24,7 @@ Update
 
 Run the following commands to update.
 
-``bash update.sh <the name of the conda environment>```
+``bash update.sh <the name of the conda environment>``
 
 
 Examples
