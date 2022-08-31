@@ -16,34 +16,18 @@ Run the bash script in a `bash` shell.
 
 ``bash install.sh``
 
+It will start an interactive session for the installation.
+
+
 Update
 ======
 
 Run the following commands to update.
 
-``conda actiavte <the name of the env that you created>```
+``bash update.sh <the name of the conda environment>```
 
-``git pull origin main``
-
-``python -m pip install .``
-
-If some of the dependencies are out of date,
-
-``conda install -c conda-forge --file requirements-dev.txt --yes``
 
 Examples
 ========
 
-Please ask Songsheng to give the access rights to this google folder.
-
-https://drive.google.com/drive/folders/13DJwlidULEW7Zgaubd3fiIlQeL7OiYZF?usp=sharing
-
-Then, there is two example jupter notebooks in the `notebooks` folder that you can run in JupyterLab.
-
-Below is the notebook to show how to get crystal maps and table of peaks information from the diffraction data.
-
-01_analysis_example_code.ipynb
-
-Below is the notebook to show how to guess the indexes of the peaks from the same grain using the results from the crystal mappings in the former step.
-
-08_how_to_run_peak_indexing.ipynb
+The example of usage will be released to the public after the publication of the paper.
