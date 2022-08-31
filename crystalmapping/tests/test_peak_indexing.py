@@ -2,7 +2,7 @@ from crystalmapping.peakindexer import PeakIndexer, IndexerConfig
 from crystalmapping.datafiles import CEO2_PONI_FILE, CRYSTAL_MAPS_FILE, TIO2_CIF_FILE
 
 
-def test_indexing_real_data(tmpdir):
+def test_indexing_real_data():
     GRPOUP1 = [16, 59, 37]
     config = IndexerConfig()
     pi = PeakIndexer(config)

@@ -63,6 +63,8 @@ def _plot_crystal_maps(
     """
     if limit_func is None:
         limit_func = _limit_3std
+    dims = [k for k in da.sizes.keys() if k != "grain"]
+    sizes = [da.sizes[d] for d in dims]
     kwargs.setdefault("col", "grain")
     kwargs.setdefault("col_wrap", 20)
     kwargs.setdefault("sharex", False)
@@ -72,9 +74,7 @@ def _plot_crystal_maps(
     kwargs.setdefault("vmax", vmax)
     kwargs.setdefault("vmin", vmin)
     kwargs.setdefault("size", 5.0)
-    kwargs.setdefault(
-        "aspect",
-    )
+    kwargs.setdefault("aspect", sizes[1] / sizes[0])
     facet = da.plot.imshow(**kwargs)
     _set_real_aspect(facet.axes)
     if invert_y:

@@ -1,6 +1,5 @@
 import itertools
 import math
-import sys
 import typing
 from collections import defaultdict
 from dataclasses import dataclass
@@ -111,11 +110,30 @@ class AngleComparsion(object):
 
 
 @dataclass
+class IndexResult(object):
+
+    peak1: int
+    peak2: int
+    u_mat: Matrix
+    hkls: np.ndarray
+    losses: np.ndarray
+    loss: np.ndarray
+    ac: AngleComparsion
+
+    def __eq__(self, __o: object) -> bool:
+        return self.loss == __o.loss
+
+    def __lt__(self, __o: object) -> bool:
+        return self.loss < __o.loss
+
+
+@dataclass
 class IndexerConfig(Config):
 
     dspacing_bounds: T.Optional[T.Tuple[float, float]] = None
+    index_agl_tolerance: float = 1.0
     index_tth_tolerance: float = 0.1
-    index_best_n: int = 3
+    index_best_n: int = 256
     index_all_peaks: bool = True
 
 
@@ -170,7 +188,8 @@ class PeakIndexer(BaseObject):
     def _set_actual_reciprocal(self) -> np.ndarray:
         """Assign the values to the windows dataframe."""
         # change the unit of Q to inverse A
-        self._peaks = self._dataset[["x", "y"]].to_dataframe()
+        self._peaks = self._dataset[["x", "y"]
+                                    ].to_dataframe()
         qa = self._ai.qArray() / 10.0
         w = self._ai.wavelength * 1e10
         y = self._dataset["y"].data
@@ -230,56 +249,68 @@ class PeakIndexer(BaseObject):
         peaks : typing.List[int]
             The index of the peaks in the table.
         """
-        first_n = self._config.index_best_n
         index_all = self._config.index_all_peaks
-        if first_n is None:
-            first_n = sys.maxsize
+        best_n = self._config.index_best_n
         peaks = np.array(peaks)
         n = peaks.shape[0]
         # choose candidates
         candidates = self._get_candidates(peaks)
         # collect results
-        lsts = defaultdict(list)
         all_peaks = self._dataset["grain"].data if index_all else peaks.copy()
         # fill in the results
-        count = 0
-        for i, j in itertools.permutations(range(n), 2):
-            other = (all_peaks != peaks[i]) & (all_peaks != peaks[j])
-            results = self._get_anlge_h1_h2(
-                peaks[i], candidates[i], peaks[j], candidates[j]
-            )
-            results: T.List[AngleComparsion] = _get_n_largest(results, first_n)
-            for ac in results:
-                u = self._get_U(ac.h1, ac.h2)
-                hkls = self._get_indexing_result_for_peaks(all_peaks)
-                losses = self._get_losses(hkls)
-                loss = np.min(losses[other])
-                lsts["U"].append(u)
-                lsts["hkls"].append(hkls)
-                lsts["losses"].append(losses)
-                lsts["loss"].append(loss)
-                lsts["angle_sample"].append(ac.angle_sample)
-                lsts["angle_grain"].append(ac.angle_grain)
-                lsts["diff_angle"].append(ac.diff_angle)
-                lsts["peak1"].append(peaks[i])
-                lsts["peak2"].append(peaks[j])
-                count += 1
-        if count == 0:
+        pairs = tqdm(itertools.permutations(range(n), 2), total=n * (n - 1))
+
+        def gen():
+            for i, j in pairs:
+                other = (all_peaks != peaks[i]) & (all_peaks != peaks[j])
+                results = self._get_anlge_h1_h2(
+                    peaks[i], candidates[i], peaks[j], candidates[j]
+                )
+                for ac in results:
+                    u = self._get_U(ac.h1, ac.h2)
+                    hkls = self._get_indexing_result_for_peaks(all_peaks)
+                    losses = self._get_losses(hkls)
+                    loss = np.min(losses[other])
+                    yield IndexResult(
+                        peak1=peaks[i],
+                        peak2=peaks[j],
+                        u_mat=u,
+                        hkls=hkls,
+                        losses=losses,
+                        loss=loss,
+                        ac=ac,
+                    )
+            return
+
+        res: T.List[IndexResult] = _get_n_largest(gen(), best_n)
+        if len(res) == 0:
             raise IndexerError(
-                "No peaking indexing results were found. Please tune up the tth tolerance or checking the data."
+                "No peaking indexing results were found. Please tune up the tth or agl tolerance or checking the data."
             )
         # summarize the results
         self._peak_index = xr.Dataset(
             {
-                "U": (["candidate", "dim_0", "dim_1"], lsts["U"]),
-                "hkls": (["candidate", "peak", "dim_1"], lsts["hkls"]),
-                "losses": (["candidate", "peak"], lsts["losses"]),
-                "loss": (["candidate"], lsts["loss"]),
-                "angle_sample": (["candidate"], lsts["angle_sample"], {"units": "deg"}),
-                "angle_grain": (["candidate"], lsts["angle_grain"], {"units": "deg"}),
-                "diff_angle": (["candidate"], lsts["diff_angle"], {"units": "deg"}),
-                "peak1": (["candidate"], lsts["peak1"]),
-                "peak2": (["candidate"], lsts["peak2"]),
+                "U": (["candidate", "dim_0", "dim_1"], [x.u_mat for x in res]),
+                "hkls": (["candidate", "peak", "dim_1"], [x.hkls for x in res]),
+                "losses": (["candidate", "peak"], [x.losses for x in res]),
+                "loss": (["candidate"], [x.loss for x in res]),
+                "angle_sample": (
+                    ["candidate"],
+                    [x.ac.angle_sample for x in res],
+                    {"units": "deg"},
+                ),
+                "angle_grain": (
+                    ["candidate"],
+                    [x.ac.angle_grain for x in res],
+                    {"units": "deg"},
+                ),
+                "diff_angle": (
+                    ["candidate"],
+                    [x.ac.diff_angle for x in res],
+                    {"units": "deg"},
+                ),
+                "peak1": (["candidate"], [x.peak1 for x in res]),
+                "peak2": (["candidate"], [x.peak2 for x in res]),
             },
             {"peak": (["peak"], all_peaks)},
         )
@@ -316,22 +347,16 @@ class PeakIndexer(BaseObject):
             return
         n1 = hkls1.shape[0]
         n2 = hkls2.shape[0]
-
-        def gen_pairs():
-            for i in range(n1):
-                for j in range(n2):
-                    yield i, j
-            return
-
-        pairs = tqdm(
-            gen_pairs(), total=(n1 * n2), disable=(not self._config.enable_tqdm)
-        )
-        for i, j in pairs:
-            self._ubmatrix.set_h1_from_hkl(hkls1[i])
-            self._ubmatrix.set_h2_from_hkl(hkls2[j])
-            angle_in_grain = self._get_anlge_in_grain_frame()
-            if 1e-8 < abs(angle_in_grain) < (180.0 - 1e-8):
+        for i in range(n1):
+            for j in range(n2):
+                self._ubmatrix.set_h1_from_hkl(hkls1[i])
+                self._ubmatrix.set_h2_from_hkl(hkls2[j])
+                angle_in_grain = self._get_anlge_in_grain_frame()
+                if not (1e-8 < abs(angle_in_grain) < (180.0 - 1e-8)):
+                    continue
                 diff = abs(angle_in_grain - angle_in_sample)
+                if diff > self._config.index_agl_tolerance:
+                    continue
                 yield AngleComparsion(
                     self._ubmatrix.h1,
                     self._ubmatrix.h2,
