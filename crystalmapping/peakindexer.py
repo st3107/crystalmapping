@@ -2,8 +2,9 @@ import itertools
 import math
 import typing
 from collections import defaultdict
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from heapq import heappop, heappush
+from typing import List
 
 import numpy as np
 import pandas as pd
@@ -14,7 +15,8 @@ from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
 from pyFAI.calibrant import Cell
 from tqdm.auto import tqdm
 
-from .baseobject import BaseObject, Config, Error
+from .baseobject import _auto_plot_dataset, _show_crystal_maps
+from .preprocessor import EulerAngle, Preprocessor
 from .ubmatrix import UBMatrix
 
 HKL = np.ndarray
@@ -93,6 +95,27 @@ def _get_anlge(v1: np.ndarray, v2: np.ndarray) -> float:
     return np.rad2deg(np.arccos(inner))
 
 
+def _get_peaks_table(dataset: xr.Dataset, ai: AzimuthalIntegrator) -> pd.DataFrame:
+    peaks = dataset.to_dataframe()
+    qa = ai.qArray() / 10.0
+    w = ai.wavelength * 1e10
+    y = dataset["y"].data.astype(np.int64)
+    x = dataset["x"].data.astype(np.int64)
+    peaks["Q"] = np.array([qa[yy, xx] for yy, xx in zip(y, x)])
+    peaks["d"] = 2.0 * math.pi / peaks["Q"]
+    peaks["tth"] = np.rad2deg(2.0 * np.arcsin(peaks["Q"] * w / (4.0 * math.pi)))
+    return peaks
+
+
+def _load_datasets(
+    data_files: List[str], euler_angles: List[EulerAngle]
+) -> Preprocessor:
+    pp = Preprocessor("grain", ["x", "y"])
+    for f, a in zip(data_files, euler_angles):
+        pp.load_data(f, *a)
+    return pp
+
+
 @dataclass
 class AngleComparsion(object):
 
@@ -128,7 +151,7 @@ class IndexResult(object):
 
 
 @dataclass
-class IndexerConfig(Config):
+class IndexerConfig(object):
 
     dspacing_bounds: T.Optional[T.Tuple[float, float]] = None
     index_agl_tolerance: float = 1.0
@@ -137,12 +160,12 @@ class IndexerConfig(Config):
     index_all_peaks: bool = True
 
 
-class IndexerError(Error):
+class IndexerError(Exception):
     pass
 
 
 @dataclass
-class PredictedReflection:
+class PredictedReflection(object):
 
     q: T.Optional[np.ndarray] = None
     d: T.Optional[np.ndarray] = None
@@ -151,11 +174,13 @@ class PredictedReflection:
 
 
 @dataclass
-class PeakIndexer(BaseObject):
+class PeakIndexer(object):
     """The Calculator of the crystal maps."""
 
     # config
-    _config: IndexerConfig
+    config: IndexerConfig
+    # datasets
+    _datasets: List[xr.Dataset] = field(default_factory=list)
     # pyFAI
     _ai: T.Optional[AzimuthalIntegrator] = None
     # cell
@@ -169,36 +194,55 @@ class PeakIndexer(BaseObject):
     # cached value
     _pred: PredictedReflection = PredictedReflection()
 
-    def load(self, data_file: str, poni_file: str, stru_file: str) -> None:
-        self.load_dataset(data_file)
+    def load(
+        self,
+        data_files: List[str],
+        euler_angles: List[EulerAngle],
+        poni_file: str,
+        stru_file: str,
+    ) -> None:
+        """Load the necessary data.
+
+        Parameters
+        ----------
+        data_files : List[str]
+            A list of netcdf4 files output by CrystalMapper.
+        euler_angles : List[EulerAngle]
+            A list of (alpha, beta, gamma) value of Euler anlge in ZXY convention.
+        poni_file : str
+            A pyFAI poni file containing the geometry information of the experiment.
+        stru_file : str
+            A cif file containing the lattice information of the sample.
+        """
+        pp = _load_datasets(data_files, euler_angles)
+        self._datasets = pp.data_lst
         self._load_ai(poni_file)
         self._load_structure(stru_file)
-        self._set_actual_reciprocal()
+        merged = pp.process()
+        self._peaks = _get_peaks_table(merged, self._ai)
         self._set_pred_reciprocal()
         return
 
     def load_miller_index(self, filename: str) -> None:
+        """Load the guessing of Miller index.
+
+        Parameters
+        ----------
+        filename : str
+            A netcdf4 file of the guessing results.
+        """
         self._peak_index = xr.load_dataset(filename)
         return
 
     def save_miller_index(self, filename: str) -> None:
-        self._peak_index.to_netcdf(filename)
-        return
+        """Save the guess of Miller index.
 
-    def _set_actual_reciprocal(self) -> np.ndarray:
-        """Assign the values to the windows dataframe."""
-        # change the unit of Q to inverse A
-        self._peaks = self._dataset[["x", "y"]
-                                    ].to_dataframe()
-        qa = self._ai.qArray() / 10.0
-        w = self._ai.wavelength * 1e10
-        y = self._dataset["y"].data
-        x = self._dataset["x"].data
-        self._peaks["Q"] = np.array([qa[yy, xx] for yy, xx in zip(y, x)])
-        self._peaks["d"] = 2.0 * math.pi / self._peaks["Q"]
-        self._peaks["tth"] = np.rad2deg(
-            2.0 * np.arcsin(self._peaks["Q"] * w / (4.0 * math.pi))
-        )
+        Parameters
+        ----------
+        filename : str
+            A destination of netcdf4 file.
+        """
+        self._peak_index.to_netcdf(filename)
         return
 
     def _set_pred_reciprocal(self) -> None:
@@ -241,7 +285,7 @@ class PeakIndexer(BaseObject):
         )
         return
 
-    def guess_miller_index(self, peaks: T.List[int]) -> None:
+    def guess_miller_index(self, peak_ids: T.List[int]) -> None:
         """Guess the index of the peaks in one grain.
 
         Parameters
@@ -249,22 +293,22 @@ class PeakIndexer(BaseObject):
         peaks : typing.List[int]
             The index of the peaks in the table.
         """
-        index_all = self._config.index_all_peaks
-        best_n = self._config.index_best_n
-        peaks = np.array(peaks)
-        n = peaks.shape[0]
-        # choose candidates
-        candidates = self._get_candidates(peaks)
-        # collect results
-        all_peaks = self._dataset["grain"].data if index_all else peaks.copy()
-        # fill in the results
+        for p in peak_ids:
+            if p not in self._peaks.index:
+                raise IndexerError(f"'{p}' is not a valid peak ID.")
+        index_all = self.config.index_all_peaks
+        best_n = self.config.index_best_n
+        peak_ids: np.ndarray = np.array(peak_ids)
+        n = peak_ids.shape[0]
+        vs4 = self._get_candidates(peak_ids)
+        all_peaks = self._peaks.index.to_numpy() if index_all else peak_ids.copy()
         pairs = tqdm(itertools.permutations(range(n), 2), total=n * (n - 1))
 
         def gen():
             for i, j in pairs:
-                other = (all_peaks != peaks[i]) & (all_peaks != peaks[j])
+                other = (all_peaks != peak_ids[i]) & (all_peaks != peak_ids[j])
                 results = self._get_anlge_h1_h2(
-                    peaks[i], candidates[i], peaks[j], candidates[j]
+                    peak_ids[i], vs4[i], peak_ids[j], vs4[j]
                 )
                 for ac in results:
                     u = self._get_U(ac.h1, ac.h2)
@@ -272,8 +316,8 @@ class PeakIndexer(BaseObject):
                     losses = self._get_losses(hkls)
                     loss = np.min(losses[other])
                     yield IndexResult(
-                        peak1=peaks[i],
-                        peak2=peaks[j],
+                        peak1=peak_ids[i],
+                        peak2=peak_ids[j],
                         u_mat=u,
                         hkls=hkls,
                         losses=losses,
@@ -324,7 +368,7 @@ class PeakIndexer(BaseObject):
         and lower bound values are the possible hkls for that peak. The index of the Q value is the index of the
         group of possible hkls. The index is recorded in the dataframe for both upper and lower bound.
         """
-        dtt = self._config.index_tth_tolerance
+        dtt = self.config.index_tth_tolerance
         candidates = []
         for p in peaks:
             tt = self._peaks.loc[p, "tth"]
@@ -342,7 +386,7 @@ class PeakIndexer(BaseObject):
     def _get_anlge_h1_h2(
         self, peak1: int, hkls1: np.ndarray, peak2: int, hkls2: np.ndarray
     ) -> typing.Generator[AngleComparsion, None, None]:
-        self._set_us_for_peaks(peak1, peak2)
+        self._set_vec_in_sample_frame(peak1, peak2)
         angle_in_sample = self._get_angle_in_sample_frame()
         if not (1e-8 < abs(angle_in_sample) < (180.0 - 1e-8)):
             return
@@ -356,7 +400,7 @@ class PeakIndexer(BaseObject):
                 if not (1e-8 < abs(angle_in_grain) < (180.0 - 1e-8)):
                     continue
                 diff = abs(angle_in_grain - angle_in_sample)
-                if diff > self._config.index_agl_tolerance:
+                if diff > self.config.index_agl_tolerance:
                     continue
                 yield AngleComparsion(
                     self._ubmatrix.h1,
@@ -367,11 +411,13 @@ class PeakIndexer(BaseObject):
                 )
         return
 
-    def _set_us_for_peaks(self, peak1: int, peak2: int) -> None:
+    def _set_vec_in_sample_frame(self, peak1: int, peak2: int) -> None:
         row1 = self._peaks.loc[peak1]
         row2 = self._peaks.loc[peak2]
         xy1 = np.array([row1["x"], row1["y"]])
         xy2 = np.array([row2["x"], row2["y"]])
+        self._ubmatrix.set_R1(row1["alpha"], row1["beta"], row1["gamma"])
+        self._ubmatrix.set_R2(row2["alpha"], row2["beta"], row2["gamma"])
         self._ubmatrix.set_u1_from_xy(xy1)
         self._ubmatrix.set_u2_from_xy(xy2)
         return
@@ -390,8 +436,8 @@ class PeakIndexer(BaseObject):
 
     def _get_losses(self, hkls: np.ndarray) -> np.ndarray:
         rhkls = np.around(hkls)
-        vs = self._ubmatrix.reci_to_cart(hkls)
-        rvs = self._ubmatrix.reci_to_cart(rhkls)
+        vs = self._ubmatrix.lat_to_grain(hkls)
+        rvs = self._ubmatrix.lat_to_grain(rhkls)
         diffs_sq = np.sum((rvs - vs) ** 2, axis=1)
         lens_sq = np.sum(vs**2, axis=1)
         cost = np.sqrt(diffs_sq / lens_sq)
@@ -403,10 +449,12 @@ class PeakIndexer(BaseObject):
     def _get_hkl_for_a_peak(self, peak: int) -> HKL:
         row = self._peaks.loc[peak]
         xy = np.array([row["x"], row["y"]])
-        u = self._ubmatrix.xy_to_lab(xy)
-        v = self._ubmatrix.lab_to_cart(u)
-        hkl = self._ubmatrix.cart_to_reci(v)
-        return hkl
+        self._ubmatrix.set_R1(row["alpha"], row["beta"], row["gamma"])
+        v_lab = self._ubmatrix.xy_to_lab(xy)
+        v_sample = self._ubmatrix.lab_to_sample_1(v_lab)
+        v_grain = self._ubmatrix.sample_to_grain(v_sample)
+        v_lat = self._ubmatrix.grain_to_lat(v_grain)
+        return v_lat
 
     def show(self, best_n: T.Optional[int] = None) -> None:
         """Print out the indexing results.
@@ -484,3 +532,19 @@ class PeakIndexer(BaseObject):
         )
         df = pd.DataFrame(dct)
         return df
+
+    def visualize(self, dataset_id: int, peak_ids: List[int] = None, **kwargs) -> None:
+        """Visualize the crystal maps.
+
+        Parameters
+        ----------
+        dataset_id : int
+            A 0-index ID of the dataset.
+        peaks : List[int], optional
+            A list of peak id in that dataset, by default None
+        """
+        if peak_ids is None:
+            _auto_plot_dataset(self._datasets[dataset_id], **kwargs)
+        else:
+            _show_crystal_maps(self._datasets[dataset_id], peak_ids, **kwargs)
+        return

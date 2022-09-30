@@ -1,7 +1,12 @@
-import numpy as np
+from functools import lru_cache
+from typing import Tuple
 
-from diffpy.structure import Lattice, loadStructure, Structure
+import numpy as np
+from diffpy.structure import Lattice, Structure, loadStructure
 from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
+
+Matrix = np.ndarray
+EulerAngle = Tuple[float, float, float]
 
 
 def _cross_product(v1: np.ndarray, v2: np.ndarray) -> np.ndarray:
@@ -83,9 +88,34 @@ def _get_u_from_geo(x: float, y: float, geo: AzimuthalIntegrator) -> np.ndarray:
     return vdiff
 
 
+@lru_cache(8)
+def _get_rot_matrix(alpha: float, beta: float, gamma: float) -> Matrix:
+    c1, c2, c3 = np.cos(np.array([alpha, beta, gamma]))
+    s1, s2, s3 = np.sin(np.array([alpha, beta, gamma]))
+    mat = np.zeros((3, 3), dtype=np.float64)
+    mat[0][0] = c1 * c3 - c2 * s1 * s3
+    mat[0][1] = -c1 * s3 - c2 * c3 * s1
+    mat[0][2] = s1 * s2
+    mat[1][0] = c3 * s1 + c1 * c2 * s3
+    mat[1][1] = c1 * c2 * c3 - s1 * s3
+    mat[1][2] = -c1 * s2
+    mat[2][0] = s2 * s3
+    mat[2][1] = c3 * s2
+    mat[2][2] = c2
+    return mat
+
+
 def _load_lat(cif_file: str) -> Lattice:
     stru: Structure = loadStructure(cif_file)
     return stru.lattice
+
+
+def _sample_to_lab(R: Matrix, v_sample: np.ndarray) -> np.ndarray:
+    return np.matmul(R, v_sample.T).T
+
+
+def _lab_to_sample(R: Matrix, v_lab: np.ndarray) -> np.ndarray:
+    return np.matmul(R.T, v_lab.T).T
 
 
 class UBMatrixError(Exception):
@@ -100,13 +130,13 @@ class UBMatrix:
     Attributes
     ----------
     h1 : 1d array
-        A vector in crystal cartesian coordinate.
+        A vector in grain frame.
     h2 : 1d array
-        A vector in crystal cartesian coordinate.
+        A vector in grain frame.
     u1 : 1d array
-        A vector in lab frame.
+        A vector in sample frame.
     u2 : 1d array
-        A vector in lab frame.
+        A vector in sample frame.
     lat : Lattice
         A lattice containing a, b, c, alpha, beta, gamma.
     geo : AzimuthalIntegrator
@@ -135,6 +165,8 @@ class UBMatrix:
         self.invB = None
         self.U = self.get_U() if self.able_to_get_U() else None
         self.B = self.get_B() if self.able_to_get_B() else None
+        self.R1 = None
+        self.R2 = None
 
     def able_to_get_U(self):
         """Return True if able to fil in self.U."""
@@ -164,22 +196,30 @@ class UBMatrix:
 
     def set_u1_from_xy(self, xy: np.ndarray) -> None:
         """Set self.u1 by x y coordinates using self.geo."""
-        self.u1 = self.xy_to_lab(xy)
+        self.u1 = self.lab_to_sample_1(self.xy_to_lab(xy))
         return
 
     def set_u2_from_xy(self, xy: np.ndarray) -> None:
         """Set self.u2 by x y coordinate using self.geo."""
-        self.u2 = self.xy_to_lab(xy)
+        self.u2 = self.lab_to_sample_2(self.xy_to_lab(xy))
         return
 
     def set_h1_from_hkl(self, hkl: np.ndarray) -> None:
         """Set self.h1 by hkl using B matrix."""
-        self.h1 = self.reci_to_cart(hkl)
+        self.h1 = self.lat_to_grain(hkl)
         return
 
     def set_h2_from_hkl(self, hkl: np.ndarray) -> None:
         """Set self.h2 by hkl using B matrix."""
-        self.h2 = self.reci_to_cart(hkl)
+        self.h2 = self.lat_to_grain(hkl)
+        return
+
+    def set_R1(self, alpha: float, beta: float, gamma: float) -> None:
+        self.R1 = _get_rot_matrix(alpha, beta, gamma)
+        return
+
+    def set_R2(self, alpha: float, beta: float, gamma: float) -> None:
+        self.R2 = _get_rot_matrix(alpha, beta, gamma)
         return
 
     @property
@@ -203,30 +243,50 @@ class UBMatrix:
             raise UBMatrixError("`self.geo` is None.")
         return _get_u_from_geo(xy[0], xy[1], self.geo)
 
-    def reci_to_cart(self, hkl: np.ndarray) -> np.ndarray:
+    def sample_to_lab_1(self, v_sample: np.ndarray) -> np.ndarray:
+        if self.R1 is None:
+            raise UBMatrixError("self.R1 is None.")
+        return _sample_to_lab(self.R1, v_sample)
+
+    def lab_to_sample_1(self, v_lab: np.ndarray) -> np.ndarray:
+        if self.R1 is None:
+            raise UBMatrixError("self.R1 is None.")
+        return _lab_to_sample(self.R1, v_lab)
+
+    def sample_to_lab_2(self, v_sample: np.ndarray) -> np.ndarray:
+        if self.R2 is None:
+            raise UBMatrixError("self.R2 is None.")
+        return _sample_to_lab(self.R2, v_sample)
+
+    def lab_to_sample_2(self, v_lab: np.ndarray) -> np.ndarray:
+        if self.R2 is None:
+            raise UBMatrixError("self.R2 is None.")
+        return _lab_to_sample(self.R2, v_lab)
+
+    def lat_to_grain(self, v_lat: np.ndarray) -> np.ndarray:
         """Transform a vector from reciprocal space (hkl) frame to crystal cartesian frame."""
         if self.B is None:
             raise UBMatrixError("`self.B` is None.")
-        return np.matmul(self.B, hkl.T).T
+        return np.matmul(self.B, v_lat.T).T
 
-    def cart_to_lab(self, v: np.ndarray) -> np.ndarray:
+    def grain_to_lat(self, v_grain: np.ndarray) -> np.ndarray:
+        """Transform a vector from the cartesian crystal frame to reciprocal space (hkl)."""
+        if self.invB is None:
+            raise UBMatrixError("`self.B` is None.")
+        return np.matmul(self.invB, v_grain.T).T
+
+    def grain_to_sample(self, v_grain: np.ndarray) -> np.ndarray:
         """Transform a vector from cartesian crystal frame to lab frame."""
         if self.U is None:
             raise UBMatrixError("`self.U` is None")
-        return np.matmul(self.U, v.T).T
+        return np.matmul(self.U, v_grain.T).T
 
-    def lab_to_cart(self, u: np.ndarray) -> np.ndarray:
+    def sample_to_grain(self, v_sample: np.ndarray) -> np.ndarray:
         """Transform a vector from the lab frame to cartesian crystal frame."""
         if self.U is None:
             raise UBMatrixError("`self.U` is None.")
         # U^T is the U^{-1}
-        return np.matmul(self.U.T, u.T).T
-
-    def cart_to_reci(self, v: np.ndarray) -> np.ndarray:
-        """Transform a vector from the cartesian crystal frame to reciprocal space (hkl)."""
-        if self.invB is None:
-            raise UBMatrixError("`self.B` is None.")
-        return np.matmul(self.invB, v.T).T
+        return np.matmul(self.U.T, v_sample.T).T
 
     def get_U_from_two_points(
         self, xy1: np.ndarray, hkl1: np.ndarray, xy2: np.ndarray, hkl2: np.ndarray
