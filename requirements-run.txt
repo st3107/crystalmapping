@@ -4,6 +4,7 @@ matplotlib
 netcdf4
 numpy
 pyfai
+seaborn
 trackpy
 xarray
 # need for experiment at nsls-ii

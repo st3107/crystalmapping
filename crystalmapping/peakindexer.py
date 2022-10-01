@@ -4,12 +4,16 @@ import typing
 from collections import defaultdict
 from dataclasses import dataclass, field
 from heapq import heappop, heappush
-from typing import List
+from typing import Any, List, Sequence, Tuple
 
 import numpy as np
 import pandas as pd
 import pyFAI
 import xarray as xr
+import seaborn as sns
+import matplotlib.pyplot as plt
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
 from diffpy.structure import Lattice, Structure, loadStructure
 from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
 from pyFAI.calibrant import Cell
@@ -90,8 +94,8 @@ def _get_n_largest(lst: T.Iterable[T.Any], n: int) -> T.List[T.Tuple]:
 
 
 def _get_anlge(v1: np.ndarray, v2: np.ndarray) -> float:
-    inner = np.dot(v1, v2)
-    inner /= np.linalg.norm(v1) * np.linalg.norm(v2)
+    inner = np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2))
+    inner = max(inner, min(inner, 1.), -1.)
     return np.rad2deg(np.arccos(inner))
 
 
@@ -114,6 +118,16 @@ def _load_datasets(
     for f, a in zip(data_files, euler_angles):
         pp.load_data(f, *a)
     return pp
+
+
+def _square_grid_subplots(n: int, size: float) -> Tuple[Figure, Sequence[Axes]]:
+    ncol = int(np.round(np.sqrt(n)))
+    nrow = int(np.ceil(n / ncol))
+    fig, axes = plt.subplots(nrow, ncol, figsize=(ncol * size, nrow * size))
+    axes: Sequence[Axes] = axes.flatten()
+    for ax in axes[n:]:
+        ax.axis("off")
+    return fig, axes
 
 
 @dataclass
@@ -298,7 +312,7 @@ class PeakIndexer(object):
                 raise IndexerError(f"'{p}' is not a valid peak ID.")
         index_all = self.config.index_all_peaks
         best_n = self.config.index_best_n
-        peak_ids: np.ndarray = np.array(peak_ids)
+        peak_ids: np.ndarray = np.unique(np.array(peak_ids))
         n = peak_ids.shape[0]
         vs4 = self._get_candidates(peak_ids)
         all_peaks = self._peaks.index.to_numpy() if index_all else peak_ids.copy()
@@ -547,4 +561,26 @@ class PeakIndexer(object):
             _auto_plot_dataset(self._datasets[dataset_id], **kwargs)
         else:
             _show_crystal_maps(self._datasets[dataset_id], peak_ids, **kwargs)
+        return
+
+    def hist_error(self, peak_ids: List[int] = None, size: float = 4., bins: Any = "auto") -> None:
+        """Plot the histogram of erros.
+
+        Parameters
+        ----------
+        peak_ids : List[int], optional
+            A list of peak IDs to plot, by default None, plot all peaks.
+        size : float, optional
+            Size in inches for the individual panel, by default 4.
+        """
+        losses: pd.DataFrame = self._peak_index["losses"].to_dataframe()
+        peak = self._peak_index["peak"].to_numpy() if peak_ids is None else np.unique(np.array(peak_ids))
+        n = len(peak)
+        _, axes = _square_grid_subplots(n, size)
+        for i in range(n):
+            q = 'peak == {}'.format(peak[i])
+            data = losses.query(q)
+            sns.histplot(data, kde=True, ax=axes[i], bins=bins)
+            axes[i].legend(["$\mu$ = {:.2f}, $\sigma$ = {:.3f}".format(data["losses"].mean(), data["losses"].std())])
+            axes[i].set_title("Bragg Peak {}".format(peak[i]))
         return
