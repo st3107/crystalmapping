@@ -17,6 +17,7 @@
         <script src="../../_static/underscore.js"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
         <script src="../../_static/clipboard.min.js"></script>
         <script src="../../_static/copybutton.js"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -80,6 +81,7 @@
 <span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">import</span> <span class="nn">typing</span>
 <span class="kn">import</span> <span class="nn">uuid</span>
+<span class="kn">import</span> <span class="nn">time</span>
 
 <span class="kn">import</span> <span class="nn">bluesky.plan_stubs</span> <span class="k">as</span> <span class="nn">bps</span>
 <span class="kn">import</span> <span class="nn">bluesky.plans</span> <span class="k">as</span> <span class="nn">bp</span>
@@ -167,6 +169,7 @@
     <span class="n">md</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">backoff</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
     <span class="n">snake</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">open_and_close</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">Generator</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Move on a grid and do a fly scan at each point in the grid.</span>
 
@@ -231,6 +234,8 @@
 <span class="sd">        If non-zero, fly scan from start - backoff to end + backoff, by default 0.</span>
 <span class="sd">    snake : bool, optional</span>
 <span class="sd">        If true, snake the axis of the fly scan, by default False</span>
+<span class="sd">    open_and_close : bool, optional</span>
+<span class="sd">        If true, open and close shutter at every point, by default False</span>
 
 <span class="sd">    Yields</span>
 <span class="sd">    -------</span>
@@ -309,22 +314,26 @@
     <span class="n">speed</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">fly_stop</span> <span class="o">-</span> <span class="n">fly_start</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">fly_pixels</span> <span class="o">*</span> <span class="n">computed_dwell_time</span><span class="p">)</span>
     <span class="c1"># check the speed</span>
     <span class="n">low</span><span class="p">,</span> <span class="n">high</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">fly_motor</span><span class="o">.</span><span class="n">velocity</span><span class="o">.</span><span class="n">limits</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">speed</span> <span class="o">&lt;</span> <span class="n">low</span> <span class="ow">or</span> <span class="n">speed</span> <span class="o">&gt;</span> <span class="n">high</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="s2">&quot;The fly scan velocity is </span><span class="si">{}</span><span class="s2">. &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">speed</span><span class="p">)</span>
-            <span class="o">+</span> <span class="s2">&quot;It is out of the range of the motor speed: (</span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">).&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">)</span>
-        <span class="p">)</span>
-    <span class="k">if</span> <span class="n">move_velocity</span> <span class="o">&lt;</span> <span class="n">low</span> <span class="ow">or</span> <span class="n">move_velocity</span> <span class="o">&gt;</span> <span class="n">high</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="s2">&quot;The move velocity is </span><span class="si">{}</span><span class="s2">. &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">move_velocity</span><span class="p">)</span>
-            <span class="o">+</span> <span class="s2">&quot;It is out of the range of the motor speed: (</span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">).&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">)</span>
-        <span class="p">)</span>
+    <span class="k">if</span> <span class="n">low</span> <span class="o">&lt;</span> <span class="n">high</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">speed</span> <span class="o">&lt;</span> <span class="n">low</span> <span class="ow">or</span> <span class="n">speed</span> <span class="o">&gt;</span> <span class="n">high</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;The fly scan velocity is </span><span class="si">{}</span><span class="s2">. &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">speed</span><span class="p">)</span>
+                <span class="o">+</span> <span class="s2">&quot;It is out of the range of the motor speed: (</span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">).&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">move_velocity</span> <span class="o">&lt;</span> <span class="n">low</span> <span class="ow">or</span> <span class="n">move_velocity</span> <span class="o">&gt;</span> <span class="n">high</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;The move velocity is </span><span class="si">{}</span><span class="s2">. &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">move_velocity</span><span class="p">)</span>
+                <span class="o">+</span> <span class="s2">&quot;It is out of the range of the motor speed: (</span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">).&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">)</span>
+            <span class="p">)</span>
 
     <span class="nd">@bpp</span><span class="o">.</span><span class="n">reset_positions_decorator</span><span class="p">([</span><span class="n">fly_motor</span><span class="o">.</span><span class="n">velocity</span><span class="p">])</span>
     <span class="nd">@bpp</span><span class="o">.</span><span class="n">set_run_key_decorator</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;xrd_map_</span><span class="si">{</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="nd">@bpp</span><span class="o">.</span><span class="n">stage_decorator</span><span class="p">(</span><span class="n">detectors</span><span class="p">)</span>
     <span class="nd">@bpp</span><span class="o">.</span><span class="n">run_decorator</span><span class="p">(</span><span class="n">md</span><span class="o">=</span><span class="n">_md</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">inner</span><span class="p">():</span>
+        <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">mv</span><span class="p">(</span><span class="n">shutter</span><span class="p">,</span> <span class="n">shutter_close</span><span class="p">)</span>
+        <span class="k">yield from</span> <span class="n">dark_plan</span><span class="p">(</span><span class="n">ad</span><span class="p">)</span>
+        <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">mv</span><span class="p">(</span><span class="n">shutter</span><span class="p">,</span> <span class="n">shutter_open</span><span class="p">)</span>
         <span class="n">_fly_start</span><span class="p">,</span> <span class="n">_fly_stop</span> <span class="o">=</span> <span class="n">fly_start</span><span class="p">,</span> <span class="n">fly_stop</span>
         <span class="n">_backoff</span> <span class="o">=</span> <span class="n">backoff</span>
         <span class="k">for</span> <span class="n">coord</span> <span class="ow">in</span> <span class="n">coords</span><span class="p">:</span>
@@ -345,233 +354,20 @@
 
             <span class="c1"># wait for the pre-fly motion to stop</span>
             <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">mv</span><span class="p">(</span><span class="n">fly_motor</span><span class="o">.</span><span class="n">velocity</span><span class="p">,</span> <span class="n">speed</span><span class="p">)</span>
-            <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">mv</span><span class="p">(</span><span class="n">shutter</span><span class="p">,</span> <span class="n">shutter_open</span><span class="p">)</span>
-            <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">shutter_wait_open</span><span class="p">)</span>
-            <span class="n">fly_group</span> <span class="o">=</span> <span class="n">short_uid</span><span class="p">(</span><span class="s2">&quot;fly&quot;</span><span class="p">)</span>
-            <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">abs_set</span><span class="p">(</span><span class="n">fly_motor</span><span class="p">,</span> <span class="n">_fly_stop</span> <span class="o">+</span> <span class="n">_backoff</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">fly_group</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">fly_pixels</span><span class="p">):</span>
-
-                <span class="n">fly_pixel_group</span> <span class="o">=</span> <span class="n">short_uid</span><span class="p">(</span><span class="s2">&quot;fly_pixel&quot;</span><span class="p">)</span>
-                <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">detectors</span><span class="p">:</span>
-                    <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">trigger</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">fly_pixel_group</span><span class="p">)</span>
-
-                <span class="c1"># grab motor position right after we trigger</span>
-                <span class="n">start_pos</span> <span class="o">=</span> <span class="k">yield from</span> <span class="n">_extarct_motor_pos</span><span class="p">(</span><span class="n">fly_motor</span><span class="p">)</span>
-                <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">mv</span><span class="p">(</span><span class="n">px_start</span><span class="p">,</span> <span class="n">start_pos</span><span class="p">)</span>
-                <span class="c1"># wait for frame to finish</span>
-                <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">wait</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="n">fly_pixel_group</span><span class="p">)</span>
-
-                <span class="c1"># grab the motor position</span>
-                <span class="n">stop_pos</span> <span class="o">=</span> <span class="k">yield from</span> <span class="n">_extarct_motor_pos</span><span class="p">(</span><span class="n">fly_motor</span><span class="p">)</span>
-                <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">mv</span><span class="p">(</span><span class="n">px_stop</span><span class="p">,</span> <span class="n">stop_pos</span><span class="p">)</span>
-                <span class="c1"># generate the event</span>
-                <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="s2">&quot;primary&quot;</span><span class="p">)</span>
-                <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">all_dets</span><span class="p">:</span>
-                    <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
-                <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
-            <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">checkpoint</span><span class="p">()</span>
-            <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">mv</span><span class="p">(</span><span class="n">shutter</span><span class="p">,</span> <span class="n">shutter_close</span><span class="p">)</span>
-            <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">wait</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="n">fly_group</span><span class="p">)</span>
-            <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">checkpoint</span><span class="p">()</span>
-            <span class="k">if</span> <span class="n">snake</span><span class="p">:</span>
-                <span class="c1"># if snaking, flip these for the next pass through</span>
-                <span class="n">_fly_start</span><span class="p">,</span> <span class="n">_fly_stop</span> <span class="o">=</span> <span class="n">_fly_stop</span><span class="p">,</span> <span class="n">_fly_start</span>
-                <span class="n">_backoff</span> <span class="o">=</span> <span class="o">-</span><span class="n">_backoff</span>
-        <span class="k">return</span>
-
-    <span class="k">return</span> <span class="p">(</span><span class="k">yield from</span> <span class="n">inner</span><span class="p">())</span></div>
-
-
-<div class="viewcode-block" id="fly_scan_nd_no_shutter"><a class="viewcode-back" href="../../apis.html#crystalmapping.plans.fly_scan_nd_no_shutter">[docs]</a><span class="k">def</span> <span class="nf">fly_scan_nd_no_shutter</span><span class="p">(</span>
-    <span class="n">detectors</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
-    <span class="o">*</span><span class="n">args</span><span class="p">,</span>
-    <span class="n">move_velocity</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-    <span class="n">time_per_point</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-    <span class="n">time_per_frame</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-    <span class="n">shutter</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span>
-    <span class="n">shutter_open</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">,</span>
-    <span class="n">shutter_close</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">,</span>
-    <span class="n">shutter_wait_open</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
-    <span class="n">shutter_wait_close</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
-    <span class="n">take_dark</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="n">md</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">backoff</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
-    <span class="n">snake</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">Generator</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Move on a grid and do a fly scan at each point in the grid.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    detectors : list</span>
-<span class="sd">        A list of detectors. The first one must be an area detector. The list shouldn&#39;t include the motors in the</span>
-<span class="sd">        `args`.</span>
-<span class="sd">    *args :</span>
-<span class="sd">        patterned like (``motor1, start1, stop1, num1,``</span>
-<span class="sd">                        ``motor2, start2, stop2, num2,``</span>
-<span class="sd">                        ``motor3, start3, stop3, num3,`` ...</span>
-<span class="sd">                        ``motorN, startN, stopN, numN``)</span>
-
-<span class="sd">        The first motor is the &quot;slowest&quot;, the outer loop. The last motor</span>
-<span class="sd">        is the &quot;fly&quot; motor, the non-stoping scan along an axis. For all motors</span>
-<span class="sd">        except the first motor, there is a &quot;snake&quot; argument: a boolean</span>
-<span class="sd">        indicating whether to following snake-like, winding trajectory or a</span>
-<span class="sd">        simple left-to-right trajectory.</span>
-<span class="sd">    move_velocity : float</span>
-<span class="sd">        The speed for the motors to move to the next grid point.</span>
-<span class="sd">    time_per_point : float</span>
-<span class="sd">        The time to collect one image at one point.</span>
-<span class="sd">    time_per_frame : float</span>
-<span class="sd">        The time to collect one frame in a image. One image contains serveral frames.</span>
-<span class="sd">    shutter : object</span>
-<span class="sd">        The fast shutter.</span>
-<span class="sd">    shutter_open : typing.Any</span>
-<span class="sd">        The value of the shutter in open state.</span>
-<span class="sd">    shutter_close : typing.Any</span>
-<span class="sd">        The value of the shutter in close state.</span>
-<span class="sd">    shutter_wait_open : float, optional</span>
-<span class="sd">        The time between the shutter open and the start of the light image collection, by default 0.</span>
-<span class="sd">    shutter_wait_close : float, optional</span>
-<span class="sd">        The time between the shutter close and the start of the dark image collection, by default 0.</span>
-<span class="sd">    take_dark : bool, optional</span>
-<span class="sd">        If true, take a dark image at the end of the fly scan, by default True</span>
-<span class="sd">    md : dict, optional</span>
-<span class="sd">        The dictionary of the metadata to added into the plan, by default None</span>
-<span class="sd">    backoff : float, optional</span>
-<span class="sd">        If non-zero, fly scan from start - backoff to end + backoff, by default 0.</span>
-<span class="sd">    snake : bool, optional</span>
-<span class="sd">        If true, snake the axis of the fly scan, by default False</span>
-
-<span class="sd">    Yields</span>
-<span class="sd">    -------</span>
-<span class="sd">    Iterator[typing.Generic]</span>
-<span class="sd">        The messages of the plan.</span>
-
-<span class="sd">    Raises</span>
-<span class="sd">    ------</span>
-<span class="sd">    TomoPlanError</span>
-<span class="sd">        Empty detector list.</span>
-<span class="sd">    TomoPlanError</span>
-<span class="sd">        Not enough motors.</span>
-<span class="sd">    TomoPlanError</span>
-<span class="sd">        Wrong motor positions format.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># check args</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">detectors</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">TomoPlanError</span><span class="p">(</span><span class="s2">&quot;dets cannot be an empty list.&quot;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">8</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">TomoPlanError</span><span class="p">(</span>
-            <span class="s2">&quot;There must be at least 8 arguments for the motors, like ``motor1, start1, end1, number1, motor2, &quot;</span>
-            <span class="s2">&quot;start2, end2, number2`.&quot;</span>
-        <span class="p">)</span>
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">%</span> <span class="mi">4</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">TomoPlanError</span><span class="p">(</span>
-            <span class="s2">&quot;The arguments must be in format `motor1, start1, end1, number1, motor2, start2, end2, number2, ...`&quot;</span>
-        <span class="p">)</span>
-
-    <span class="c1"># get the motors and positions</span>
-    <span class="n">fly_motor</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="o">-</span><span class="mi">4</span><span class="p">]</span>
-    <span class="n">fly_start</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">]</span>
-    <span class="n">fly_stop</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
-    <span class="n">fly_pixels</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-    <span class="n">motors</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">4</span><span class="p">:</span><span class="mi">4</span><span class="p">]</span>
-    <span class="n">starts</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">4</span><span class="p">:</span><span class="mi">4</span><span class="p">]</span>
-    <span class="n">ends</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">2</span><span class="p">:</span><span class="o">-</span><span class="mi">4</span><span class="p">:</span><span class="mi">4</span><span class="p">]</span>
-    <span class="n">nums</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">3</span><span class="p">:</span><span class="o">-</span><span class="mi">4</span><span class="p">:</span><span class="mi">4</span><span class="p">]</span>
-    <span class="n">coords</span> <span class="o">=</span> <span class="n">_get_motors_and_coords</span><span class="p">(</span><span class="n">starts</span><span class="p">,</span> <span class="n">ends</span><span class="p">,</span> <span class="n">nums</span><span class="p">)</span>
-
-    <span class="c1"># configurea area detector</span>
-    <span class="n">ad</span> <span class="o">=</span> <span class="n">detectors</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">num_frame</span><span class="p">,</span> <span class="n">acq_time</span><span class="p">,</span> <span class="n">computed_dwell_time</span> <span class="o">=</span> <span class="k">yield from</span> <span class="n">configure_area_det</span><span class="p">(</span>
-        <span class="n">ad</span><span class="p">,</span> <span class="n">time_per_point</span><span class="p">,</span> <span class="n">time_per_frame</span>
-    <span class="p">)</span>
-
-    <span class="c1"># set up metadata</span>
-    <span class="n">sp</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;time_per_frame&quot;</span><span class="p">:</span> <span class="n">acq_time</span><span class="p">,</span>
-        <span class="s2">&quot;num_frames&quot;</span><span class="p">:</span> <span class="n">num_frame</span><span class="p">,</span>
-        <span class="s2">&quot;requested_exposure&quot;</span><span class="p">:</span> <span class="n">time_per_point</span><span class="p">,</span>
-        <span class="s2">&quot;computed_exposure&quot;</span><span class="p">:</span> <span class="n">computed_dwell_time</span><span class="p">,</span>
-        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;ct&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;uid&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()),</span>
-        <span class="s2">&quot;plan_name&quot;</span><span class="p">:</span> <span class="s2">&quot;fly_scan_nd&quot;</span><span class="p">,</span>
-    <span class="p">}</span>
-    <span class="n">_md</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;detectors&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">det</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">det</span> <span class="ow">in</span> <span class="n">detectors</span><span class="p">],</span>
-        <span class="s2">&quot;plan_args&quot;</span><span class="p">:</span> <span class="p">{},</span>
-        <span class="s2">&quot;map_size&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">fly_pixels</span><span class="p">,)</span> <span class="o">+</span> <span class="n">nums</span><span class="p">,</span>
-        <span class="s2">&quot;shape&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">fly_pixels</span><span class="p">,)</span> <span class="o">+</span> <span class="n">nums</span><span class="p">,</span>
-        <span class="s2">&quot;hints&quot;</span><span class="p">:</span> <span class="p">{},</span>
-        <span class="s2">&quot;extents&quot;</span><span class="p">:</span> <span class="p">[(</span><span class="n">fly_start</span><span class="p">,</span> <span class="n">fly_stop</span><span class="p">)]</span>
-        <span class="o">+</span> <span class="p">[(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span> <span class="k">for</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">starts</span><span class="p">,</span> <span class="n">ends</span><span class="p">)],</span>
-        <span class="o">**</span><span class="p">{</span><span class="sa">f</span><span class="s2">&quot;sp_</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">sp</span><span class="o">.</span><span class="n">items</span><span class="p">()},</span>
-    <span class="p">}</span>
-    <span class="n">_md</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">md</span> <span class="ow">or</span> <span class="p">{})</span>
-    <span class="n">_md</span><span class="p">[</span><span class="s2">&quot;hints&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span>
-        <span class="s2">&quot;dimensions&quot;</span><span class="p">,</span>
-        <span class="p">[((</span><span class="sa">f</span><span class="s2">&quot;start_</span><span class="si">{</span><span class="n">fly_motor</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,),</span> <span class="s2">&quot;primary&quot;</span><span class="p">)]</span>
-        <span class="o">+</span> <span class="p">[((</span><span class="n">motor</span><span class="o">.</span><span class="n">name</span><span class="p">,),</span> <span class="s2">&quot;primary&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">motor</span> <span class="ow">in</span> <span class="n">motors</span><span class="p">],</span>
-    <span class="p">)</span>
-    <span class="c1"># soft signal to use for tracking pixel edges</span>
-    <span class="n">px_start</span> <span class="o">=</span> <span class="n">Signal</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;start_</span><span class="si">{</span><span class="n">fly_motor</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="n">Kind</span><span class="o">.</span><span class="n">normal</span><span class="p">)</span>
-    <span class="n">px_stop</span> <span class="o">=</span> <span class="n">Signal</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;stop_</span><span class="si">{</span><span class="n">fly_motor</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="n">Kind</span><span class="o">.</span><span class="n">normal</span><span class="p">)</span>
-    <span class="n">all_dets</span> <span class="o">=</span> <span class="n">detectors</span> <span class="o">+</span> <span class="p">[</span><span class="n">px_start</span><span class="p">,</span> <span class="n">px_stop</span><span class="p">,</span> <span class="n">fly_motor</span><span class="o">.</span><span class="n">velocity</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">motors</span><span class="p">)</span>
-    <span class="c1"># or get the gating working below.</span>
-    <span class="n">speed</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">fly_stop</span> <span class="o">-</span> <span class="n">fly_start</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">fly_pixels</span> <span class="o">*</span> <span class="n">computed_dwell_time</span><span class="p">)</span>
-    <span class="c1"># check the speed</span>
-    <span class="n">low</span><span class="p">,</span> <span class="n">high</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">fly_motor</span><span class="o">.</span><span class="n">velocity</span><span class="o">.</span><span class="n">limits</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">speed</span> <span class="o">&lt;</span> <span class="n">low</span> <span class="ow">or</span> <span class="n">speed</span> <span class="o">&gt;</span> <span class="n">high</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="s2">&quot;The fly scan velocity is </span><span class="si">{}</span><span class="s2">. &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">speed</span><span class="p">)</span>
-            <span class="o">+</span> <span class="s2">&quot;It is out of the range of the motor speed: (</span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">).&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">)</span>
-        <span class="p">)</span>
-    <span class="k">if</span> <span class="n">move_velocity</span> <span class="o">&lt;</span> <span class="n">low</span> <span class="ow">or</span> <span class="n">move_velocity</span> <span class="o">&gt;</span> <span class="n">high</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="s2">&quot;The move velocity is </span><span class="si">{}</span><span class="s2">. &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">move_velocity</span><span class="p">)</span>
-            <span class="o">+</span> <span class="s2">&quot;It is out of the range of the motor speed: (</span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">).&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">)</span>
-        <span class="p">)</span>
-
-    <span class="nd">@bpp</span><span class="o">.</span><span class="n">reset_positions_decorator</span><span class="p">([</span><span class="n">fly_motor</span><span class="o">.</span><span class="n">velocity</span><span class="p">])</span>
-    <span class="nd">@bpp</span><span class="o">.</span><span class="n">set_run_key_decorator</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;xrd_map_</span><span class="si">{</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="nd">@bpp</span><span class="o">.</span><span class="n">stage_decorator</span><span class="p">(</span><span class="n">detectors</span><span class="p">)</span>
-    <span class="nd">@bpp</span><span class="o">.</span><span class="n">run_decorator</span><span class="p">(</span><span class="n">md</span><span class="o">=</span><span class="n">_md</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">inner</span><span class="p">():</span>
-        <span class="n">_fly_start</span><span class="p">,</span> <span class="n">_fly_stop</span> <span class="o">=</span> <span class="n">fly_start</span><span class="p">,</span> <span class="n">fly_stop</span>
-        <span class="n">_backoff</span> <span class="o">=</span> <span class="n">backoff</span>
-        <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">mv</span><span class="p">(</span><span class="n">shutter</span><span class="p">,</span> <span class="n">shutter_open</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">coord</span> <span class="ow">in</span> <span class="n">coords</span><span class="p">:</span>
-            <span class="c1"># move the step motors</span>
-            <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">checkpoint</span><span class="p">()</span>
-            <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">mv</span><span class="p">(</span><span class="n">fly_motor</span><span class="o">.</span><span class="n">velocity</span><span class="p">,</span> <span class="n">move_velocity</span><span class="p">)</span>
-            <span class="n">pre_fly_group</span> <span class="o">=</span> <span class="n">short_uid</span><span class="p">(</span><span class="s2">&quot;pre_fly&quot;</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">motor</span><span class="p">,</span> <span class="n">pos</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">motors</span><span class="p">,</span> <span class="n">coord</span><span class="p">):</span>
-                <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">abs_set</span><span class="p">(</span><span class="n">motor</span><span class="p">,</span> <span class="n">pos</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">pre_fly_group</span><span class="p">)</span>
-            <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">abs_set</span><span class="p">(</span>
-                <span class="n">fly_motor</span><span class="p">,</span> <span class="n">_fly_start</span> <span class="o">-</span> <span class="n">_backoff</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">pre_fly_group</span>
-            <span class="p">)</span>
-            <span class="c1"># take a dark during the movement</span>
-            <span class="k">if</span> <span class="n">take_dark</span><span class="p">:</span>
-                <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">mv</span><span class="p">(</span><span class="n">shutter</span><span class="p">,</span> <span class="n">shutter_close</span><span class="p">)</span>
-                <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">shutter_wait_close</span><span class="p">)</span>
-                <span class="k">yield from</span> <span class="n">dark_plan</span><span class="p">(</span><span class="n">ad</span><span class="p">)</span>
-                <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">shutter_wait_open</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">open_and_close</span><span class="p">:</span>
                 <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">mv</span><span class="p">(</span><span class="n">shutter</span><span class="p">,</span> <span class="n">shutter_open</span><span class="p">)</span>
-            <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">wait</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="n">pre_fly_group</span><span class="p">)</span>
-
+                <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">shutter_wait_open</span><span class="p">)</span>
             <span class="n">fly_group</span> <span class="o">=</span> <span class="n">short_uid</span><span class="p">(</span><span class="s2">&quot;fly&quot;</span><span class="p">)</span>
-            <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">mv</span><span class="p">(</span><span class="n">fly_motor</span><span class="o">.</span><span class="n">velocity</span><span class="p">,</span> <span class="n">speed</span><span class="p">)</span>
             <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">abs_set</span><span class="p">(</span><span class="n">fly_motor</span><span class="p">,</span> <span class="n">_fly_stop</span> <span class="o">+</span> <span class="n">_backoff</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">fly_group</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">fly_pixels</span><span class="p">):</span>
-
+            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">fly_pixels</span><span class="p">):</span>
                 <span class="n">fly_pixel_group</span> <span class="o">=</span> <span class="n">short_uid</span><span class="p">(</span><span class="s2">&quot;fly_pixel&quot;</span><span class="p">)</span>
                 <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">detectors</span><span class="p">:</span>
                     <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">trigger</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">fly_pixel_group</span><span class="p">)</span>
-
                 <span class="c1"># grab motor position right after we trigger</span>
                 <span class="n">start_pos</span> <span class="o">=</span> <span class="k">yield from</span> <span class="n">_extarct_motor_pos</span><span class="p">(</span><span class="n">fly_motor</span><span class="p">)</span>
                 <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">mv</span><span class="p">(</span><span class="n">px_start</span><span class="p">,</span> <span class="n">start_pos</span><span class="p">)</span>
                 <span class="c1"># wait for frame to finish</span>
                 <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">wait</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="n">fly_pixel_group</span><span class="p">)</span>
-
                 <span class="c1"># grab the motor position</span>
                 <span class="n">stop_pos</span> <span class="o">=</span> <span class="k">yield from</span> <span class="n">_extarct_motor_pos</span><span class="p">(</span><span class="n">fly_motor</span><span class="p">)</span>
                 <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">mv</span><span class="p">(</span><span class="n">px_stop</span><span class="p">,</span> <span class="n">stop_pos</span><span class="p">)</span>
@@ -581,13 +377,14 @@
                     <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
                 <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
             <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">checkpoint</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">open_and_close</span><span class="p">:</span>
+                <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">mv</span><span class="p">(</span><span class="n">shutter</span><span class="p">,</span> <span class="n">shutter_close</span><span class="p">)</span>
             <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">wait</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="n">fly_group</span><span class="p">)</span>
             <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">checkpoint</span><span class="p">()</span>
             <span class="k">if</span> <span class="n">snake</span><span class="p">:</span>
                 <span class="c1"># if snaking, flip these for the next pass through</span>
                 <span class="n">_fly_start</span><span class="p">,</span> <span class="n">_fly_stop</span> <span class="o">=</span> <span class="n">_fly_stop</span><span class="p">,</span> <span class="n">_fly_start</span>
                 <span class="n">_backoff</span> <span class="o">=</span> <span class="o">-</span><span class="n">_backoff</span>
-        <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">mv</span><span class="p">(</span><span class="n">shutter</span><span class="p">,</span> <span class="n">shutter_close</span><span class="p">)</span>
         <span class="k">return</span>
 
     <span class="k">return</span> <span class="p">(</span><span class="k">yield from</span> <span class="n">inner</span><span class="p">())</span></div>
@@ -605,7 +402,7 @@
     <span class="n">shutter_wait_open</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
     <span class="n">shutter_wait_close</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
     <span class="n">take_dark</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="n">md</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">md</span><span class="o">=</span><span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">Generator</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Scan over a mesh; each motor is on an independent trajectory.</span>
 
@@ -674,25 +471,28 @@
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">detectors</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">TomoPlanError</span><span class="p">(</span><span class="s2">&quot;dets cannot be an empty list.&quot;</span><span class="p">)</span>
 
-    <span class="n">slow_motor</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span>
 
     <span class="k">def</span> <span class="nf">_per_step</span><span class="p">(</span><span class="n">detectors</span><span class="p">,</span> <span class="n">step</span><span class="p">,</span> <span class="n">pos_cache</span><span class="p">):</span>
         <span class="c1"># start movement</span>
-        <span class="n">move_group</span> <span class="o">=</span> <span class="n">short_uid</span><span class="p">(</span><span class="s2">&quot;move&quot;</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">motor</span><span class="p">,</span> <span class="n">pos</span> <span class="ow">in</span> <span class="n">step</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">abs_set</span><span class="p">(</span><span class="n">motor</span><span class="p">,</span> <span class="n">pos</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">move_group</span><span class="p">)</span>
-        <span class="c1"># take dark if there is a movement of the slow motor</span>
-        <span class="k">if</span> <span class="n">step</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">slow_motor</span><span class="p">)</span> <span class="o">!=</span> <span class="n">pos_cache</span><span class="p">[</span><span class="n">slow_motor</span><span class="p">]</span> <span class="ow">and</span> <span class="n">take_dark</span><span class="p">:</span>
+        <span class="k">nonlocal</span> <span class="n">counter</span>
+        <span class="k">if</span> <span class="n">counter</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">mv</span><span class="p">(</span><span class="n">shutter</span><span class="p">,</span> <span class="n">shutter_close</span><span class="p">)</span>
             <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">shutter_wait_close</span><span class="p">)</span>
             <span class="k">yield from</span> <span class="n">dark_plan</span><span class="p">(</span><span class="n">detectors</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
             <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">mv</span><span class="p">(</span><span class="n">shutter</span><span class="p">,</span> <span class="n">shutter_open</span><span class="p">)</span>
+        <span class="n">move_group</span> <span class="o">=</span> <span class="n">short_uid</span><span class="p">(</span><span class="s2">&quot;move&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">motor</span><span class="p">,</span> <span class="n">pos</span> <span class="ow">in</span> <span class="n">step</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">abs_set</span><span class="p">(</span><span class="n">motor</span><span class="p">,</span> <span class="n">pos</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">move_group</span><span class="p">)</span>
         <span class="c1"># wait until finish and take reading</span>
         <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">wait</span><span class="p">(</span><span class="n">move_group</span><span class="p">)</span>
         <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">trigger_and_read</span><span class="p">(</span><span class="n">detectors</span><span class="p">)</span>
         <span class="c1"># update the cache</span>
         <span class="k">for</span> <span class="n">motor</span><span class="p">,</span> <span class="n">pos</span> <span class="ow">in</span> <span class="n">step</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="n">pos_cache</span><span class="p">[</span><span class="n">motor</span><span class="p">]</span> <span class="o">=</span> <span class="n">pos</span>
+        <span class="c1"># increase counter</span>
+        <span class="n">counter</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">return</span>
 
     <span class="n">num_frame</span><span class="p">,</span> <span class="n">time_per_frame2</span><span class="p">,</span> <span class="n">time_per_point2</span> <span class="o">=</span> <span class="k">yield from</span> <span class="n">configure_area_det</span><span class="p">(</span>
         <span class="n">detectors</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">time_per_point</span><span class="p">,</span> <span class="n">time_per_frame</span>
@@ -707,122 +507,17 @@
         <span class="s2">&quot;sp_plan_name&quot;</span><span class="p">:</span> <span class="s2">&quot;grid_scan_nd&quot;</span><span class="p">,</span>
     <span class="p">}</span>
     <span class="n">_md</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">md</span><span class="p">)</span>
-
     <span class="n">plan</span> <span class="o">=</span> <span class="n">bp</span><span class="o">.</span><span class="n">grid_scan</span><span class="p">(</span><span class="n">detectors</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">snake_axes</span><span class="o">=</span><span class="n">snake</span><span class="p">,</span> <span class="n">per_step</span><span class="o">=</span><span class="n">_per_step</span><span class="p">,</span> <span class="n">md</span><span class="o">=</span><span class="n">_md</span><span class="p">)</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">take_dark</span><span class="p">:</span>
-        <span class="n">plan</span> <span class="o">=</span> <span class="n">bpp</span><span class="o">.</span><span class="n">pchain</span><span class="p">(</span>
-            <span class="n">bps</span><span class="o">.</span><span class="n">mv</span><span class="p">(</span><span class="n">shutter</span><span class="p">,</span> <span class="n">shutter_open</span><span class="p">),</span> <span class="n">bps</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">shutter_wait_open</span><span class="p">),</span> <span class="n">plan</span>
-        <span class="p">)</span>
-    <span class="n">plan</span> <span class="o">=</span> <span class="n">bpp</span><span class="o">.</span><span class="n">finalize_wrapper</span><span class="p">(</span><span class="n">plan</span><span class="p">,</span> <span class="n">bps</span><span class="o">.</span><span class="n">mv</span><span class="p">(</span><span class="n">shutter</span><span class="p">,</span> <span class="n">shutter_close</span><span class="p">))</span>
-    <span class="k">return</span> <span class="p">(</span><span class="k">yield from</span> <span class="n">plan</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="grid_scan_optional_dark"><a class="viewcode-back" href="../../apis.html#crystalmapping.plans.grid_scan_optional_dark">[docs]</a><span class="k">def</span> <span class="nf">grid_scan_optional_dark</span><span class="p">(</span>
-    <span class="n">detectors</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
-    <span class="o">*</span><span class="n">args</span><span class="p">,</span>
-    <span class="n">snake</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">time_per_point</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-    <span class="n">time_per_frame</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-    <span class="n">shutter</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span>
-    <span class="n">shutter_open</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">,</span>
-    <span class="n">shutter_close</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">,</span>
-    <span class="n">shutter_wait</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
-    <span class="n">md</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">Generator</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Scan over a mesh; each motor is on an independent trajectory.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    detectors : list</span>
-<span class="sd">        A list of &#39;readable&#39; objects</span>
-<span class="sd">    *args :</span>
-<span class="sd">        patterned like (``motor1, start1, stop1, num1,``</span>
-<span class="sd">                        ``motor2, start2, stop2, num2,``</span>
-<span class="sd">                        ``motor3, start3, stop3, num3,`` ...</span>
-<span class="sd">                        ``motorN, startN, stopN, numN``)</span>
-
-<span class="sd">        The first motor is the &quot;slowest&quot;, the outer loop. The last motor</span>
-<span class="sd">        is the &quot;fly&quot; motor, the non-stoping scan along an axis. For all motors</span>
-<span class="sd">        except the first motor, there is a &quot;snake&quot; argument: a boolean</span>
-<span class="sd">        indicating whether to following snake-like, winding trajectory or a</span>
-<span class="sd">        simple left-to-right trajectory.</span>
-<span class="sd">    snake : bool, optional</span>
-<span class="sd">        If true, snake the axis of the fly scan, by default None</span>
-<span class="sd">    time_per_point : float</span>
-<span class="sd">        The time to collect one image at one point.</span>
-<span class="sd">    time_per_frame : float</span>
-<span class="sd">        The time to collect one frame in a image. One image contains serveral frames.</span>
-<span class="sd">    time_per_point : float</span>
-<span class="sd">        The time to collect one image at one point.</span>
-<span class="sd">    time_per_frame : float</span>
-<span class="sd">        The time to collect one frame in a image. One image contains serveral frames.</span>
-<span class="sd">    shutter : object</span>
-<span class="sd">        The fast shutter.</span>
-<span class="sd">    shutter_open : typing.Any</span>
-<span class="sd">        The value of the shutter in open state.</span>
-<span class="sd">    shutter_close : typing.Any</span>
-<span class="sd">        The value of the shutter in close state.</span>
-<span class="sd">    shutter_wait : float, optional</span>
-<span class="sd">        The time between the shutter open and close, by default 0.</span>
-<span class="sd">    md : [type], optional</span>
-<span class="sd">        The dictionary of the metadata to added into the plan, by default None, by default None</span>
-
-<span class="sd">    Yields</span>
-<span class="sd">    -------</span>
-<span class="sd">    Iterator[typing.Generic]</span>
-<span class="sd">        The messages of the plan.</span>
-
-<span class="sd">    Raises</span>
-<span class="sd">    ------</span>
-<span class="sd">    TomoPlanError</span>
-<span class="sd">        Empty detector list.</span>
-<span class="sd">    TomoPlanError</span>
-<span class="sd">        Not enough motors.</span>
-<span class="sd">    TomoPlanError</span>
-<span class="sd">        Wrong motor positions format.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">md</span><span class="p">:</span>
-        <span class="n">md</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">TomoPlanError</span><span class="p">(</span><span class="s2">&quot;Missing arguments for the motors.&quot;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">%</span> <span class="mi">4</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">TomoPlanError</span><span class="p">(</span>
-            <span class="s2">&quot;The arguments must be in format `motor1, start1, end1, number1, motor2, start2, end2, number2, ...`&quot;</span>
-        <span class="p">)</span>
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">detectors</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">TomoPlanError</span><span class="p">(</span><span class="s2">&quot;dets cannot be an empty list.&quot;</span><span class="p">)</span>
-
-    <span class="n">num_frame</span><span class="p">,</span> <span class="n">time_per_frame2</span><span class="p">,</span> <span class="n">time_per_point2</span> <span class="o">=</span> <span class="k">yield from</span> <span class="n">configure_area_det</span><span class="p">(</span>
-        <span class="n">detectors</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">time_per_point</span><span class="p">,</span> <span class="n">time_per_frame</span>
-    <span class="p">)</span>
-    <span class="n">_md</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;sp_time_per_frame&quot;</span><span class="p">:</span> <span class="n">time_per_frame2</span><span class="p">,</span>
-        <span class="s2">&quot;sp_num_frames&quot;</span><span class="p">:</span> <span class="n">num_frame</span><span class="p">,</span>
-        <span class="s2">&quot;sp_requested_exposure&quot;</span><span class="p">:</span> <span class="n">time_per_point</span><span class="p">,</span>
-        <span class="s2">&quot;sp_computed_exposure&quot;</span><span class="p">:</span> <span class="n">time_per_point2</span><span class="p">,</span>
-        <span class="s2">&quot;sp_type&quot;</span><span class="p">:</span> <span class="s2">&quot;ct&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;sp_uid&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()),</span>
-        <span class="s2">&quot;sp_plan_name&quot;</span><span class="p">:</span> <span class="s2">&quot;grid_scan_nd&quot;</span><span class="p">,</span>
-    <span class="p">}</span>
-    <span class="n">_md</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">md</span><span class="p">)</span>
-
-    <span class="n">plan</span> <span class="o">=</span> <span class="n">bpp</span><span class="o">.</span><span class="n">pchain</span><span class="p">(</span>
-        <span class="n">bps</span><span class="o">.</span><span class="n">mv</span><span class="p">(</span><span class="n">shutter</span><span class="p">,</span> <span class="n">shutter_close</span><span class="p">),</span>
-        <span class="n">bps</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">shutter_wait</span><span class="p">),</span>
-        <span class="n">dark_plan</span><span class="p">(</span><span class="n">detectors</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
-        <span class="n">bps</span><span class="o">.</span><span class="n">mv</span><span class="p">(</span><span class="n">shutter</span><span class="p">,</span> <span class="n">shutter_open</span><span class="p">),</span>
-        <span class="n">bps</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">shutter_wait</span><span class="p">),</span>
-        <span class="n">bp</span><span class="o">.</span><span class="n">grid_scan</span><span class="p">(</span><span class="n">detectors</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">snake_axes</span><span class="o">=</span><span class="n">snake</span><span class="p">,</span> <span class="n">md</span><span class="o">=</span><span class="n">_md</span><span class="p">),</span>
-    <span class="p">)</span>
     <span class="n">plan</span> <span class="o">=</span> <span class="n">bpp</span><span class="o">.</span><span class="n">finalize_wrapper</span><span class="p">(</span><span class="n">plan</span><span class="p">,</span> <span class="n">bps</span><span class="o">.</span><span class="n">mv</span><span class="p">(</span><span class="n">shutter</span><span class="p">,</span> <span class="n">shutter_close</span><span class="p">))</span>
     <span class="k">return</span> <span class="p">(</span><span class="k">yield from</span> <span class="n">plan</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="loop_forever"><a class="viewcode-back" href="../../apis.html#crystalmapping.plans.loop_forever">[docs]</a><span class="k">def</span> <span class="nf">loop_forever</span><span class="p">(</span>
-    <span class="n">motor</span><span class="p">:</span> <span class="n">ophyd</span><span class="o">.</span><span class="n">Device</span><span class="p">,</span> <span class="n">left</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">right</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">motor</span><span class="p">:</span> <span class="n">ophyd</span><span class="o">.</span><span class="n">Device</span><span class="p">,</span> <span class="n">left</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">right</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">)</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">Generator</span><span class="p">[</span><span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
     <span class="sd">&quot;&quot;&quot;Move motor from left to right and right to left repeatedly until t seconds pass&quot;&quot;&quot;</span>
-    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+    <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="k">while</span> <span class="p">((</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">timeout</span><span class="p">):</span>
         <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">mv</span><span class="p">(</span><span class="n">motor</span><span class="p">,</span> <span class="n">left</span><span class="p">)</span>
         <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">mv</span><span class="p">(</span><span class="n">motor</span><span class="p">,</span> <span class="n">right</span><span class="p">)</span>
     <span class="k">return</span></div>

@@ -17,6 +17,7 @@
         <script src="_static/underscore.js"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
         <script src="_static/clipboard.min.js"></script>
         <script src="_static/copybutton.js"></script>
     <script src="_static/js/theme.js"></script>
@@ -84,6 +85,7 @@
  | <a href="#E"><strong>E</strong></a>
  | <a href="#F"><strong>F</strong></a>
  | <a href="#G"><strong>G</strong></a>
+ | <a href="#H"><strong>H</strong></a>
  | <a href="#I"><strong>I</strong></a>
  | <a href="#L"><strong>L</strong></a>
  | <a href="#M"><strong>M</strong></a>
@@ -91,19 +93,17 @@
  | <a href="#R"><strong>R</strong></a>
  | <a href="#S"><strong>S</strong></a>
  | <a href="#T"><strong>T</strong></a>
- | <a href="#W"><strong>W</strong></a>
+ | <a href="#V"><strong>V</strong></a>
  
 </div>
 <h2 id="A">A</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="apis.html#crystalmapping.utils.CrystalMapper.assign_q_values">assign_q_values() (crystalmapping.utils.CrystalMapper method)</a>
+      <li><a href="apis.html#crystalmapping.peakindexer.AngleComparsion">AngleComparsion (class in crystalmapping.peakindexer)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="apis.html#crystalmapping.utils.CrystalMapper.auto_process">auto_process() (crystalmapping.utils.CrystalMapper method)</a>
-</li>
-      <li><a href="apis.html#crystalmapping.utils.CrystalMapper.auto_visualize">auto_visualize() (crystalmapping.utils.CrystalMapper static method)</a>
+      <li><a href="apis.html#crystalmapping.crystalmapper.CrystalMapper.auto_process">auto_process() (crystalmapping.crystalmapper.CrystalMapper method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -111,43 +111,39 @@
 <h2 id="C">C</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="apis.html#crystalmapping.utils.CrystalMapper.calc_coords">calc_coords() (crystalmapping.utils.CrystalMapper method)</a>
-</li>
-      <li><a href="apis.html#crystalmapping.utils.CrystalMapper.calc_dark_and_light_from_frames_arr">calc_dark_and_light_from_frames_arr() (crystalmapping.utils.CrystalMapper method)</a>
-</li>
-      <li><a href="apis.html#crystalmapping.utils.CrystalMapper.calc_hkls">calc_hkls() (crystalmapping.utils.CrystalMapper method)</a>
-</li>
-      <li><a href="apis.html#crystalmapping.utils.CrystalMapper.calc_hkls_in_a_range">calc_hkls_in_a_range() (crystalmapping.utils.CrystalMapper method)</a>
-</li>
-      <li><a href="apis.html#crystalmapping.utils.CrystalMapper.calc_hkls_lower_and_upper">calc_hkls_lower_and_upper() (crystalmapping.utils.CrystalMapper method)</a>
-</li>
-      <li><a href="apis.html#crystalmapping.utils.CrystalMapper.calc_intensity_in_windows">calc_intensity_in_windows() (crystalmapping.utils.CrystalMapper method)</a>
-</li>
-      <li><a href="apis.html#crystalmapping.utils.CrystalMapper.calc_peaks_from_dk_sub_frame">calc_peaks_from_dk_sub_frame() (crystalmapping.utils.CrystalMapper method)</a>
-</li>
-      <li><a href="apis.html#crystalmapping.utils.CrystalMapper.calc_windows_from_peaks">calc_windows_from_peaks() (crystalmapping.utils.CrystalMapper method)</a>
-</li>
       <li><a href="apis.html#crystalmapping.servers.Commands">Commands (class in crystalmapping.servers)</a>
 </li>
       <li><a href="apis.html#crystalmapping.plans.configure_area_det">configure_area_det() (in module crystalmapping.plans)</a>
 </li>
-      <li><a href="apis.html#crystalmapping.utils.CrystalMapper.coords_to_dict">coords_to_dict() (crystalmapping.utils.CrystalMapper method)</a>
-</li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="apis.html#crystalmapping.servers.Commands.create_best_effort_config">create_best_effort_config() (crystalmapping.servers.Commands method)</a>
+</li>
+      <li><a href="apis.html#crystalmapping.crystalmapper.CrystalMapper.create_crystal_maps">create_crystal_maps() (crystalmapping.crystalmapper.CrystalMapper method)</a>
 </li>
       <li><a href="apis.html#crystalmapping.servers.Commands.create_extremum_config">create_extremum_config() (crystalmapping.servers.Commands method)</a>
 </li>
-      <li><a href="apis.html#crystalmapping.utils.CrystalMapper">CrystalMapper (class in crystalmapping.utils)</a>
-</li>
-      <li><a href="apis.html#crystalmapping.utils.CrystalMapperError">CrystalMapperError</a>
+      <li><a href="apis.html#crystalmapping.crystalmapper.CrystalMapper">CrystalMapper (class in crystalmapping.crystalmapper)</a>
 </li>
       <li>
     crystalmapping.callbacks
 
       <ul>
         <li><a href="apis.html#module-crystalmapping.callbacks">module</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    crystalmapping.crystalmapper
+
+      <ul>
+        <li><a href="apis.html#module-crystalmapping.crystalmapper">module</a>
+</li>
+      </ul></li>
+      <li>
+    crystalmapping.peakindexer
+
+      <ul>
+        <li><a href="apis.html#module-crystalmapping.peakindexer">module</a>
 </li>
       </ul></li>
       <li>
@@ -164,13 +160,6 @@
         <li><a href="apis.html#module-crystalmapping.servers">module</a>
 </li>
       </ul></li>
-      <li>
-    crystalmapping.utils
-
-      <ul>
-        <li><a href="apis.html#module-crystalmapping.utils">module</a>
-</li>
-      </ul></li>
   </ul></td>
 </tr></table>
 
@@ -178,8 +167,6 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="apis.html#crystalmapping.plans.dark_plan">dark_plan() (in module crystalmapping.plans)</a>
-</li>
-      <li><a href="apis.html#crystalmapping.utils.CrystalMapper.dark_to_xarray">dark_to_xarray() (crystalmapping.utils.CrystalMapper method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -211,11 +198,11 @@
 <h2 id="F">F</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="apis.html#crystalmapping.plans.fly_scan_nd">fly_scan_nd() (in module crystalmapping.plans)</a>
+      <li><a href="apis.html#crystalmapping.crystalmapper.CrystalMapper.find_bragg_spots">find_bragg_spots() (crystalmapping.crystalmapper.CrystalMapper method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="apis.html#crystalmapping.plans.fly_scan_nd_no_shutter">fly_scan_nd_no_shutter() (in module crystalmapping.plans)</a>
+      <li><a href="apis.html#crystalmapping.plans.fly_scan_nd">fly_scan_nd() (in module crystalmapping.plans)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -227,15 +214,21 @@
 </li>
       <li><a href="apis.html#crystalmapping.callbacks.get_dataframe">get_dataframe() (in module crystalmapping.callbacks)</a>
 </li>
-      <li><a href="apis.html#crystalmapping.utils.CrystalMapper.get_frame">get_frame() (crystalmapping.utils.CrystalMapper method)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="apis.html#crystalmapping.callbacks.get_mean_frame">get_mean_frame() (in module crystalmapping.callbacks)</a>
 </li>
       <li><a href="apis.html#crystalmapping.plans.grid_scan_nd">grid_scan_nd() (in module crystalmapping.plans)</a>
 </li>
-      <li><a href="apis.html#crystalmapping.plans.grid_scan_optional_dark">grid_scan_optional_dark() (in module crystalmapping.plans)</a>
+      <li><a href="apis.html#crystalmapping.peakindexer.PeakIndexer.guess_miller_index">guess_miller_index() (crystalmapping.peakindexer.PeakIndexer method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="H">H</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="apis.html#crystalmapping.peakindexer.PeakIndexer.hist_error">hist_error() (crystalmapping.peakindexer.PeakIndexer method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -245,15 +238,13 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="apis.html#crystalmapping.callbacks.ImageProcessor">ImageProcessor (class in crystalmapping.callbacks)</a>
 </li>
-      <li><a href="apis.html#crystalmapping.utils.CrystalMapper.index_peaks">index_peaks() (crystalmapping.utils.CrystalMapper method)</a>
+      <li><a href="apis.html#crystalmapping.peakindexer.IndexerConfig">IndexerConfig (class in crystalmapping.peakindexer)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="apis.html#crystalmapping.utils.CrystalMapper.index_peaks_in_one_grain">index_peaks_in_one_grain() (crystalmapping.utils.CrystalMapper method)</a>
+      <li><a href="apis.html#crystalmapping.peakindexer.IndexerError">IndexerError</a>
 </li>
-      <li><a href="apis.html#crystalmapping.utils.CrystalMapper.index_peaks_in_one_grain2">index_peaks_in_one_grain2() (crystalmapping.utils.CrystalMapper method)</a>
-</li>
-      <li><a href="apis.html#crystalmapping.utils.CrystalMapper.intensity_to_xarray">intensity_to_xarray() (crystalmapping.utils.CrystalMapper method)</a>
+      <li><a href="apis.html#crystalmapping.peakindexer.IndexResult">IndexResult (class in crystalmapping.peakindexer)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -261,11 +252,15 @@
 <h2 id="L">L</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="apis.html#crystalmapping.utils.CrystalMapper.light_to_xarray">light_to_xarray() (crystalmapping.utils.CrystalMapper method)</a>
+      <li><a href="apis.html#crystalmapping.peakindexer.PeakIndexer.load">load() (crystalmapping.peakindexer.PeakIndexer method)</a>
+</li>
+      <li><a href="apis.html#crystalmapping.crystalmapper.CrystalMapper.load_bluesky_v1">load_bluesky_v1() (crystalmapping.crystalmapper.CrystalMapper method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="apis.html#crystalmapping.utils.CrystalMapper.load_structure">load_structure() (crystalmapping.utils.CrystalMapper method)</a>
+      <li><a href="apis.html#crystalmapping.crystalmapper.CrystalMapper.load_bluesky_v2">load_bluesky_v2() (crystalmapping.crystalmapper.CrystalMapper method)</a>
+</li>
+      <li><a href="apis.html#crystalmapping.peakindexer.PeakIndexer.load_miller_index">load_miller_index() (crystalmapping.peakindexer.PeakIndexer method)</a>
 </li>
       <li><a href="apis.html#crystalmapping.plans.loop_forever">loop_forever() (in module crystalmapping.plans)</a>
 </li>
@@ -275,17 +270,23 @@
 <h2 id="M">M</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="apis.html#crystalmapping.crystalmapper.MapperConfig">MapperConfig (class in crystalmapping.crystalmapper)</a>
+</li>
+      <li><a href="apis.html#crystalmapping.crystalmapper.MapperError">MapperError</a>
+</li>
       <li>
     module
 
       <ul>
         <li><a href="apis.html#module-crystalmapping.callbacks">crystalmapping.callbacks</a>
 </li>
+        <li><a href="apis.html#module-crystalmapping.crystalmapper">crystalmapping.crystalmapper</a>
+</li>
+        <li><a href="apis.html#module-crystalmapping.peakindexer">crystalmapping.peakindexer</a>
+</li>
         <li><a href="apis.html#module-crystalmapping.plans">crystalmapping.plans</a>
 </li>
         <li><a href="apis.html#module-crystalmapping.servers">crystalmapping.servers</a>
-</li>
-        <li><a href="apis.html#module-crystalmapping.utils">crystalmapping.utils</a>
 </li>
       </ul></li>
   </ul></td>
@@ -294,13 +295,13 @@
 <h2 id="P">P</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="apis.html#crystalmapping.callbacks.PeakTracker">PeakTracker (class in crystalmapping.callbacks)</a>
+      <li><a href="apis.html#crystalmapping.peakindexer.PeakIndexer">PeakIndexer (class in crystalmapping.peakindexer)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="apis.html#crystalmapping.utils.plot_real_aspect">plot_real_aspect() (in module crystalmapping.utils)</a>
+      <li><a href="apis.html#crystalmapping.callbacks.PeakTracker">PeakTracker (class in crystalmapping.callbacks)</a>
 </li>
-      <li><a href="apis.html#crystalmapping.utils.CrystalMapper.print_indexing_result">print_indexing_result() (crystalmapping.utils.CrystalMapper method)</a>
+      <li><a href="apis.html#crystalmapping.peakindexer.PredictedReflection">PredictedReflection (class in crystalmapping.peakindexer)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -308,12 +309,10 @@
 <h2 id="R">R</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="apis.html#crystalmapping.utils.CrystalMapper.reshape_intensity">reshape_intensity() (crystalmapping.utils.CrystalMapper method)</a>
+      <li><a href="apis.html#crystalmapping.servers.Commands.run_best_effort">run_best_effort() (crystalmapping.servers.Commands method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="apis.html#crystalmapping.servers.Commands.run_best_effort">run_best_effort() (crystalmapping.servers.Commands method)</a>
-</li>
       <li><a href="apis.html#crystalmapping.servers.Commands.run_extremum">run_extremum() (crystalmapping.servers.Commands method)</a>
 </li>
   </ul></td>
@@ -322,25 +321,25 @@
 <h2 id="S">S</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="apis.html#crystalmapping.utils.CrystalMapper.search_two_peaks">search_two_peaks() (crystalmapping.utils.CrystalMapper method)</a>
+      <li><a href="apis.html#crystalmapping.peakindexer.PeakIndexer.save_miller_index">save_miller_index() (crystalmapping.peakindexer.PeakIndexer method)</a>
 </li>
-      <li><a href="apis.html#crystalmapping.utils.CrystalMapper.show_dark">show_dark() (crystalmapping.utils.CrystalMapper method)</a>
+      <li><a href="apis.html#crystalmapping.peakindexer.PeakIndexer.show">show() (crystalmapping.peakindexer.PeakIndexer method)</a>
 </li>
-      <li><a href="apis.html#crystalmapping.utils.CrystalMapper.show_frame">show_frame() (crystalmapping.utils.CrystalMapper method)</a>
+      <li><a href="apis.html#crystalmapping.crystalmapper.CrystalMapper.show_dark">show_dark() (crystalmapping.crystalmapper.CrystalMapper method)</a>
 </li>
-      <li><a href="apis.html#crystalmapping.utils.CrystalMapper.show_intensity">show_intensity() (crystalmapping.utils.CrystalMapper method)</a>
+      <li><a href="apis.html#crystalmapping.crystalmapper.CrystalMapper.show_frame">show_frame() (crystalmapping.crystalmapper.CrystalMapper method)</a>
 </li>
-      <li><a href="apis.html#crystalmapping.utils.CrystalMapper.show_light">show_light() (crystalmapping.utils.CrystalMapper method)</a>
+      <li><a href="apis.html#crystalmapping.crystalmapper.CrystalMapper.show_intensity">show_intensity() (crystalmapping.crystalmapper.CrystalMapper method)</a>
 </li>
-      <li><a href="apis.html#crystalmapping.utils.CrystalMapper.show_light_sub_dark">show_light_sub_dark() (crystalmapping.utils.CrystalMapper method)</a>
+      <li><a href="apis.html#crystalmapping.crystalmapper.CrystalMapper.show_light">show_light() (crystalmapping.crystalmapper.CrystalMapper method)</a>
 </li>
-      <li><a href="apis.html#crystalmapping.utils.CrystalMapper.show_peaks">show_peaks() (crystalmapping.utils.CrystalMapper method)</a>
+      <li><a href="apis.html#crystalmapping.crystalmapper.CrystalMapper.show_light_sub_dark">show_light_sub_dark() (crystalmapping.crystalmapper.CrystalMapper method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="apis.html#crystalmapping.utils.CrystalMapper.show_windows">show_windows() (crystalmapping.utils.CrystalMapper method)</a>
+      <li><a href="apis.html#crystalmapping.crystalmapper.CrystalMapper.show_windows">show_windows() (crystalmapping.crystalmapper.CrystalMapper method)</a>
 </li>
-      <li><a href="apis.html#crystalmapping.utils.CrystalMapper.show_windows_on_frame">show_windows_on_frame() (crystalmapping.utils.CrystalMapper method)</a>
+      <li><a href="apis.html#crystalmapping.crystalmapper.CrystalMapper.show_windows_on_frame">show_windows_on_frame() (crystalmapping.crystalmapper.CrystalMapper method)</a>
 </li>
       <li><a href="apis.html#crystalmapping.callbacks.ImageProcessor.start">start() (crystalmapping.callbacks.ImageProcessor method)</a>
 
@@ -360,22 +359,26 @@
 <h2 id="T">T</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="apis.html#crystalmapping.utils.CrystalMapper.to_dataset">to_dataset() (crystalmapping.utils.CrystalMapper method)</a>
+      <li><a href="apis.html#crystalmapping.plans.TomoPlanError">TomoPlanError</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="apis.html#crystalmapping.plans.TomoPlanError">TomoPlanError</a>
-</li>
       <li><a href="apis.html#crystalmapping.callbacks.TrackLinker">TrackLinker (class in crystalmapping.callbacks)</a>
+</li>
+      <li><a href="apis.html#crystalmapping.crystalmapper.CrystalMapper.tune_RoI">tune_RoI() (crystalmapping.crystalmapper.CrystalMapper method)</a>
 </li>
   </ul></td>
 </tr></table>
 
-<h2 id="W">W</h2>
+<h2 id="V">V</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="apis.html#crystalmapping.utils.CrystalMapper.windows_to_xarray">windows_to_xarray() (crystalmapping.utils.CrystalMapper method)</a>
+      <li><a href="apis.html#crystalmapping.crystalmapper.CrystalMapper.visualize">visualize() (crystalmapping.crystalmapper.CrystalMapper method)</a>
+
+      <ul>
+        <li><a href="apis.html#crystalmapping.peakindexer.PeakIndexer.visualize">(crystalmapping.peakindexer.PeakIndexer method)</a>
 </li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
