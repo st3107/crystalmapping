@@ -509,7 +509,7 @@ class PeakIndexer(object):
         # part 2
         print("The U matrix is shown below.")
         print()
-        print(_str_matrix(np.round(data["U"].data, 2)))
+        print(_str_matrix(np.round(data["U"].data, 3)))
         print()
         # part 3
         print("Below is the prediction of the hkls.")
