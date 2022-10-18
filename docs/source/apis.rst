@@ -14,7 +14,7 @@ crystalmapping.servers
    :members:
 
 crystalmapping.crystalmapper
---------------------
+----------------------------
 
 .. automodule:: crystalmapping.crystalmapper
    :members:
@@ -27,7 +27,7 @@ crystalmapping.callbacks
 
 
 crystalmapping.peakindexer
---------------------
+--------------------------
 
 .. automodule:: crystalmapping.peakindexer
    :members:
