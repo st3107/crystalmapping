@@ -147,7 +147,7 @@ def _auto_plot(
 def _auto_plot_dataset(
     ds: xr.Dataset,
     key: str = "intensity",
-    title: typing.Tuple[str, str] = None,
+    title: typing.Tuple[str, str] = ("grain", "peak {}"),
     invert_y: bool = True,
     **kwargs
 ) -> None:
