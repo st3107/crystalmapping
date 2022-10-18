@@ -7,18 +7,8 @@ from crystalmapping.datafiles import (
 from crystalmapping.peakindexer import IndexerConfig, PeakIndexer
 
 
-def test_indexing_real_data():
-    GRPOUP1 = [0, 1]
-    config = IndexerConfig()
-    pi = PeakIndexer(config)
-    pi.load([str(CRYSTAL_MAPS_FILE_90_DEG)], [(0., 0., 90.)], str(CEO2_PONI_FILE), str(TIO2_CIF_FILE))
-    pi.guess_miller_index(GRPOUP1)
-    pi.show(1)
-    return
-
-
 def test_indexing_merged_data():
-    GRPOUP1 = [0, 1]
+    GRPOUP1 = ["1_1", "1_2"]
     config = IndexerConfig()
     pi = PeakIndexer(config)
     pi.load(
@@ -29,5 +19,5 @@ def test_indexing_merged_data():
     )
     pi.guess_miller_index(GRPOUP1)
     pi.show(1)
-    pi.visualize(0, GRPOUP1)
+    pi.visualize(0, ["1_1"])
     return

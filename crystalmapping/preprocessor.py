@@ -9,11 +9,9 @@ EulerAngle = Tuple[float, float, float]
 
 
 def _reindex_peak_id(data_lst: List[Dataset], index: str) -> None:
-    start = 0
-    for data in data_lst:
+    for i, data in enumerate(data_lst):
         n = data[index].shape[0]
-        data[index] = np.arange(start, start + n, dtype=np.int64)
-        start += n
+        data[index] = [f"{j+1}_{i+1}" for j in range(n)]
     return None
 
 
