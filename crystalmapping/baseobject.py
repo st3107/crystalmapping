@@ -207,7 +207,5 @@ class BaseObject(object):
         ----------
         peaks : typing.List[int]
             A list of integer of the peaks.
-        size: float
-            The size of one cystal map.
         """
         return _show_crystal_maps(self._dataset, peaks, **kwargs)

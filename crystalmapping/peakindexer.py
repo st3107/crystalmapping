@@ -148,6 +148,7 @@ class AngleComparsion(object):
 
 @dataclass
 class IndexResult(object):
+    """The result of peak indexing."""
 
     peak1: int
     peak2: int
@@ -166,6 +167,7 @@ class IndexResult(object):
 
 @dataclass
 class IndexerConfig(object):
+    """Configuration for the PeakIndexer."""
 
     dspacing_bounds: T.Optional[T.Tuple[float, float]] = None
     index_agl_tolerance: float = 1.0
@@ -175,11 +177,13 @@ class IndexerConfig(object):
 
 
 class IndexerError(Exception):
+    """Error of the PeakIndexer."""
     pass
 
 
 @dataclass
 class PredictedReflection(object):
+    """The results of the predicted reflection."""
 
     q: T.Optional[np.ndarray] = None
     d: T.Optional[np.ndarray] = None

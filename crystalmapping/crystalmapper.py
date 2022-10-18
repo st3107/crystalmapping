@@ -307,7 +307,8 @@ class CrystalMapper(BaseObject):
             )
 
     def show_frame(self, index: int, *args, **kwargs) -> FacetGrid:
-        """Show the frame at that index."""
+        """Show the frame at that index.
+        """
         frame = self._get_frame(index)
         _set_vlim(kwargs, frame, 4.0)
         facet = frame.plot.imshow(*args, **kwargs)
@@ -321,7 +322,8 @@ class CrystalMapper(BaseObject):
         return facet
 
     def show_dark(self, *args, **kwargs) -> FacetGrid:
-        """Show the dark image."""
+        """Show the dark image.
+        """
         frame = self._dark_to_xarray()
         _set_vlim(kwargs, frame, 4.0)
         facet = frame.plot.imshow(*args, **kwargs)
@@ -329,7 +331,8 @@ class CrystalMapper(BaseObject):
         return facet
 
     def show_light(self, *args, **kwargs) -> FacetGrid:
-        """Show the light image."""
+        """Show the light image.
+        """
         frame = self._light_to_xarray()
         _set_vlim(kwargs, frame, 4.0)
         facet = frame.plot.imshow(*args, **kwargs)
@@ -348,30 +351,53 @@ class CrystalMapper(BaseObject):
         return facet
 
     def show_windows(self, *args, **kwargs) -> FacetGrid:
-        """Show the windows on the dark subtracted light image."""
+        """Show the windows on the dark subtracted light image.
+        """
         facet = self.show_light_sub_dark(*args, **kwargs)
         _draw_windows(self._windows, facet.axes)
         return facet
 
     def show_intensity(self, **kwargs) -> FacetGrid:
-        """Show the intensity array."""
+        """Show the intensity array.
+        """
         arr = self._intensity_to_xarray()
         return _auto_plot(arr, title=None, invert_y=True, **kwargs)
 
     def auto_process(self) -> None:
-        """Automatically process the data in the standard protocol."""
+        """Automatically process the data in the standard protocol.
+        """
         self.find_bragg_spots()
         self.create_crystal_maps()
         return
 
     def tune_RoI(self, number: int, half_width: int) -> None:
+        """Tune the RoI number and half width.
+
+        Parameters
+        ----------
+        number : int
+            Number of the RoI regions. Choose from the strongest.
+        half_width : int
+            Number of pixels excluding the center for the half width of the RoI region.
+        """
         self._config.RoI_number = number
         self._config.RoI_half_width = half_width
         self._align_roi()
         self.show_windows()
         return
 
+    def find_bragg_spots(self) -> None:
+        """Find the Bragg spots before creating the crystal maps.
+        """
+        self._squeeze_shape_and_extents()
+        self._calc_dark_and_light_from_frames_arr(self._config.slice_of_frames)
+        self._calc_peaks_from_dk_sub_frame(self._config.trackpy_kernel_size)
+        self._calc_coords()
+        return
+
     def create_crystal_maps(self) -> None:
+        """Create the crystal maps after finding the Bragg spots.
+        """
         self._align_roi()
         self._calc_intensity_in_windows()
         self._reshape_intensity()
@@ -384,19 +410,36 @@ class CrystalMapper(BaseObject):
         )
         return
 
-    def find_bragg_spots(self) -> None:
-        self._squeeze_shape_and_extents()
-        self._calc_dark_and_light_from_frames_arr(self._config.slice_of_frames)
-        self._calc_peaks_from_dk_sub_frame(self._config.trackpy_kernel_size)
-        self._calc_coords()
-        return
-
     def load_bluesky_v1(self, run: BlueskyRun) -> None:
+        """Load the data and metadata from the version 1 databroker.
+
+        Parameters
+        ----------
+        run : BlueskyRun
+            A version 1 BlueskyRun (Header).
+        """
         self._metadata = dict(run.start)
         self._frames_arr = run.xarray_dask()[self._config.image_data_key]
         return
 
     def load_bluesky_v2(self, run: BlueskyRun) -> None:
+        """Load the data and metadata from the version 2 databroker.
+
+        Parameters
+        ----------
+        run : BlueskyRun
+            A version 2 BlueskyRun.
+        """
         self._metadata = dict(run.metadata["start"])
         self._frames_arr = run.primary.to_dask()[self._config.image_data_key]
         return
+
+    def visualize(self, peaks: typing.Optional[typing.List[int]] = None, **kwargs) -> None:
+        """Show the crystal maps of certain peaks.
+
+        Parameters
+        ----------
+        peaks : typing.List[int]
+            A list of integer of the peaks.
+        """
+        return super().visualize(peaks, **kwargs)
