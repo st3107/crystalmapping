@@ -13,7 +13,7 @@ def test_indexing_real_data():
     pi = PeakIndexer(config)
     pi.load([str(CRYSTAL_MAPS_FILE_90_DEG)], [(0., 0., 90.)], str(CEO2_PONI_FILE), str(TIO2_CIF_FILE))
     pi.guess_miller_index(GRPOUP1)
-    pi.show()
+    pi.show(1)
     return
 
 
@@ -28,7 +28,7 @@ def test_indexing_merged_data():
         str(TIO2_CIF_FILE),
     )
     pi.guess_miller_index(GRPOUP1)
-    pi.show()
+    pi.show(1)
     pi.visualize(0, GRPOUP1)
-    pi.hist_error()
+    pi.hist_error(GRPOUP1)
     return
