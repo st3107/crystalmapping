@@ -30,5 +30,4 @@ def test_indexing_merged_data():
     pi.guess_miller_index(GRPOUP1)
     pi.show(1)
     pi.visualize(0, GRPOUP1)
-    pi.hist_error(GRPOUP1)
     return
