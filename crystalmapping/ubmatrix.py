@@ -9,6 +9,10 @@ Matrix = np.ndarray
 EulerAngle = Tuple[float, float, float]
 
 
+class UBMatrixError(Exception):
+    pass
+
+
 def _cross_product(v1: np.ndarray, v2: np.ndarray) -> np.ndarray:
     return np.cross(v1, v2)
 
@@ -21,7 +25,10 @@ def _gram_schmidt(vs: np.ndarray) -> np.ndarray:
         u = v
         for i in range(n):
             u -= _project(us[i], v)
-        u /= np.linalg.norm(u)
+        norm_u = np.linalg.norm(u)
+        if norm_u == 0.:
+            raise UBMatrixError("Norm of the vector is zero.")
+        u /= norm_u
         us.append(u)
     return np.column_stack(us)
 
@@ -116,10 +123,6 @@ def _sample_to_lab(R: Matrix, v_sample: np.ndarray) -> np.ndarray:
 
 def _lab_to_sample(R: Matrix, v_lab: np.ndarray) -> np.ndarray:
     return np.matmul(R.T, v_lab.T).T
-
-
-class UBMatrixError(Exception):
-    pass
 
 
 class UBMatrix:

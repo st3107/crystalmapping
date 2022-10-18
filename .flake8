@@ -9,4 +9,4 @@ exclude =
     docs/source/conf.py
     notebooks/*
     __init__.py
-max-line-length = 115
+max-line-length = 1000

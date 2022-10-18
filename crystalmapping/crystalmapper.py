@@ -419,7 +419,10 @@ class CrystalMapper(BaseObject):
             A version 1 BlueskyRun (Header).
         """
         self._metadata = dict(run.start)
-        self._frames_arr = run.xarray_dask()[self._config.image_data_key]
+        try:
+            self._frames_arr = run.xarray_dask()[self._config.image_data_key]
+        except Exception:
+            self._frames_arr = run.xarray()[self._config.image_data_key]
         return
 
     def load_bluesky_v2(self, run: BlueskyRun) -> None:
@@ -431,7 +434,10 @@ class CrystalMapper(BaseObject):
             A version 2 BlueskyRun.
         """
         self._metadata = dict(run.metadata["start"])
-        self._frames_arr = run.primary.to_dask()[self._config.image_data_key]
+        try:
+            self._frames_arr = run.primary.to_dask()[self._config.image_data_key]
+        except Exception:
+            self._frames_arr = run.primary.read()[self._config.image_data_key]
         return
 
     def visualize(self, peaks: typing.Optional[typing.List[int]] = None, **kwargs) -> None:

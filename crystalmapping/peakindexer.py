@@ -93,10 +93,17 @@ def _get_n_largest(lst: T.Iterable[T.Any], n: int) -> T.List[T.Tuple]:
     return res
 
 
+def _normalize(v: np.ndarray) -> np.ndarray:
+    nv = np.linalg.norm(v)
+    if nv == 0.:
+        raise IndexError("length of vector is zero.")
+    return v / nv
+
+
 def _get_anlge(v1: np.ndarray, v2: np.ndarray) -> float:
-    v1_u = v1 / np.linalg.norm(v1)
-    v2_u = v2 / np.linalg.norm(v2)
-    return np.arccos(np.clip(np.dot(v1_u, v2_u), -1.0, 1.0))
+    v1_u = _normalize(v1)
+    v2_u = _normalize(v2)
+    return np.rad2deg(np.arccos(np.clip(np.dot(v1_u, v2_u), -1.0, 1.0)))
 
 
 def _get_peaks_table(dataset: xr.Dataset, ai: AzimuthalIntegrator) -> pd.DataFrame:
@@ -585,6 +592,6 @@ class PeakIndexer(object):
             q = "peak == '{}'".format(peak[i]) if isinstance(peak[i], str) else "peak == {}".format(peak[i])
             data = losses.query(q)
             sns.histplot(data, kde=True, ax=axes[i], bins=bins)
-            axes[i].legend(["$\mu$ = {:.2f}, $\sigma$ = {:.3f}".format(data["losses"].mean(), data["losses"].std())])
+            axes[i].legend([r"$\mu$ = {:.2f}, $\sigma$ = {:.3f}".format(data["losses"].mean(), data["losses"].std())])
             axes[i].set_title("Bragg Peak {}".format(peak[i]))
         return
