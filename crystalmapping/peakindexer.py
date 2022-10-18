@@ -94,9 +94,9 @@ def _get_n_largest(lst: T.Iterable[T.Any], n: int) -> T.List[T.Tuple]:
 
 
 def _get_anlge(v1: np.ndarray, v2: np.ndarray) -> float:
-    inner = np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2))
-    inner = max(inner, min(inner, 1.), -1.)
-    return np.rad2deg(np.arccos(inner))
+    v1_u = v1 / np.linalg.norm(v1)
+    v2_u = v2 / np.linalg.norm(v2)
+    return np.arccos(np.clip(np.dot(v1_u, v2_u), -1.0, 1.0))
 
 
 def _get_peaks_table(dataset: xr.Dataset, ai: AzimuthalIntegrator) -> pd.DataFrame:
@@ -303,12 +303,12 @@ class PeakIndexer(object):
         )
         return
 
-    def guess_miller_index(self, peak_ids: T.List[int]) -> None:
+    def guess_miller_index(self, peak_ids: T.List[str]) -> None:
         """Guess the index of the peaks in one grain.
 
         Parameters
         ----------
-        peaks : typing.List[int]
+        peaks : typing.List[str]
             The index of the peaks in the table.
         """
         for p in peak_ids:
@@ -379,7 +379,7 @@ class PeakIndexer(object):
         )
         return
 
-    def _get_candidates(self, peaks: T.List[int]) -> T.List[np.ndarray]:
+    def _get_candidates(self, peaks: T.List[str]) -> T.List[np.ndarray]:
         """Calculate hkls and assign them to the peaks.
 
         Find the upper and lower bound of the Q for each Q value in the dataframe. The hkls that have the upper
@@ -461,7 +461,7 @@ class PeakIndexer(object):
         cost = np.sqrt(diffs_sq / lens_sq)
         return cost
 
-    def _get_indexing_result_for_peaks(self, peaks: typing.List[int]) -> np.ndarray:
+    def _get_indexing_result_for_peaks(self, peaks: typing.List[str]) -> np.ndarray:
         return np.stack([self._get_hkl_for_a_peak(peak) for peak in peaks])
 
     def _get_hkl_for_a_peak(self, peak: int) -> HKL:
@@ -551,14 +551,14 @@ class PeakIndexer(object):
         df = pd.DataFrame(dct)
         return df
 
-    def visualize(self, dataset_id: int, peak_ids: List[int] = None, **kwargs) -> None:
+    def visualize(self, dataset_id: int, peak_ids: List[str] = None, **kwargs) -> None:
         """Visualize the crystal maps.
 
         Parameters
         ----------
         dataset_id : int
             A 0-index ID of the dataset.
-        peaks : List[int], optional
+        peaks : List[str], optional
             A list of peak id in that dataset, by default None
         """
         if peak_ids is None:
@@ -567,12 +567,12 @@ class PeakIndexer(object):
             _show_crystal_maps(self._datasets[dataset_id], peak_ids, **kwargs)
         return
 
-    def hist_error(self, peak_ids: List[int] = None, size: float = 4., bins: Any = "auto") -> None:
+    def hist_error(self, peak_ids: List[str] = None, size: float = 4., bins: Any = "auto") -> None:
         """Plot the histogram of erros.
 
         Parameters
         ----------
-        peak_ids : List[int], optional
+        peak_ids : List[str], optional
             A list of peak IDs to plot, by default None, plot all peaks.
         size : float, optional
             Size in inches for the individual panel, by default 4.
@@ -582,7 +582,7 @@ class PeakIndexer(object):
         n = len(peak)
         _, axes = _square_grid_subplots(n, size)
         for i in range(n):
-            q = 'peak == {}'.format(peak[i])
+            q = "peak == '{}'".format(peak[i]) if isinstance(peak[i], str) else "peak == {}".format(peak[i])
             data = losses.query(q)
             sns.histplot(data, kde=True, ax=axes[i], bins=bins)
             axes[i].legend(["$\mu$ = {:.2f}, $\sigma$ = {:.3f}".format(data["losses"].mean(), data["losses"].std())])
