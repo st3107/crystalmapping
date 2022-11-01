@@ -83,7 +83,7 @@
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
 <span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
 <span class="kn">from</span> <span class="nn">heapq</span> <span class="kn">import</span> <span class="n">heappop</span><span class="p">,</span> <span class="n">heappush</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Tuple</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">NamedTuple</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Tuple</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
@@ -105,6 +105,40 @@
 <span class="n">HKL</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
 <span class="n">Matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
 <span class="n">T</span> <span class="o">=</span> <span class="n">typing</span>
+
+<div class="viewcode-block" id="AngleComparsion"><a class="viewcode-back" href="../../apis.html#crystalmapping.peakindexer.AngleComparsion">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">AngleComparsion</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="n">h1</span><span class="p">:</span> <span class="n">HKL</span>
+    <span class="n">h2</span><span class="p">:</span> <span class="n">HKL</span>
+    <span class="n">angle_sample</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">angle_grain</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">diff_angle</span><span class="p">:</span> <span class="nb">float</span>
+
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">__o</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">diff_angle</span> <span class="o">==</span> <span class="n">__o</span><span class="o">.</span><span class="n">diff_angle</span>
+
+    <span class="k">def</span> <span class="fm">__lt__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">__o</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">diff_angle</span> <span class="o">&gt;</span> <span class="n">__o</span><span class="o">.</span><span class="n">diff_angle</span></div>
+
+
+<div class="viewcode-block" id="IndexResult"><a class="viewcode-back" href="../../apis.html#crystalmapping.peakindexer.IndexResult">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">IndexResult</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;The result of peak indexing.&quot;&quot;&quot;</span>
+
+    <span class="n">peak1</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">peak2</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">u_mat</span><span class="p">:</span> <span class="n">Matrix</span>
+    <span class="n">hkls</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">losses</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">loss</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">ac</span><span class="p">:</span> <span class="n">AngleComparsion</span>
+
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">__o</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss</span> <span class="o">==</span> <span class="n">__o</span><span class="o">.</span><span class="n">loss</span>
+
+    <span class="k">def</span> <span class="fm">__lt__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">__o</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss</span> <span class="o">&lt;</span> <span class="n">__o</span><span class="o">.</span><span class="n">loss</span></div>
 
 
 <span class="k">def</span> <span class="nf">_str_matrix</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">Matrix</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -216,39 +250,82 @@
     <span class="k">return</span> <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span>
 
 
-<div class="viewcode-block" id="AngleComparsion"><a class="viewcode-back" href="../../apis.html#crystalmapping.peakindexer.AngleComparsion">[docs]</a><span class="nd">@dataclass</span>
-<span class="k">class</span> <span class="nc">AngleComparsion</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-
-    <span class="n">h1</span><span class="p">:</span> <span class="n">HKL</span>
-    <span class="n">h2</span><span class="p">:</span> <span class="n">HKL</span>
-    <span class="n">angle_sample</span><span class="p">:</span> <span class="nb">float</span>
-    <span class="n">angle_grain</span><span class="p">:</span> <span class="nb">float</span>
-    <span class="n">diff_angle</span><span class="p">:</span> <span class="nb">float</span>
-
-    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">__o</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">diff_angle</span> <span class="o">==</span> <span class="n">__o</span><span class="o">.</span><span class="n">diff_angle</span>
-
-    <span class="k">def</span> <span class="fm">__lt__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">__o</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">diff_angle</span> <span class="o">&gt;</span> <span class="n">__o</span><span class="o">.</span><span class="n">diff_angle</span></div>
+<span class="k">def</span> <span class="nf">_get_losses</span><span class="p">(</span><span class="n">ub</span><span class="p">:</span> <span class="n">UBMatrix</span><span class="p">,</span> <span class="n">hkls</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="n">rhkls</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">around</span><span class="p">(</span><span class="n">hkls</span><span class="p">)</span>
+    <span class="n">vs</span> <span class="o">=</span> <span class="n">ub</span><span class="o">.</span><span class="n">lat_to_grain</span><span class="p">(</span><span class="n">hkls</span><span class="p">)</span>
+    <span class="n">rvs</span> <span class="o">=</span> <span class="n">ub</span><span class="o">.</span><span class="n">lat_to_grain</span><span class="p">(</span><span class="n">rhkls</span><span class="p">)</span>
+    <span class="n">diffs_sq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">rvs</span> <span class="o">-</span> <span class="n">vs</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">lens_sq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">vs</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">cost</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">diffs_sq</span> <span class="o">/</span> <span class="n">lens_sq</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">cost</span>
 
 
-<div class="viewcode-block" id="IndexResult"><a class="viewcode-back" href="../../apis.html#crystalmapping.peakindexer.IndexResult">[docs]</a><span class="nd">@dataclass</span>
-<span class="k">class</span> <span class="nc">IndexResult</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;The result of peak indexing.&quot;&quot;&quot;</span>
+<span class="k">def</span> <span class="nf">_make_peak_index</span><span class="p">(</span><span class="n">res</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">List</span><span class="p">[</span><span class="n">IndexResult</span><span class="p">],</span> <span class="n">all_peaks</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;U&quot;</span><span class="p">:</span> <span class="p">([</span><span class="s2">&quot;candidate&quot;</span><span class="p">,</span> <span class="s2">&quot;dim_0&quot;</span><span class="p">,</span> <span class="s2">&quot;dim_1&quot;</span><span class="p">],</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">u_mat</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">res</span><span class="p">]),</span>
+            <span class="s2">&quot;hkls&quot;</span><span class="p">:</span> <span class="p">([</span><span class="s2">&quot;candidate&quot;</span><span class="p">,</span> <span class="s2">&quot;peak&quot;</span><span class="p">,</span> <span class="s2">&quot;dim_1&quot;</span><span class="p">],</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">hkls</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">res</span><span class="p">]),</span>
+            <span class="s2">&quot;losses&quot;</span><span class="p">:</span> <span class="p">([</span><span class="s2">&quot;candidate&quot;</span><span class="p">,</span> <span class="s2">&quot;peak&quot;</span><span class="p">],</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">losses</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">res</span><span class="p">]),</span>
+            <span class="s2">&quot;loss&quot;</span><span class="p">:</span> <span class="p">([</span><span class="s2">&quot;candidate&quot;</span><span class="p">],</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">loss</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">res</span><span class="p">]),</span>
+            <span class="s2">&quot;angle_sample&quot;</span><span class="p">:</span> <span class="p">(</span>
+                <span class="p">[</span><span class="s2">&quot;candidate&quot;</span><span class="p">],</span>
+                <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">ac</span><span class="o">.</span><span class="n">angle_sample</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">res</span><span class="p">],</span>
+                <span class="p">{</span><span class="s2">&quot;units&quot;</span><span class="p">:</span> <span class="s2">&quot;deg&quot;</span><span class="p">},</span>
+            <span class="p">),</span>
+            <span class="s2">&quot;angle_grain&quot;</span><span class="p">:</span> <span class="p">(</span>
+                <span class="p">[</span><span class="s2">&quot;candidate&quot;</span><span class="p">],</span>
+                <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">ac</span><span class="o">.</span><span class="n">angle_grain</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">res</span><span class="p">],</span>
+                <span class="p">{</span><span class="s2">&quot;units&quot;</span><span class="p">:</span> <span class="s2">&quot;deg&quot;</span><span class="p">},</span>
+            <span class="p">),</span>
+            <span class="s2">&quot;diff_angle&quot;</span><span class="p">:</span> <span class="p">(</span>
+                <span class="p">[</span><span class="s2">&quot;candidate&quot;</span><span class="p">],</span>
+                <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">ac</span><span class="o">.</span><span class="n">diff_angle</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">res</span><span class="p">],</span>
+                <span class="p">{</span><span class="s2">&quot;units&quot;</span><span class="p">:</span> <span class="s2">&quot;deg&quot;</span><span class="p">},</span>
+            <span class="p">),</span>
+            <span class="s2">&quot;peak1&quot;</span><span class="p">:</span> <span class="p">([</span><span class="s2">&quot;candidate&quot;</span><span class="p">],</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">peak1</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">res</span><span class="p">]),</span>
+            <span class="s2">&quot;peak2&quot;</span><span class="p">:</span> <span class="p">([</span><span class="s2">&quot;candidate&quot;</span><span class="p">],</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">peak2</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">res</span><span class="p">]),</span>
+        <span class="p">},</span>
+        <span class="p">{</span><span class="s2">&quot;peak&quot;</span><span class="p">:</span> <span class="p">([</span><span class="s2">&quot;peak&quot;</span><span class="p">],</span> <span class="n">all_peaks</span><span class="p">)},</span>
+    <span class="p">)</span>
 
-    <span class="n">peak1</span><span class="p">:</span> <span class="nb">int</span>
-    <span class="n">peak2</span><span class="p">:</span> <span class="nb">int</span>
-    <span class="n">u_mat</span><span class="p">:</span> <span class="n">Matrix</span>
-    <span class="n">hkls</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
-    <span class="n">losses</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
-    <span class="n">loss</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
-    <span class="n">ac</span><span class="p">:</span> <span class="n">AngleComparsion</span>
 
-    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">__o</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss</span> <span class="o">==</span> <span class="n">__o</span><span class="o">.</span><span class="n">loss</span>
+<span class="k">def</span> <span class="nf">_get_hkl</span><span class="p">(</span><span class="n">ub</span><span class="p">:</span> <span class="n">UBMatrix</span><span class="p">,</span> <span class="n">row</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="n">ub</span><span class="o">.</span><span class="n">set_R1</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;alpha&quot;</span><span class="p">],</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;beta&quot;</span><span class="p">],</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;gamma&quot;</span><span class="p">])</span>
+    <span class="n">v_lab</span> <span class="o">=</span> <span class="n">ub</span><span class="o">.</span><span class="n">xy_to_lab</span><span class="p">(</span><span class="n">row</span><span class="p">[[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">())</span>
+    <span class="n">v_sample</span> <span class="o">=</span> <span class="n">ub</span><span class="o">.</span><span class="n">lab_to_sample_1</span><span class="p">(</span><span class="n">v_lab</span><span class="p">)</span>
+    <span class="n">v_grain</span> <span class="o">=</span> <span class="n">ub</span><span class="o">.</span><span class="n">sample_to_grain</span><span class="p">(</span><span class="n">v_sample</span><span class="p">)</span>
+    <span class="n">v_lat</span> <span class="o">=</span> <span class="n">ub</span><span class="o">.</span><span class="n">grain_to_lat</span><span class="p">(</span><span class="n">v_grain</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">v_lat</span>
 
-    <span class="k">def</span> <span class="fm">__lt__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">__o</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss</span> <span class="o">&lt;</span> <span class="n">__o</span><span class="o">.</span><span class="n">loss</span></div>
+
+<span class="k">def</span> <span class="nf">_index_using_U_matrix</span><span class="p">(</span><span class="n">peak_index</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">,</span> <span class="n">peaks</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">ub</span><span class="p">:</span> <span class="n">UBMatrix</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IndexResult</span><span class="p">:</span>
+    <span class="n">ub</span><span class="o">.</span><span class="n">U</span> <span class="o">=</span> <span class="n">peak_index</span><span class="p">[</span><span class="s2">&quot;U&quot;</span><span class="p">][</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">data</span>
+    <span class="n">hkls</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">_get_hkl</span><span class="p">(</span><span class="n">ub</span><span class="p">,</span> <span class="n">row</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">peaks</span><span class="o">.</span><span class="n">iterrows</span><span class="p">()])</span>
+    <span class="n">losses</span> <span class="o">=</span> <span class="n">_get_losses</span><span class="p">(</span><span class="n">ub</span><span class="p">,</span> <span class="n">hkls</span><span class="p">)</span>
+    <span class="n">loss</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">losses</span><span class="p">)</span>
+    <span class="n">ac</span> <span class="o">=</span> <span class="n">AngleComparsion</span><span class="p">(</span>
+        <span class="kc">None</span><span class="p">,</span>
+        <span class="kc">None</span><span class="p">,</span>
+        <span class="n">peak_index</span><span class="p">[</span><span class="s2">&quot;angle_sample&quot;</span><span class="p">][</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span>
+        <span class="n">peak_index</span><span class="p">[</span><span class="s2">&quot;angle_grain&quot;</span><span class="p">][</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span>
+        <span class="n">peak_index</span><span class="p">[</span><span class="s2">&quot;diff_angle&quot;</span><span class="p">][</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+    <span class="p">)</span>
+    <span class="n">ir</span> <span class="o">=</span> <span class="n">IndexResult</span><span class="p">(</span>
+        <span class="n">peak_index</span><span class="p">[</span><span class="s2">&quot;peak1&quot;</span><span class="p">][</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
+        <span class="n">peak_index</span><span class="p">[</span><span class="s2">&quot;peak2&quot;</span><span class="p">][</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
+        <span class="n">ub</span><span class="o">.</span><span class="n">U</span><span class="p">,</span>
+        <span class="n">hkls</span><span class="p">,</span>
+        <span class="n">losses</span><span class="p">,</span>
+        <span class="n">loss</span><span class="p">,</span>
+        <span class="n">ac</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">ir</span>
+
+
+<span class="k">def</span> <span class="nf">_index_peaks</span><span class="p">(</span><span class="n">peak_index</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">,</span> <span class="n">peaks</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">ub</span><span class="p">:</span> <span class="n">UBMatrix</span><span class="p">,</span> <span class="n">idxs</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">List</span><span class="p">[</span><span class="n">T</span><span class="o">.</span><span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">IndexResult</span><span class="p">:</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="p">[</span><span class="n">_index_using_U_matrix</span><span class="p">(</span><span class="n">peak_index</span><span class="p">,</span> <span class="n">peaks</span><span class="p">,</span> <span class="n">ub</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span> <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">idxs</span><span class="p">]</span>
+    <span class="n">peak_ids</span> <span class="o">=</span> <span class="n">peaks</span><span class="o">.</span><span class="n">index</span>
+    <span class="k">return</span> <span class="n">_make_peak_index</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="n">peak_ids</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="IndexerConfig"><a class="viewcode-back" href="../../apis.html#crystalmapping.peakindexer.IndexerConfig">[docs]</a><span class="nd">@dataclass</span>
@@ -297,6 +374,8 @@
     <span class="n">_ubmatrix</span><span class="p">:</span> <span class="n">UBMatrix</span> <span class="o">=</span> <span class="n">UBMatrix</span><span class="p">()</span>
     <span class="c1"># cached value</span>
     <span class="n">_pred</span><span class="p">:</span> <span class="n">PredictedReflection</span> <span class="o">=</span> <span class="n">PredictedReflection</span><span class="p">()</span>
+    <span class="c1"># previous result</span>
+    <span class="n">_previous_result</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 
 <div class="viewcode-block" id="PeakIndexer.load"><a class="viewcode-back" href="../../apis.html#crystalmapping.peakindexer.PeakIndexer.load">[docs]</a>    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -336,6 +415,17 @@
 <span class="sd">            A netcdf4 file of the guessing results.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_peak_index</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">load_dataset</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        <span class="k">return</span></div>
+
+<div class="viewcode-block" id="PeakIndexer.load_previous_result"><a class="viewcode-back" href="../../apis.html#crystalmapping.peakindexer.PeakIndexer.load_previous_result">[docs]</a>    <span class="k">def</span> <span class="nf">load_previous_result</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Load the result from the previous peak indexing.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        result_file : str</span>
+<span class="sd">            Output file from the PeakIndexer.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_previous_result</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">load_dataset</span><span class="p">(</span><span class="n">result_file</span><span class="p">)</span>
         <span class="k">return</span></div>
 
 <div class="viewcode-block" id="PeakIndexer.save_miller_index"><a class="viewcode-back" href="../../apis.html#crystalmapping.peakindexer.PeakIndexer.save_miller_index">[docs]</a>    <span class="k">def</span> <span class="nf">save_miller_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -437,32 +527,7 @@
                 <span class="s2">&quot;agl tolerance or checking the data.&quot;</span>
             <span class="p">)</span>
         <span class="c1"># summarize the results</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_peak_index</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span>
-            <span class="p">{</span>
-                <span class="s2">&quot;U&quot;</span><span class="p">:</span> <span class="p">([</span><span class="s2">&quot;candidate&quot;</span><span class="p">,</span> <span class="s2">&quot;dim_0&quot;</span><span class="p">,</span> <span class="s2">&quot;dim_1&quot;</span><span class="p">],</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">u_mat</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">res</span><span class="p">]),</span>
-                <span class="s2">&quot;hkls&quot;</span><span class="p">:</span> <span class="p">([</span><span class="s2">&quot;candidate&quot;</span><span class="p">,</span> <span class="s2">&quot;peak&quot;</span><span class="p">,</span> <span class="s2">&quot;dim_1&quot;</span><span class="p">],</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">hkls</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">res</span><span class="p">]),</span>
-                <span class="s2">&quot;losses&quot;</span><span class="p">:</span> <span class="p">([</span><span class="s2">&quot;candidate&quot;</span><span class="p">,</span> <span class="s2">&quot;peak&quot;</span><span class="p">],</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">losses</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">res</span><span class="p">]),</span>
-                <span class="s2">&quot;loss&quot;</span><span class="p">:</span> <span class="p">([</span><span class="s2">&quot;candidate&quot;</span><span class="p">],</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">loss</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">res</span><span class="p">]),</span>
-                <span class="s2">&quot;angle_sample&quot;</span><span class="p">:</span> <span class="p">(</span>
-                    <span class="p">[</span><span class="s2">&quot;candidate&quot;</span><span class="p">],</span>
-                    <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">ac</span><span class="o">.</span><span class="n">angle_sample</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">res</span><span class="p">],</span>
-                    <span class="p">{</span><span class="s2">&quot;units&quot;</span><span class="p">:</span> <span class="s2">&quot;deg&quot;</span><span class="p">},</span>
-                <span class="p">),</span>
-                <span class="s2">&quot;angle_grain&quot;</span><span class="p">:</span> <span class="p">(</span>
-                    <span class="p">[</span><span class="s2">&quot;candidate&quot;</span><span class="p">],</span>
-                    <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">ac</span><span class="o">.</span><span class="n">angle_grain</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">res</span><span class="p">],</span>
-                    <span class="p">{</span><span class="s2">&quot;units&quot;</span><span class="p">:</span> <span class="s2">&quot;deg&quot;</span><span class="p">},</span>
-                <span class="p">),</span>
-                <span class="s2">&quot;diff_angle&quot;</span><span class="p">:</span> <span class="p">(</span>
-                    <span class="p">[</span><span class="s2">&quot;candidate&quot;</span><span class="p">],</span>
-                    <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">ac</span><span class="o">.</span><span class="n">diff_angle</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">res</span><span class="p">],</span>
-                    <span class="p">{</span><span class="s2">&quot;units&quot;</span><span class="p">:</span> <span class="s2">&quot;deg&quot;</span><span class="p">},</span>
-                <span class="p">),</span>
-                <span class="s2">&quot;peak1&quot;</span><span class="p">:</span> <span class="p">([</span><span class="s2">&quot;candidate&quot;</span><span class="p">],</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">peak1</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">res</span><span class="p">]),</span>
-                <span class="s2">&quot;peak2&quot;</span><span class="p">:</span> <span class="p">([</span><span class="s2">&quot;candidate&quot;</span><span class="p">],</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">peak2</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">res</span><span class="p">]),</span>
-            <span class="p">},</span>
-            <span class="p">{</span><span class="s2">&quot;peak&quot;</span><span class="p">:</span> <span class="p">([</span><span class="s2">&quot;peak&quot;</span><span class="p">],</span> <span class="n">all_peaks</span><span class="p">)},</span>
-        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_peak_index</span> <span class="o">=</span> <span class="n">_make_peak_index</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="n">all_peaks</span><span class="p">)</span>
         <span class="k">return</span></div>
 
     <span class="k">def</span> <span class="nf">_get_candidates</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">peaks</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="o">.</span><span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
@@ -539,13 +604,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ubmatrix</span><span class="o">.</span><span class="n">U</span>
 
     <span class="k">def</span> <span class="nf">_get_losses</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hkls</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-        <span class="n">rhkls</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">around</span><span class="p">(</span><span class="n">hkls</span><span class="p">)</span>
-        <span class="n">vs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ubmatrix</span><span class="o">.</span><span class="n">lat_to_grain</span><span class="p">(</span><span class="n">hkls</span><span class="p">)</span>
-        <span class="n">rvs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ubmatrix</span><span class="o">.</span><span class="n">lat_to_grain</span><span class="p">(</span><span class="n">rhkls</span><span class="p">)</span>
-        <span class="n">diffs_sq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">rvs</span> <span class="o">-</span> <span class="n">vs</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-        <span class="n">lens_sq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">vs</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-        <span class="n">cost</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">diffs_sq</span> <span class="o">/</span> <span class="n">lens_sq</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">cost</span>
+        <span class="k">return</span> <span class="n">_get_losses</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ubmatrix</span><span class="p">,</span> <span class="n">hkls</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_get_indexing_result_for_peaks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">peaks</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_hkl_for_a_peak</span><span class="p">(</span><span class="n">peak</span><span class="p">)</span> <span class="k">for</span> <span class="n">peak</span> <span class="ow">in</span> <span class="n">peaks</span><span class="p">])</span>
@@ -673,6 +732,17 @@
             <span class="n">sns</span><span class="o">.</span><span class="n">histplot</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">kde</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">bins</span><span class="o">=</span><span class="n">bins</span><span class="p">)</span>
             <span class="n">axes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">([</span><span class="sa">r</span><span class="s2">&quot;$\mu$ = </span><span class="si">{:.2f}</span><span class="s2">, $\sigma$ = </span><span class="si">{:.3f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;losses&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;losses&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">())])</span>
             <span class="n">axes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Bragg Peak </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">peak</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+        <span class="k">return</span></div>
+
+<div class="viewcode-block" id="PeakIndexer.index_peaks_by_U"><a class="viewcode-back" href="../../apis.html#crystalmapping.peakindexer.PeakIndexer.index_peaks_by_U">[docs]</a>    <span class="k">def</span> <span class="nf">index_peaks_by_U</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">U_index</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Index the peaks using the U matrix from previous results.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        U_index : T.List[int]</span>
+<span class="sd">            0-index of the U matrix to use. It is from best to worst in previous result.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_peak_index</span> <span class="o">=</span> <span class="n">_index_peaks</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_previous_result</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_peaks</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ubmatrix</span><span class="p">,</span> <span class="n">U_index</span><span class="p">)</span>
         <span class="k">return</span></div></div>
 </pre></div>
 
