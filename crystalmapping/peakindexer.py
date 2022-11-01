@@ -4,7 +4,7 @@ import typing
 from collections import defaultdict
 from dataclasses import dataclass, field
 from heapq import heappop, heappush
-from typing import Any, List, Sequence, Tuple
+from typing import Any, List, NamedTuple, Sequence, Tuple
 
 import numpy as np
 import pandas as pd
@@ -26,6 +26,40 @@ from .ubmatrix import UBMatrix
 HKL = np.ndarray
 Matrix = np.ndarray
 T = typing
+
+@dataclass
+class AngleComparsion(object):
+
+    h1: HKL
+    h2: HKL
+    angle_sample: float
+    angle_grain: float
+    diff_angle: float
+
+    def __eq__(self, __o: object) -> bool:
+        return self.diff_angle == __o.diff_angle
+
+    def __lt__(self, __o: object) -> bool:
+        return self.diff_angle > __o.diff_angle
+
+
+@dataclass
+class IndexResult(object):
+    """The result of peak indexing."""
+
+    peak1: int
+    peak2: int
+    u_mat: Matrix
+    hkls: np.ndarray
+    losses: np.ndarray
+    loss: np.ndarray
+    ac: AngleComparsion
+
+    def __eq__(self, __o: object) -> bool:
+        return self.loss == __o.loss
+
+    def __lt__(self, __o: object) -> bool:
+        return self.loss < __o.loss
 
 
 def _str_matrix(data: Matrix) -> str:
@@ -137,39 +171,82 @@ def _square_grid_subplots(n: int, size: float) -> Tuple[Figure, Sequence[Axes]]:
     return fig, axes
 
 
-@dataclass
-class AngleComparsion(object):
-
-    h1: HKL
-    h2: HKL
-    angle_sample: float
-    angle_grain: float
-    diff_angle: float
-
-    def __eq__(self, __o: object) -> bool:
-        return self.diff_angle == __o.diff_angle
-
-    def __lt__(self, __o: object) -> bool:
-        return self.diff_angle > __o.diff_angle
+def _get_losses(ub: UBMatrix, hkls: np.ndarray) -> np.ndarray:
+    rhkls = np.around(hkls)
+    vs = ub.lat_to_grain(hkls)
+    rvs = ub.lat_to_grain(rhkls)
+    diffs_sq = np.sum((rvs - vs) ** 2, axis=1)
+    lens_sq = np.sum(vs**2, axis=1)
+    cost = np.sqrt(diffs_sq / lens_sq)
+    return cost
 
 
-@dataclass
-class IndexResult(object):
-    """The result of peak indexing."""
+def _make_peak_index(res: T.List[IndexResult], all_peaks: T.Any) -> xr.Dataset:
+    return xr.Dataset(
+        {
+            "U": (["candidate", "dim_0", "dim_1"], [x.u_mat for x in res]),
+            "hkls": (["candidate", "peak", "dim_1"], [x.hkls for x in res]),
+            "losses": (["candidate", "peak"], [x.losses for x in res]),
+            "loss": (["candidate"], [x.loss for x in res]),
+            "angle_sample": (
+                ["candidate"],
+                [x.ac.angle_sample for x in res],
+                {"units": "deg"},
+            ),
+            "angle_grain": (
+                ["candidate"],
+                [x.ac.angle_grain for x in res],
+                {"units": "deg"},
+            ),
+            "diff_angle": (
+                ["candidate"],
+                [x.ac.diff_angle for x in res],
+                {"units": "deg"},
+            ),
+            "peak1": (["candidate"], [x.peak1 for x in res]),
+            "peak2": (["candidate"], [x.peak2 for x in res]),
+        },
+        {"peak": (["peak"], all_peaks)},
+    )
 
-    peak1: int
-    peak2: int
-    u_mat: Matrix
-    hkls: np.ndarray
-    losses: np.ndarray
-    loss: np.ndarray
-    ac: AngleComparsion
 
-    def __eq__(self, __o: object) -> bool:
-        return self.loss == __o.loss
+def _get_hkl(ub: UBMatrix, row: pd.Series) -> np.ndarray:
+    ub.set_R1(row["alpha"], row["beta"], row["gamma"])
+    v_lab = ub.xy_to_lab(row[["x", "y"]].to_numpy())
+    v_sample = ub.lab_to_sample_1(v_lab)
+    v_grain = ub.sample_to_grain(v_sample)
+    v_lat = ub.grain_to_lat(v_grain)
+    return v_lat
 
-    def __lt__(self, __o: object) -> bool:
-        return self.loss < __o.loss
+
+def _index_using_U_matrix(peak_index: xr.Dataset, peaks: pd.DataFrame, ub: UBMatrix, idx: T.Any) -> IndexResult:
+    ub.U = peak_index["U"][idx].data
+    hkls = np.array([_get_hkl(ub, row) for _, row in peaks.iterrows()])
+    losses = _get_losses(ub, hkls)
+    loss = np.min(losses)
+    ac = AngleComparsion(
+        None,
+        None,
+        peak_index["angle_sample"][idx].item(),
+        peak_index["angle_grain"][idx].item(),
+        peak_index["diff_angle"][idx].item()
+    )
+    ir = IndexResult(
+        peak_index["peak1"][idx].data,
+        peak_index["peak2"][idx].data,
+        ub.U,
+        hkls,
+        losses,
+        loss,
+        ac
+    )
+    return ir
+
+
+def _index_peaks(peak_index: xr.Dataset, peaks: pd.DataFrame, ub: UBMatrix, idxs: T.List[T.Any]) -> IndexResult:
+    res = [_index_using_U_matrix(peak_index, peaks, ub, idx) for idx in idxs]
+    peak_ids = peaks.index
+    return _make_peak_index(res, peak_ids)
 
 
 @dataclass
@@ -218,6 +295,8 @@ class PeakIndexer(object):
     _ubmatrix: UBMatrix = UBMatrix()
     # cached value
     _pred: PredictedReflection = PredictedReflection()
+    # previous result
+    _previous_result: T.Optional[xr.Dataset] = None
 
     def load(
         self,
@@ -257,6 +336,17 @@ class PeakIndexer(object):
             A netcdf4 file of the guessing results.
         """
         self._peak_index = xr.load_dataset(filename)
+        return
+
+    def load_previous_result(self, result_file: str) -> None:
+        """Load the result from the previous peak indexing.
+
+        Parameters
+        ----------
+        result_file : str
+            Output file from the PeakIndexer.
+        """
+        self._previous_result = xr.load_dataset(result_file)
         return
 
     def save_miller_index(self, filename: str) -> None:
@@ -358,32 +448,7 @@ class PeakIndexer(object):
                 "agl tolerance or checking the data."
             )
         # summarize the results
-        self._peak_index = xr.Dataset(
-            {
-                "U": (["candidate", "dim_0", "dim_1"], [x.u_mat for x in res]),
-                "hkls": (["candidate", "peak", "dim_1"], [x.hkls for x in res]),
-                "losses": (["candidate", "peak"], [x.losses for x in res]),
-                "loss": (["candidate"], [x.loss for x in res]),
-                "angle_sample": (
-                    ["candidate"],
-                    [x.ac.angle_sample for x in res],
-                    {"units": "deg"},
-                ),
-                "angle_grain": (
-                    ["candidate"],
-                    [x.ac.angle_grain for x in res],
-                    {"units": "deg"},
-                ),
-                "diff_angle": (
-                    ["candidate"],
-                    [x.ac.diff_angle for x in res],
-                    {"units": "deg"},
-                ),
-                "peak1": (["candidate"], [x.peak1 for x in res]),
-                "peak2": (["candidate"], [x.peak2 for x in res]),
-            },
-            {"peak": (["peak"], all_peaks)},
-        )
+        self._peak_index = _make_peak_index(res, all_peaks)
         return
 
     def _get_candidates(self, peaks: T.List[str]) -> T.List[np.ndarray]:
@@ -460,13 +525,7 @@ class PeakIndexer(object):
         return self._ubmatrix.U
 
     def _get_losses(self, hkls: np.ndarray) -> np.ndarray:
-        rhkls = np.around(hkls)
-        vs = self._ubmatrix.lat_to_grain(hkls)
-        rvs = self._ubmatrix.lat_to_grain(rhkls)
-        diffs_sq = np.sum((rvs - vs) ** 2, axis=1)
-        lens_sq = np.sum(vs**2, axis=1)
-        cost = np.sqrt(diffs_sq / lens_sq)
-        return cost
+        return _get_losses(self._ubmatrix, hkls)
 
     def _get_indexing_result_for_peaks(self, peaks: typing.List[str]) -> np.ndarray:
         return np.stack([self._get_hkl_for_a_peak(peak) for peak in peaks])
@@ -594,4 +653,15 @@ class PeakIndexer(object):
             sns.histplot(data, kde=True, ax=axes[i], bins=bins)
             axes[i].legend([r"$\mu$ = {:.2f}, $\sigma$ = {:.3f}".format(data["losses"].mean(), data["losses"].std())])
             axes[i].set_title("Bragg Peak {}".format(peak[i]))
+        return
+
+    def index_peaks_by_U(self, U_index: T.List[int]) -> None:
+        """Index the peaks using the U matrix from previous results.
+
+        Parameters
+        ----------
+        U_index : T.List[int]
+            0-index of the U matrix to use. It is from best to worst in previous result.
+        """
+        self._peak_index = _index_peaks(self._previous_result, self._peaks, self._ubmatrix, U_index)
         return
