@@ -4,7 +4,7 @@ import typing
 from collections import defaultdict
 from dataclasses import dataclass, field
 from heapq import heappop, heappush
-from typing import Any, List, NamedTuple, Sequence, Tuple
+from typing import Any, List, Sequence, Tuple
 
 import numpy as np
 import pandas as pd
@@ -26,6 +26,7 @@ from .ubmatrix import UBMatrix
 HKL = np.ndarray
 Matrix = np.ndarray
 T = typing
+
 
 @dataclass
 class AngleComparsion(object):
