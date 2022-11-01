@@ -35,7 +35,7 @@ class FakeBlueskyRunV1(FakeBlueskyRunV2):
 
 class FourImageRunV2(FakeBlueskyRunV2):
     def __init__(self) -> None:
-        light_image: np.ndarray = plt.imread(str(FAKE_IMAGE_FILE))
+        light_image: np.ndarray = 1. - plt.imread(str(FAKE_IMAGE_FILE))
         light_image = np.expand_dims(light_image, 0)
         dark_image: np.ndarray = np.zeros_like(light_image)
         image_key = "dexela_image"
