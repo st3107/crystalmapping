@@ -34,7 +34,7 @@ with open(path.join(here, 'requirements.txt')) as requirements_file:
 
 setup(
     name='crystalmapping',
-    version='0.1.1',
+    version='0.2.0',
     description="A python package to do crystal mapping.",
     long_description=readme,
     author="Songsheng Tao",
