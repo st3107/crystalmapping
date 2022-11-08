@@ -65,9 +65,9 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
-          <li><a href="../index.html">Module code</a> &raquo;</li>
-      <li>crystalmapping.crystalmapper</li>
+      <li><a href="../../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">crystalmapping.crystalmapper</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -135,7 +135,9 @@
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">I_in_windows</span><span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">_track_peaks</span><span class="p">(</span><span class="n">frames</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span> <span class="n">windows</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">enable_tqdm</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">_track_peaks</span><span class="p">(</span>
+    <span class="n">frames</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span> <span class="n">windows</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">enable_tqdm</span><span class="p">:</span> <span class="nb">bool</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Create a list of tasks to compute the grain maps. Each task is one grain map.&quot;&quot;&quot;</span>
     <span class="c1"># create intensity vs time for each grain</span>
     <span class="n">intensities</span> <span class="o">=</span> <span class="p">[]</span>
@@ -180,8 +182,7 @@
 
 
 <span class="k">def</span> <span class="nf">_min_and_max_along_time</span><span class="p">(</span>
-    <span class="n">data</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span>
-    <span class="n">enable_tqdm</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">data</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span> <span class="n">enable_tqdm</span><span class="p">:</span> <span class="nb">bool</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
     <span class="sd">&quot;&quot;&quot;Extract the minimum and maximum values of each pixel in a series of mean frames. Return a data array.</span>
 <span class="sd">    First is the min array and the second is the max array.&quot;&quot;&quot;</span>
@@ -277,7 +278,9 @@
             <span class="k">if</span> <span class="n">index_range</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
             <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">_frames_arr</span>
         <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_dark</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_light</span> <span class="o">=</span> <span class="n">_min_and_max_along_time</span><span class="p">(</span><span class="n">frames_arr</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">enable_tqdm</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dark</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_light</span> <span class="o">=</span> <span class="n">_min_and_max_along_time</span><span class="p">(</span>
+            <span class="n">frames_arr</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">enable_tqdm</span>
+        <span class="p">)</span>
         <span class="k">return</span>
 
     <span class="k">def</span> <span class="nf">_calc_peaks_from_dk_sub_frame</span><span class="p">(</span>
@@ -300,7 +303,9 @@
 
     <span class="k">def</span> <span class="nf">_calc_intensity_in_windows</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get the intensity array as a function of index of frames.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_intensity</span> <span class="o">=</span> <span class="n">_track_peaks</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_frames_arr</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_windows</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">enable_tqdm</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_intensity</span> <span class="o">=</span> <span class="n">_track_peaks</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_frames_arr</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_windows</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">enable_tqdm</span>
+        <span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dark</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_bkg_intensity</span> <span class="o">=</span> <span class="n">_average_intensity</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dark</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_windows</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_intensity</span> <span class="o">=</span> <span class="p">(</span>
@@ -370,7 +375,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_intensity</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s2">&quot;intensity&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">data</span>
         <span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="n">w</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_window_names</span> <span class="k">if</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">names</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_winodows</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dataset</span><span class="p">[</span><span class="n">names</span><span class="p">]</span><span class="o">.</span><span class="n">to_dataframe</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_windows</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dataset</span><span class="p">[</span><span class="n">names</span><span class="p">]</span><span class="o">.</span><span class="n">to_dataframe</span><span class="p">()</span>
         <span class="k">return</span>
 
     <span class="k">def</span> <span class="nf">_get_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">:</span>
@@ -386,8 +391,7 @@
             <span class="p">)</span>
 
 <div class="viewcode-block" id="CrystalMapper.show_frame"><a class="viewcode-back" href="../../apis.html#crystalmapping.crystalmapper.CrystalMapper.show_frame">[docs]</a>    <span class="k">def</span> <span class="nf">show_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FacetGrid</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Show the frame at that index.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Show the frame at that index.&quot;&quot;&quot;</span>
         <span class="n">frame</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_frame</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
         <span class="n">_set_vlim</span><span class="p">(</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">frame</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">)</span>
         <span class="n">facet</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
@@ -401,8 +405,7 @@
         <span class="k">return</span> <span class="n">facet</span></div>
 
 <div class="viewcode-block" id="CrystalMapper.show_dark"><a class="viewcode-back" href="../../apis.html#crystalmapping.crystalmapper.CrystalMapper.show_dark">[docs]</a>    <span class="k">def</span> <span class="nf">show_dark</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FacetGrid</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Show the dark image.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Show the dark image.&quot;&quot;&quot;</span>
         <span class="n">frame</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dark_to_xarray</span><span class="p">()</span>
         <span class="n">_set_vlim</span><span class="p">(</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">frame</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">)</span>
         <span class="n">facet</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
@@ -410,8 +413,7 @@
         <span class="k">return</span> <span class="n">facet</span></div>
 
 <div class="viewcode-block" id="CrystalMapper.show_light"><a class="viewcode-back" href="../../apis.html#crystalmapping.crystalmapper.CrystalMapper.show_light">[docs]</a>    <span class="k">def</span> <span class="nf">show_light</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FacetGrid</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Show the light image.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Show the light image.&quot;&quot;&quot;</span>
         <span class="n">frame</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_light_to_xarray</span><span class="p">()</span>
         <span class="n">_set_vlim</span><span class="p">(</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">frame</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">)</span>
         <span class="n">facet</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
@@ -430,21 +432,18 @@
         <span class="k">return</span> <span class="n">facet</span></div>
 
 <div class="viewcode-block" id="CrystalMapper.show_windows"><a class="viewcode-back" href="../../apis.html#crystalmapping.crystalmapper.CrystalMapper.show_windows">[docs]</a>    <span class="k">def</span> <span class="nf">show_windows</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FacetGrid</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Show the windows on the dark subtracted light image.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Show the windows on the dark subtracted light image.&quot;&quot;&quot;</span>
         <span class="n">facet</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">show_light_sub_dark</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="n">_draw_windows</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_windows</span><span class="p">,</span> <span class="n">facet</span><span class="o">.</span><span class="n">axes</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">facet</span></div>
 
 <div class="viewcode-block" id="CrystalMapper.show_intensity"><a class="viewcode-back" href="../../apis.html#crystalmapping.crystalmapper.CrystalMapper.show_intensity">[docs]</a>    <span class="k">def</span> <span class="nf">show_intensity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FacetGrid</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Show the intensity array.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Show the intensity array.&quot;&quot;&quot;</span>
         <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_intensity_to_xarray</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">_auto_plot</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">invert_y</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="CrystalMapper.auto_process"><a class="viewcode-back" href="../../apis.html#crystalmapping.crystalmapper.CrystalMapper.auto_process">[docs]</a>    <span class="k">def</span> <span class="nf">auto_process</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Automatically process the data in the standard protocol.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Automatically process the data in the standard protocol.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">find_bragg_spots</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">create_crystal_maps</span><span class="p">()</span>
         <span class="k">return</span></div>
@@ -466,8 +465,7 @@
         <span class="k">return</span></div>
 
 <div class="viewcode-block" id="CrystalMapper.find_bragg_spots"><a class="viewcode-back" href="../../apis.html#crystalmapping.crystalmapper.CrystalMapper.find_bragg_spots">[docs]</a>    <span class="k">def</span> <span class="nf">find_bragg_spots</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Find the Bragg spots before creating the crystal maps.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Find the Bragg spots before creating the crystal maps.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_squeeze_shape_and_extents</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_calc_dark_and_light_from_frames_arr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">slice_of_frames</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_calc_peaks_from_dk_sub_frame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">trackpy_kernel_size</span><span class="p">)</span>
@@ -475,8 +473,7 @@
         <span class="k">return</span></div>
 
 <div class="viewcode-block" id="CrystalMapper.create_crystal_maps"><a class="viewcode-back" href="../../apis.html#crystalmapping.crystalmapper.CrystalMapper.create_crystal_maps">[docs]</a>    <span class="k">def</span> <span class="nf">create_crystal_maps</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Create the crystal maps after finding the Bragg spots.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Create the crystal maps after finding the Bragg spots.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_align_roi</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_calc_intensity_in_windows</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_reshape_intensity</span><span class="p">()</span>
@@ -519,7 +516,9 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_frames_arr</span> <span class="o">=</span> <span class="n">run</span><span class="o">.</span><span class="n">primary</span><span class="o">.</span><span class="n">read</span><span class="p">()[</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">image_data_key</span><span class="p">]</span>
         <span class="k">return</span></div>
 
-<div class="viewcode-block" id="CrystalMapper.visualize"><a class="viewcode-back" href="../../apis.html#crystalmapping.crystalmapper.CrystalMapper.visualize">[docs]</a>    <span class="k">def</span> <span class="nf">visualize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">peaks</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">typing</span><span class="o">.</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="CrystalMapper.visualize"><a class="viewcode-back" href="../../apis.html#crystalmapping.crystalmapper.CrystalMapper.visualize">[docs]</a>    <span class="k">def</span> <span class="nf">visualize</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">peaks</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">typing</span><span class="o">.</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Show the crystal maps of certain peaks.</span>
 
 <span class="sd">        Parameters</span>
@@ -527,7 +526,12 @@
 <span class="sd">        peaks : typing.List[int]</span>
 <span class="sd">            A list of integer of the peaks.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">visualize</span><span class="p">(</span><span class="n">peaks</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div></div>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">visualize</span><span class="p">(</span><span class="n">peaks</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">load_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">load_dataset</span><span class="p">(</span><span class="n">data_file</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_from_dataset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dataset</span><span class="p">)</span>
+        <span class="k">return</span></div>
 </pre></div>
 
            </div>
