@@ -56,7 +56,9 @@ def _average_intensity(frame: np.ndarray, windows: pd.DataFrame) -> np.ndarray:
     return np.array(I_in_windows)
 
 
-def _track_peaks(frames: xr.DataArray, windows: pd.DataFrame, enable_tqdm: bool) -> np.ndarray:
+def _track_peaks(
+    frames: xr.DataArray, windows: pd.DataFrame, enable_tqdm: bool
+) -> np.ndarray:
     """Create a list of tasks to compute the grain maps. Each task is one grain map."""
     # create intensity vs time for each grain
     intensities = []
@@ -101,8 +103,7 @@ def _create_windows_from_width(df: pd.DataFrame, width: int) -> pd.DataFrame:
 
 
 def _min_and_max_along_time(
-    data: xr.DataArray,
-    enable_tqdm: bool
+    data: xr.DataArray, enable_tqdm: bool
 ) -> typing.Tuple[np.ndarray, np.ndarray]:
     """Extract the minimum and maximum values of each pixel in a series of mean frames. Return a data array.
     First is the min array and the second is the max array."""
@@ -198,7 +199,9 @@ class CrystalMapper(BaseObject):
             if index_range is not None
             else self._frames_arr
         )
-        self._dark, self._light = _min_and_max_along_time(frames_arr, self._config.enable_tqdm)
+        self._dark, self._light = _min_and_max_along_time(
+            frames_arr, self._config.enable_tqdm
+        )
         return
 
     def _calc_peaks_from_dk_sub_frame(
@@ -221,7 +224,9 @@ class CrystalMapper(BaseObject):
 
     def _calc_intensity_in_windows(self):
         """Get the intensity array as a function of index of frames."""
-        self._intensity = _track_peaks(self._frames_arr, self._windows, self._config.enable_tqdm)
+        self._intensity = _track_peaks(
+            self._frames_arr, self._windows, self._config.enable_tqdm
+        )
         if self._dark is not None:
             self._bkg_intensity = _average_intensity(self._dark, self._windows)
             self._intensity = (
@@ -291,7 +296,7 @@ class CrystalMapper(BaseObject):
             self._intensity = dataset["intensity"].data
         names = [w for w in self._window_names if w in dataset]
         if names:
-            self._winodows = self._dataset[names].to_dataframe()
+            self._windows = self._dataset[names].to_dataframe()
         return
 
     def _get_frame(self, index: int) -> xr.DataArray:
@@ -307,8 +312,7 @@ class CrystalMapper(BaseObject):
             )
 
     def show_frame(self, index: int, *args, **kwargs) -> FacetGrid:
-        """Show the frame at that index.
-        """
+        """Show the frame at that index."""
         frame = self._get_frame(index)
         _set_vlim(kwargs, frame, 4.0)
         facet = frame.plot.imshow(*args, **kwargs)
@@ -322,8 +326,7 @@ class CrystalMapper(BaseObject):
         return facet
 
     def show_dark(self, *args, **kwargs) -> FacetGrid:
-        """Show the dark image.
-        """
+        """Show the dark image."""
         frame = self._dark_to_xarray()
         _set_vlim(kwargs, frame, 4.0)
         facet = frame.plot.imshow(*args, **kwargs)
@@ -331,8 +334,7 @@ class CrystalMapper(BaseObject):
         return facet
 
     def show_light(self, *args, **kwargs) -> FacetGrid:
-        """Show the light image.
-        """
+        """Show the light image."""
         frame = self._light_to_xarray()
         _set_vlim(kwargs, frame, 4.0)
         facet = frame.plot.imshow(*args, **kwargs)
@@ -351,21 +353,18 @@ class CrystalMapper(BaseObject):
         return facet
 
     def show_windows(self, *args, **kwargs) -> FacetGrid:
-        """Show the windows on the dark subtracted light image.
-        """
+        """Show the windows on the dark subtracted light image."""
         facet = self.show_light_sub_dark(*args, **kwargs)
         _draw_windows(self._windows, facet.axes)
         return facet
 
     def show_intensity(self, **kwargs) -> FacetGrid:
-        """Show the intensity array.
-        """
+        """Show the intensity array."""
         arr = self._intensity_to_xarray()
         return _auto_plot(arr, title=None, invert_y=True, **kwargs)
 
     def auto_process(self) -> None:
-        """Automatically process the data in the standard protocol.
-        """
+        """Automatically process the data in the standard protocol."""
         self.find_bragg_spots()
         self.create_crystal_maps()
         return
@@ -387,8 +386,7 @@ class CrystalMapper(BaseObject):
         return
 
     def find_bragg_spots(self) -> None:
-        """Find the Bragg spots before creating the crystal maps.
-        """
+        """Find the Bragg spots before creating the crystal maps."""
         self._squeeze_shape_and_extents()
         self._calc_dark_and_light_from_frames_arr(self._config.slice_of_frames)
         self._calc_peaks_from_dk_sub_frame(self._config.trackpy_kernel_size)
@@ -396,8 +394,7 @@ class CrystalMapper(BaseObject):
         return
 
     def create_crystal_maps(self) -> None:
-        """Create the crystal maps after finding the Bragg spots.
-        """
+        """Create the crystal maps after finding the Bragg spots."""
         self._align_roi()
         self._calc_intensity_in_windows()
         self._reshape_intensity()
@@ -440,7 +437,9 @@ class CrystalMapper(BaseObject):
             self._frames_arr = run.primary.read()[self._config.image_data_key]
         return
 
-    def visualize(self, peaks: typing.Optional[typing.List[int]] = None, **kwargs) -> None:
+    def visualize(
+        self, peaks: typing.Optional[typing.List[int]] = None, **kwargs
+    ) -> None:
         """Show the crystal maps of certain peaks.
 
         Parameters
@@ -449,3 +448,8 @@ class CrystalMapper(BaseObject):
             A list of integer of the peaks.
         """
         return super().visualize(peaks, **kwargs)
+
+    def load_dataset(self, data_file: str) -> None:
+        super().load_dataset(data_file)
+        self._from_dataset(self._dataset)
+        return
