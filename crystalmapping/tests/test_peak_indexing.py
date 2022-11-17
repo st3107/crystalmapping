@@ -21,6 +21,7 @@ def test_indexing_merged_data():
     pi.show(1)
     pi.visualize(0, ["1_1"])
     pi.hist_error(["1_1", "1_2"])
+    pi.fine_tune_best_n([0], 2)
     pi._previous_result = pi._peak_index
     pi.index_peaks_by_U([0])
     return

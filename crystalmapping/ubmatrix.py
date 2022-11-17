@@ -26,7 +26,7 @@ def _gram_schmidt(vs: np.ndarray) -> np.ndarray:
         for i in range(n):
             u -= _project(us[i], v)
         norm_u = np.linalg.norm(u)
-        if norm_u == 0.:
+        if norm_u == 0.0:
             raise UBMatrixError("Norm of the vector is zero.")
         u /= norm_u
         us.append(u)
@@ -95,21 +95,38 @@ def _get_u_from_geo(x: float, y: float, geo: AzimuthalIntegrator) -> np.ndarray:
     return vdiff
 
 
+def _euler_to_u_mat(euler_angle: EulerAngle) -> Matrix:
+    euler_angle = np.array(euler_angle)
+    c1, c2, c3 = np.cos(euler_angle)
+    s1, s2, s3 = np.sin(euler_angle)
+    mat = np.zeros((3, 3), dtype=np.float64)
+    mat[0][0] = c1 * c2 * c3 - s1 * s3
+    mat[0][1] = -c1 * s2
+    mat[0][2] = c3 * s1 + c1 * c2 * s3
+    mat[1][0] = c3 * s2
+    mat[1][1] = c2
+    mat[1][2] = s2 * s3
+    mat[2][0] = -c1 * s3 - c2 * c3 * s1
+    mat[2][1] = s1 * s2
+    mat[2][2] = c1 * c3 - c2 * s1 * s2
+    return mat
+
+
+def _u_mat_to_euler(u_mat: Matrix) -> EulerAngle:
+    r32 = u_mat[2][1]
+    r12 = u_mat[0][1]
+    r22 = u_mat[1][1]
+    r23 = u_mat[1][2]
+    r21 = u_mat[1][0]
+    alpha = np.arctan2(r32, -r12)
+    beta = np.arctan2(np.sqrt(1 - r22**2), r22)
+    gamma = np.arctan2(r23, r21)
+    return alpha, beta, gamma
+
+
 @lru_cache(8)
 def _get_rot_matrix(alpha: float, beta: float, gamma: float) -> Matrix:
-    c1, c2, c3 = np.cos(np.array([alpha, beta, gamma]))
-    s1, s2, s3 = np.sin(np.array([alpha, beta, gamma]))
-    mat = np.zeros((3, 3), dtype=np.float64)
-    mat[0][0] = c1 * c3 - c2 * s1 * s3
-    mat[0][1] = -c1 * s3 - c2 * c3 * s1
-    mat[0][2] = s1 * s2
-    mat[1][0] = c3 * s1 + c1 * c2 * s3
-    mat[1][1] = c1 * c2 * c3 - s1 * s3
-    mat[1][2] = -c1 * s2
-    mat[2][0] = s2 * s3
-    mat[2][1] = c3 * s2
-    mat[2][2] = c2
-    return mat
+    return _euler_to_u_mat((alpha, beta, gamma))
 
 
 def _load_lat(cif_file: str) -> Lattice:
@@ -166,10 +183,14 @@ class UBMatrix:
         self._lat: Lattice = lat
         self.geo = geo
         self.invB = None
-        self.U = self.get_U() if self.able_to_get_U() else None
-        self.B = self.get_B() if self.able_to_get_B() else None
+        self.U = None
+        self.B = None
         self.R1 = None
         self.R2 = None
+        if self.able_to_get_B():
+            self.calc_and_set_B()
+        if self.able_to_get_U():
+            self.calc_and_set_U()
 
     def able_to_get_U(self):
         """Return True if able to fil in self.U."""
@@ -182,14 +203,14 @@ class UBMatrix:
         """Return True if able to fill in self.B."""
         return self._lat is not None
 
-    def get_U(self) -> None:
+    def calc_and_set_U(self) -> None:
         """Fill in the self.U attribute."""
         if not self.able_to_get_U():
             raise UBMatrixError("Not able to get U matrix. Attributes are missing.")
         self.U = _get_U_from_cart_and_inst(self.h1, self.h2, self.u1, self.u2)
         return
 
-    def get_B(self) -> None:
+    def calc_and_set_B(self) -> None:
         """Fill in the self.B attribute."""
         if not self.able_to_get_B():
             raise UBMatrixError("Not able to get B matrix. Attributes are missing.")
@@ -225,6 +246,10 @@ class UBMatrix:
         self.R2 = _get_rot_matrix(alpha, beta, gamma)
         return
 
+    def set_U_by_euler_angle(self, euler_angle: EulerAngle) -> None:
+        self.U = _euler_to_u_mat(euler_angle)
+        return
+
     @property
     def lat(self) -> Lattice:
         return self._lat
@@ -232,7 +257,7 @@ class UBMatrix:
     @lat.setter
     def lat(self, lat: Lattice):
         self._lat = lat
-        self.get_B()
+        self.calc_and_set_B()
         return
 
     def set_lat_from_cif(self, cif_file: str) -> None:
@@ -299,7 +324,7 @@ class UBMatrix:
         self.set_u2_from_xy(xy2)
         self.set_h1_from_hkl(hkl1)
         self.set_h2_from_hkl(hkl2)
-        self.get_U()
+        self.calc_and_set_U()
         return
 
     def set_geo_from_poni(self, poni_file: str) -> None:
@@ -307,3 +332,6 @@ class UBMatrix:
         self.geo = AzimuthalIntegrator()
         self.geo.load(poni_file)
         return
+
+    def get_euler_angles_from_U(self) -> EulerAngle:
+        return _u_mat_to_euler(self.U)

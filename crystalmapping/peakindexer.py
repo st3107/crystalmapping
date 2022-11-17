@@ -6,26 +6,28 @@ from dataclasses import dataclass, field
 from heapq import heappop, heappush
 from typing import Any, List, Sequence, Tuple
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pyFAI
-import xarray as xr
 import seaborn as sns
-import matplotlib.pyplot as plt
+import xarray as xr
+from diffpy.structure import Lattice, Structure, loadStructure
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
-from diffpy.structure import Lattice, Structure, loadStructure
 from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
 from pyFAI.calibrant import Cell
+from scipy.optimize import least_squares
 from tqdm.auto import tqdm
 
-from .baseobject import _auto_plot_dataset, _show_crystal_maps
-from .preprocessor import EulerAngle, Preprocessor
-from .ubmatrix import UBMatrix
+from crystalmapping.baseobject import _auto_plot_dataset, _show_crystal_maps
+from crystalmapping.preprocessor import EulerAngle, Preprocessor
+from crystalmapping.ubmatrix import UBMatrix
 
 HKL = np.ndarray
 Matrix = np.ndarray
 T = typing
+IDS = T.Union[T.List, int, slice]
 
 
 @dataclass
@@ -61,6 +63,24 @@ class IndexResult(object):
 
     def __lt__(self, __o: object) -> bool:
         return self.loss < __o.loss
+
+
+def _to_slice(_ids: IDS) -> IDS:
+    return slice(None, _ids) if isinstance(_ids, int) else _ids
+
+
+def _choose_best_u_mats(peak_index: xr.Dataset, u_mat_ids: IDS) -> xr.Dataset:
+    u_mat_id = _to_slice(u_mat_ids)
+    chosen = peak_index.sortby("loss")["candidate"][u_mat_id]
+    return chosen
+
+
+def _choose_best_peaks(
+    peak_index: xr.Dataset, u_mat_id: int, peak_ids: IDS
+) -> xr.Dataset:
+    peak_ids = _to_slice(peak_ids)
+    chosen = peak_index.sel({"candidate": u_mat_id}).sortby("losses")["peak"][peak_ids]
+    return chosen
 
 
 def _str_matrix(data: Matrix) -> str:
@@ -130,7 +150,7 @@ def _get_n_largest(lst: T.Iterable[T.Any], n: int) -> T.List[T.Tuple]:
 
 def _normalize(v: np.ndarray) -> np.ndarray:
     nv = np.linalg.norm(v)
-    if nv == 0.:
+    if nv == 0.0:
         raise IndexError("length of vector is zero.")
     return v / nv
 
@@ -208,7 +228,7 @@ def _make_peak_index(res: T.List[IndexResult], all_peaks: T.Any) -> xr.Dataset:
             "peak2": (["candidate"], [x.peak2 for x in res]),
         },
         {"peak": (["peak"], all_peaks)},
-    )
+    ).sortby("loss")
 
 
 def _get_hkl(ub: UBMatrix, row: pd.Series) -> np.ndarray:
@@ -220,9 +240,15 @@ def _get_hkl(ub: UBMatrix, row: pd.Series) -> np.ndarray:
     return v_lat
 
 
-def _index_using_U_matrix(peak_index: xr.Dataset, peaks: pd.DataFrame, ub: UBMatrix, idx: T.Any) -> IndexResult:
+def _index_using_U_matrix(
+    peak_index: xr.Dataset, peaks: pd.DataFrame, ub: UBMatrix, idx: T.Any
+) -> IndexResult:
     ub.U = peak_index["U"][idx].data
-    hkls = np.array([_get_hkl(ub, row) for _, row in peaks.iterrows()])
+    return _get_index_result(peak_index, peaks, ub, idx)
+
+
+def _get_index_result(peak_index, peaks, ub, idx):
+    hkls = _get_hkls(peaks, ub)
     losses = _get_losses(ub, hkls)
     loss = np.min(losses)
     ac = AngleComparsion(
@@ -230,7 +256,7 @@ def _index_using_U_matrix(peak_index: xr.Dataset, peaks: pd.DataFrame, ub: UBMat
         None,
         peak_index["angle_sample"][idx].item(),
         peak_index["angle_grain"][idx].item(),
-        peak_index["diff_angle"][idx].item()
+        peak_index["diff_angle"][idx].item(),
     )
     ir = IndexResult(
         peak_index["peak1"][idx].data,
@@ -239,15 +265,70 @@ def _index_using_U_matrix(peak_index: xr.Dataset, peaks: pd.DataFrame, ub: UBMat
         hkls,
         losses,
         loss,
-        ac
+        ac,
     )
     return ir
 
 
-def _index_peaks(peak_index: xr.Dataset, peaks: pd.DataFrame, ub: UBMatrix, idxs: T.List[T.Any]) -> IndexResult:
-    res = [_index_using_U_matrix(peak_index, peaks, ub, idx) for idx in idxs]
-    peak_ids = peaks.index
-    return _make_peak_index(res, peak_ids)
+def _get_hkls(peaks, ub):
+    hkls = np.array([_get_hkl(ub, row) for _, row in peaks.iterrows()])
+    return hkls
+
+
+def _index_peaks_by_U(
+    peak_index: xr.Dataset, peaks: pd.DataFrame, ub: UBMatrix, u_mat_ids: T.List
+) -> xr.Dataset:
+    u_mat_ids = _choose_best_u_mats(peak_index, u_mat_ids)
+    return _index_peaks(peak_index, peaks, ub, u_mat_ids)
+
+
+def _index_peaks(
+    peak_index: xr.Dataset, peaks: pd.DataFrame, ub: UBMatrix, u_mat_ids: T.List
+) -> xr.Dataset:
+    res = [_index_using_U_matrix(peak_index, peaks, ub, idx) for idx in u_mat_ids]
+    return _make_peak_index(res, peaks.index)
+
+
+def _fine_tune(
+    ub: UBMatrix,
+    peak_index: xr.Dataset,
+    u_mat_ids: IDS,
+    peaks: pd.DataFrame,
+    peak_ids: IDS,
+    **kwargs,
+) -> xr.Dataset:
+    kwargs.setdefault("xtol", 1e-4)
+    kwargs.setdefault("gtol", 1e-4)
+    kwargs.setdefault("ftol", 1e-4)
+    u_mat_ids = _choose_best_u_mats(peak_index, u_mat_ids)
+    for _id in u_mat_ids:
+        _optmize_U_matrix(ub, peak_index, _id, peaks, peak_ids, **kwargs)
+    return _index_peaks(peak_index, peaks, ub, u_mat_ids)
+
+
+def _optmize_U_matrix(
+    ub: UBMatrix,
+    peak_index: xr.Dataset,
+    u_mat_id: int,
+    peaks: pd.DataFrame,
+    peak_ids: IDS,
+    **kwargs,
+) -> None:
+    peak_ids = _choose_best_peaks(peak_index, u_mat_id, peak_ids)
+    sel_peaks = peaks.loc[peak_ids]
+
+    def _chi(euler_angle: np.ndarray) -> np.ndarray:
+        ub.set_U_by_euler_angle(euler_angle)
+        hkls = _get_hkls(sel_peaks, ub)
+        losses = _get_losses(ub, hkls)
+        return losses
+
+    ub.U = peak_index["U"][u_mat_id].data
+    x0 = ub.get_euler_angles_from_U()
+    res = least_squares(_chi, x0, **kwargs)
+    ub.set_U_by_euler_angle(res.x)
+    peak_index["U"][u_mat_id] = ub.U
+    return
 
 
 @dataclass
@@ -263,6 +344,7 @@ class IndexerConfig(object):
 
 class IndexerError(Exception):
     """Error of the PeakIndexer."""
+
     pass
 
 
@@ -313,7 +395,7 @@ class PeakIndexer(object):
         data_files : List[str]
             A list of netcdf4 files output by CrystalMapper.
         euler_angles : List[EulerAngle]
-            A list of (alpha, beta, gamma) value of Euler anlge in ZXY convention.
+            A list of (alpha, beta, gamma) value of Euler anlge in YZY convention.
         poni_file : str
             A pyFAI poni file containing the geometry information of the experiment.
         stru_file : str
@@ -336,7 +418,7 @@ class PeakIndexer(object):
         filename : str
             A netcdf4 file of the guessing results.
         """
-        self._peak_index = xr.load_dataset(filename)
+        self._peak_index = xr.load_dataset(filename).sortby("loss")
         return
 
     def load_previous_result(self, result_file: str) -> None:
@@ -522,7 +604,7 @@ class PeakIndexer(object):
     def _get_U(self, h1: HKL, h2: HKL) -> Matrix:
         self._ubmatrix.h1 = h1
         self._ubmatrix.h2 = h2
-        self._ubmatrix.get_U()
+        self._ubmatrix.calc_and_set_U()
         return self._ubmatrix.U
 
     def _get_losses(self, hkls: np.ndarray) -> np.ndarray:
@@ -541,28 +623,23 @@ class PeakIndexer(object):
         v_lat = self._ubmatrix.grain_to_lat(v_grain)
         return v_lat
 
-    def show(self, best_n: T.Optional[int] = None) -> None:
+    def show(self, u_mat_ids: IDS = 1, peak_ids: IDS = 10) -> None:
         """Print out the indexing results.
 
         Parameters
         ----------
-        best_n : T.Optional[int], optional
+        peak_ids : IDS, optional
             Only print out best n results, by default None
         """
-        if not best_n:
-            best_n = self._peak_index.sizes["candidate"]
-        data = self._peak_index.sortby("loss").isel({"candidate": slice(0, best_n)})
-        return self._print_grouped_data(data)
-
-    def _print_grouped_data(self, data: xr.Dataset) -> None:
-        n = data.sizes["candidate"]
-        for i in range(n):
-            sel = data.isel({"candidate": i})
-            self._print_data(sel)
+        data = self._peak_index
+        chosen_ids = _choose_best_u_mats(data, u_mat_ids)
+        for _id in chosen_ids:
+            self._print_data(data, _id, peak_ids)
         return
 
-    def _print_data(self, data: xr.Dataset) -> None:
-        data = data.sortby("losses")
+    def _print_data(self, data: xr.Dataset, u_mat_id: int, peak_ids: IDS) -> None:
+        chosen = _choose_best_peaks(data, u_mat_id, peak_ids)
+        data = data.sel({"candidate": u_mat_id, "peak": chosen})
         # part 1
         print(
             "Use peak '{}' and peak '{}' in the indexing.".format(
@@ -634,7 +711,9 @@ class PeakIndexer(object):
             _show_crystal_maps(self._datasets[dataset_id], peak_ids, **kwargs)
         return
 
-    def hist_error(self, peak_ids: List[str] = None, size: float = 4., bins: Any = "auto") -> None:
+    def hist_error(
+        self, peak_ids: List[str] = None, size: float = 4.0, bins: Any = "auto"
+    ) -> None:
         """Plot the histogram of erros.
 
         Parameters
@@ -645,24 +724,57 @@ class PeakIndexer(object):
             Size in inches for the individual panel, by default 4.
         """
         losses: pd.DataFrame = self._peak_index["losses"].to_dataframe()
-        peak = self._peak_index["peak"].to_numpy() if peak_ids is None else np.unique(np.array(peak_ids))
+        peak = (
+            self._peak_index["peak"].to_numpy()
+            if peak_ids is None
+            else np.unique(np.array(peak_ids))
+        )
         n = len(peak)
         _, axes = _square_grid_subplots(n, size)
         for i in range(n):
-            q = "peak == '{}'".format(peak[i]) if isinstance(peak[i], str) else "peak == {}".format(peak[i])
+            q = (
+                "peak == '{}'".format(peak[i])
+                if isinstance(peak[i], str)
+                else "peak == {}".format(peak[i])
+            )
             data = losses.query(q)
             sns.histplot(data, kde=True, ax=axes[i], bins=bins)
-            axes[i].legend([r"$\mu$ = {:.2f}, $\sigma$ = {:.3f}".format(data["losses"].mean(), data["losses"].std())])
+            axes[i].legend(
+                [
+                    r"$\mu$ = {:.2f}, $\sigma$ = {:.3f}".format(
+                        data["losses"].mean(), data["losses"].std()
+                    )
+                ]
+            )
             axes[i].set_title("Bragg Peak {}".format(peak[i]))
         return
 
-    def index_peaks_by_U(self, U_index: T.List[int]) -> None:
+    def index_peaks_by_U(self, u_mat_ids: IDS) -> None:
         """Index the peaks using the U matrix from previous results.
 
         Parameters
         ----------
-        U_index : T.List[int]
+        u_mat_ids : IDS
             0-index of the U matrix to use. It is from best to worst in previous result.
         """
-        self._peak_index = _index_peaks(self._previous_result, self._peaks, self._ubmatrix, U_index)
+        self._peak_index = _index_peaks_by_U(
+            self._previous_result, self._peaks, self._ubmatrix, u_mat_ids
+        )
+        return
+
+    def fine_tune(self, u_mat_ids: IDS, peak_ids: IDS, **kwargs) -> None:
+        """Fine tune the U matrix.
+
+        The fine tune is to minimize the sum of squares of the indexing errors of a set of peaks. The starting point of U is chosen from the previous indexing result from `guess_miller_index`. The fine tune is done in place so the peak_index attribute will be changed.
+
+        Parameters
+        ----------
+        u_mat_ids : IDS
+            Number or a list of numbers of U matrix to fine tune. If it is int, e. g. 3, tune the best 3 matrix. If it is a list of ints, e. g. [1, 4, 7], tune the No. 1, 4, 7 matrix.
+        peak_ids : IDS
+            Number of a list of numbers of peaks to minimize the indexing errors. If it is int, e. g. 6, minimize the best 6 peaks. If it is a list of ints, e. g. [1, 4, 8, 9], minimize No. 1, 4, 8, 9.
+        """
+        self._peak_index = _fine_tune(
+            self._ubmatrix, self._peak_index, u_mat_ids, self._peaks, peak_ids, **kwargs
+        )
         return
