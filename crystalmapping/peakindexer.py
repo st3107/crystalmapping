@@ -185,7 +185,7 @@ def _load_datasets(
 def _square_grid_subplots(n: int, size: float) -> Tuple[Figure, Sequence[Axes]]:
     ncol = int(np.round(np.sqrt(n)))
     nrow = int(np.ceil(n / ncol))
-    fig, axes = plt.subplots(nrow, ncol, figsize=(ncol * size, nrow * size))
+    fig, axes = plt.subplots(nrow, ncol, figsize=(ncol * size, nrow * size), squeeze=False)
     axes: Sequence[Axes] = axes.flatten()
     for ax in axes[n:]:
         ax.axis("off")
@@ -328,6 +328,37 @@ def _optmize_U_matrix(
     res = least_squares(_chi, x0, **kwargs)
     ub.set_U_by_euler_angle(res.x)
     peak_index["U"][u_mat_id] = ub.U
+    return
+
+
+def _hist_error(peak_index: xr.Dataset, peak_ids: List[str] = None, size: float = 4.0, bins: Any = "auto") -> None:
+    losses: pd.DataFrame = peak_index["losses"].to_dataframe()
+    losses *= 100
+    peak = (
+        peak_index["peak"].to_numpy()
+        if peak_ids is None
+        else np.unique(np.array(peak_ids))
+    )
+    n = len(peak)
+    fig, axes = _square_grid_subplots(n, size)
+    for i in range(n):
+        q = (
+            "peak == '{}'".format(peak[i])
+            if isinstance(peak[i], str)
+            else "peak == {}".format(peak[i])
+        )
+        data = losses.query(q)
+        sns.histplot(data, kde=True, ax=axes[i], bins=bins)
+        axes[i].legend(
+            [
+                r"$\mu$ = {:.2f}, $\sigma$ = {:.3f}".format(
+                    data["losses"].mean(), data["losses"].std()
+                )
+            ]
+        )
+        axes[i].set_title(r"Bragg Peak {}".format(peak[i]))
+        axes[i].set_xlabel(r"Error (%)")
+    fig.tight_layout()
     return
 
 
@@ -723,31 +754,7 @@ class PeakIndexer(object):
         size : float, optional
             Size in inches for the individual panel, by default 4.
         """
-        losses: pd.DataFrame = self._peak_index["losses"].to_dataframe()
-        peak = (
-            self._peak_index["peak"].to_numpy()
-            if peak_ids is None
-            else np.unique(np.array(peak_ids))
-        )
-        n = len(peak)
-        _, axes = _square_grid_subplots(n, size)
-        for i in range(n):
-            q = (
-                "peak == '{}'".format(peak[i])
-                if isinstance(peak[i], str)
-                else "peak == {}".format(peak[i])
-            )
-            data = losses.query(q)
-            sns.histplot(data, kde=True, ax=axes[i], bins=bins)
-            axes[i].legend(
-                [
-                    r"$\mu$ = {:.2f}, $\sigma$ = {:.3f}".format(
-                        data["losses"].mean(), data["losses"].std()
-                    )
-                ]
-            )
-            axes[i].set_title("Bragg Peak {}".format(peak[i]))
-        return
+        return _hist_error(self._peak_index, peak_ids, size, bins)
 
     def index_peaks_by_U(self, u_mat_ids: IDS) -> None:
         """Index the peaks using the U matrix from previous results.
