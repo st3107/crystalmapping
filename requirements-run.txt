@@ -15,3 +15,6 @@ databroker-pack
 fire
 mongodb
 pymongo
+# need for the jupyter
+jupyterlab
+ipywidgets
