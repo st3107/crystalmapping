@@ -17,6 +17,7 @@ from .baseobject import BaseObject, Config, Error, _auto_plot, _set_real_aspect
 COLORS = list(plt.rcParams["axes.prop_cycle"].by_key()["color"])
 T = typing
 BlueskyRun = typing.Any
+DataTuple = typing.Tuple[dict, xr.DataArray]
 
 
 def _draw_windows(df: pd.DataFrame, ax: plt.Axes) -> None:
@@ -139,6 +140,62 @@ def _set_vlim(
     kwargs.setdefault("vmin", max(low_lim, mean - std * alpha))
     kwargs.setdefault("vmax", min(high_lim, mean + std * alpha))
     return
+
+
+
+def _split_xy(run: BlueskyRun, image_name: str, phi_name: str, xy_names: T.List[str], decimal: int) -> T.List[DataTuple]:
+    data = _get_data(run)
+    dtups = _split_data(data, image_name, phi_name, xy_names, decimal)
+    return dtups
+
+
+def _get_data(run: BlueskyRun) -> xr.Dataset:
+    if hasattr(run, "xarray_dask"):
+        try:
+            return run.xarray_dask()
+        except Exception:
+            return run.xarray()
+    if hasattr(run, "primary") and hasattr(run.primary, "to_dask"):
+        try:
+            return run.primary.to_dask()
+        except Exception:
+            return run.primary.read()
+    raise MapperError("{} is not a bluesky run".format(run))
+
+
+def _split_data(data: xr.Dataset, image_name: str, phi_name: str, xy_names: T.List[str], decimal: int) -> T.List[DataTuple]:
+    for name in xy_names:
+        data[name] = np.round(data[name], decimal)
+    grouped = data.set_index(time=xy_names).groupby("time")
+    arrs = [d.sortby(phi_name) for _, d in grouped]
+    dtups = [(_make_metadata(a, phi_name), a[image_name]) for a in arrs]
+    return dtups
+
+
+def _make_metadata(data: xr.Dataset, phi_name: str) -> dict:
+    return {
+        "shape": [len(data[phi_name])],
+        "extents": [(data[phi_name].data.min(), data[phi_name].data.max())],
+        "snaking": (False,)
+    }
+
+
+def _load_data_v1(run: BlueskyRun, image_data_key: str) -> DataTuple:
+    metadata = dict(run.start)
+    try:
+        frames_arr = run.xarray_dask()[image_data_key]
+    except Exception:
+        frames_arr = run.xarray()[image_data_key]
+    return metadata, frames_arr
+
+
+def _load_data_v2(run: BlueskyRun, image_data_key: str) -> DataTuple:
+    metadata = dict(run.metadata["start"])
+    try:
+        frames_arr = run.primary.to_dask()[image_data_key]
+    except Exception:
+        frames_arr = run.primary.read()[image_data_key]
+    return metadata, frames_arr
 
 
 @dataclass
@@ -415,11 +472,7 @@ class CrystalMapper(BaseObject):
         run : BlueskyRun
             A version 1 BlueskyRun (Header).
         """
-        self._metadata = dict(run.start)
-        try:
-            self._frames_arr = run.xarray_dask()[self._config.image_data_key]
-        except Exception:
-            self._frames_arr = run.xarray()[self._config.image_data_key]
+        self._metadata, self._frames_arr = _load_data_v1(run, self._config.image_data_key)
         return
 
     def load_bluesky_v2(self, run: BlueskyRun) -> None:
@@ -430,12 +483,40 @@ class CrystalMapper(BaseObject):
         run : BlueskyRun
             A version 2 BlueskyRun.
         """
-        self._metadata = dict(run.metadata["start"])
-        try:
-            self._frames_arr = run.primary.to_dask()[self._config.image_data_key]
-        except Exception:
-            self._frames_arr = run.primary.read()[self._config.image_data_key]
+        self._metadata, self._frames_arr = _load_data_v2(run, self._config.image_data_key)
         return
+
+    def load_data_tuple(self, data_tuple: DataTuple) -> None:
+        """Load a tuple of (metadata, data) from splitted data.
+
+        Parameters
+        ----------
+        data_tuple : DataTuple
+            Tuple of (metadata, data).
+        """
+        self._metadata, self._frames_arr = data_tuple
+        return
+    
+    def split_xy(self, run: BlueskyRun, phi_name: str, xy_names: T.List[str], decimal: int) -> T.List[DataTuple]:
+        """Split the data by rounded (x, y) positions.
+
+        Parameters
+        ----------
+        run : BlueskyRun
+            Bluesky run object.
+        phi_name : str
+            Name of the rocking angle.
+        xy_names : T.List[str]
+            List of names of the x, y motors.
+        decimal : int
+            Decimal of x, y values to round to when grouping.
+
+        Returns
+        -------
+        T.List[DataTuple]
+            List of (metadata, data) tuple. Load by `load_data_tuple`.
+        """
+        return _split_xy(run, self._config.image_data_key, phi_name, xy_names, decimal)
 
     def visualize(
         self, peaks: typing.Optional[typing.List[int]] = None, **kwargs
