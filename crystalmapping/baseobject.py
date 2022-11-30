@@ -1,6 +1,7 @@
 import typing
 from dataclasses import dataclass
 
+from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 import numpy as np
 import xarray as xr
@@ -150,7 +151,7 @@ def _auto_plot_dataset(
     title: typing.Tuple[str, str] = ("grain", "peak {}"),
     invert_y: bool = True,
     **kwargs
-) -> None:
+) -> Figure:
     facet = _auto_plot(ds[key], title=None, invert_y=invert_y, **kwargs)
     if title is not None:
         v_name, f_title = title
@@ -159,12 +160,12 @@ def _auto_plot_dataset(
         for ax, val in zip(axes, vals):
             ax.set_title(f_title.format(val))
     facet.fig.tight_layout()
-    return
+    return facet.fig
 
 
 def _show_crystal_maps(
     data: xr.Dataset, peaks: typing.Optional[typing.List[int]], **kwargs
-) -> None:
+) -> Figure:
     if peaks is not None:
         data = data.sel({"grain": peaks})
     return _auto_plot_dataset(data, **kwargs)

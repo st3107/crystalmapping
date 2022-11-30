@@ -331,7 +331,7 @@ def _optmize_U_matrix(
     return
 
 
-def _hist_error(peak_index: xr.Dataset, peak_ids: List[str] = None, size: float = 4.0, bins: Any = "auto") -> None:
+def _hist_error(peak_index: xr.Dataset, peak_ids: List[str] = None, size: float = 4.0, bins: Any = "auto") -> Figure:
     losses: pd.DataFrame = peak_index["losses"].to_dataframe()
     losses *= 100
     peak = (
@@ -359,7 +359,7 @@ def _hist_error(peak_index: xr.Dataset, peak_ids: List[str] = None, size: float 
         axes[i].set_title(r"Bragg Peak {}".format(peak[i]))
         axes[i].set_xlabel(r"Error (%)")
     fig.tight_layout()
-    return
+    return fig
 
 
 @dataclass
@@ -726,7 +726,7 @@ class PeakIndexer(object):
         df = pd.DataFrame(dct)
         return df
 
-    def visualize(self, dataset_id: int, peak_ids: List[str] = None, **kwargs) -> None:
+    def visualize(self, dataset_id: int, peak_ids: List[str] = None, **kwargs) -> Figure:
         """Visualize the crystal maps.
 
         Parameters
@@ -737,14 +737,12 @@ class PeakIndexer(object):
             A list of peak id in that dataset, by default None
         """
         if peak_ids is None:
-            _auto_plot_dataset(self._datasets[dataset_id], **kwargs)
-        else:
-            _show_crystal_maps(self._datasets[dataset_id], peak_ids, **kwargs)
-        return
+            return _auto_plot_dataset(self._datasets[dataset_id], **kwargs)
+        return _show_crystal_maps(self._datasets[dataset_id], peak_ids, **kwargs)
 
     def hist_error(
         self, peak_ids: List[str] = None, size: float = 4.0, bins: Any = "auto"
-    ) -> None:
+    ) -> Figure:
         """Plot the histogram of erros.
 
         Parameters
