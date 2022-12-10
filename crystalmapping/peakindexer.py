@@ -19,6 +19,7 @@ from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
 from pyFAI.calibrant import Cell
 from scipy.optimize import least_squares
 from tqdm.auto import tqdm
+import matplotlib.ticker as mticker
 
 from crystalmapping.baseobject import _auto_plot_dataset, _show_crystal_maps
 from crystalmapping.preprocessor import EulerAngle, Preprocessor
@@ -70,8 +71,8 @@ def _to_slice(_ids: IDS) -> IDS:
 
 
 def _choose_best_u_mats(peak_index: xr.Dataset, u_mat_ids: IDS) -> xr.Dataset:
-    u_mat_id = _to_slice(u_mat_ids)
-    chosen = peak_index.sortby("loss")["candidate"][u_mat_id]
+    u_mat_ids = _to_slice(u_mat_ids)
+    chosen = peak_index.sortby("loss")["candidate"][u_mat_ids]
     return chosen
 
 
@@ -359,6 +360,62 @@ def _hist_error(peak_index: xr.Dataset, peak_ids: List[str] = None, size: float 
         axes[i].set_title(r"Bragg Peak {}".format(peak[i]))
         axes[i].set_xlabel(r"Error (%)")
     fig.tight_layout()
+    return fig
+
+
+def _get_pair_angles(peak_index: xr.Dataset, u_mat_ids: IDS, peak_ids: IDS, ub: UBMatrix) -> T.List[xr.DataArray]:
+    chosen_u_mat_ids = _choose_best_u_mats(peak_index, u_mat_ids)
+    pair_angles = []
+    for uid in chosen_u_mat_ids:
+        pids = _choose_best_peaks(peak_index, uid, peak_ids)
+        chosen_peak_index = peak_index.sel(dict(candidate=uid, peak=pids))
+        pair_angle = _get_pair_angle(chosen_peak_index, ub)
+        pair_angles.append(pair_angle)
+    return pair_angles
+
+
+def _get_pair_angle(chosen_peak_index: xr.Dataset, ub: UBMatrix) -> xr.Dataset:
+    hkls: np.ndarray = chosen_peak_index["hkls"].data
+    rhkls: np.ndarray = np.around(hkls, 0)
+    v_grain = (ub.B @ hkls.T).T
+    rv_grain = (ub.B @ rhkls.T).T
+    n: int = hkls.shape[0]
+    mat = np.zeros((n, n))
+    for i in range(n - 1):
+        for j in range(i + 1, n):
+            a = _get_anlge(v_grain[i], v_grain[j])
+            ar = _get_anlge(rv_grain[i], rv_grain[j])
+            mat[j][i] = mat[i][j] = a - ar
+    x = chosen_peak_index["peak"].data
+    idx = np.arange(0, n, 1, dtype=np.uint64)
+    data =  xr.Dataset(
+        {"peak": (["peak"], x),
+         "angle": (["dim_0", "dim_1"], mat)},
+        {"dim_0": idx,
+         "dim_1": idx}
+    )
+    data["dim_0"].attrs["standard_name"] = "peak"
+    data["dim_1"].attrs["standard_name"] = "peak"
+    data["angle"].attrs["standard_name"] = "$\Delta\Theta$"
+    data["angle"].attrs["units"] = "deg"
+    return data
+
+
+def _matshow_pair_angles(pair_angles: T.List[xr.Dataset]) -> T.List[Figure]:
+    return[_matshow_pair_angle(a) for a in pair_angles]
+
+
+def _matshow_pair_angle(pair_angle: xr.Dataset) -> Figure:
+    fig, ax = plt.subplots()
+    x: list = [""] + pair_angle["peak"].data.tolist() + [""]
+    pair_angle["angle"].plot.imshow(ax=ax, infer_intervals=False, origin="upper")
+    ax.set_aspect("equal")
+    xticks_loc = ax.get_xticks().tolist()
+    ax.xaxis.set_major_locator(mticker.FixedLocator(xticks_loc))
+    yticks_loc = ax.get_yticks().tolist()
+    ax.yaxis.set_major_locator(mticker.FixedLocator(yticks_loc))
+    ax.set_xticklabels(x)
+    ax.set_yticklabels(x)
     return fig
 
 
@@ -783,3 +840,51 @@ class PeakIndexer(object):
             self._ubmatrix, self._peak_index, u_mat_ids, self._peaks, peak_ids, **kwargs
         )
         return
+
+    def get_pair_angles(self, u_mat_ids: IDS, peak_ids: IDS) -> T.List[xr.DataArray]:
+        """Obtain the angle difference matrix.
+
+        The angle difference matrix is a matrix $\Theta$, where each element (i, j) is the the angle between peak i and peak j in grain frame by that in sample frame.
+
+        $$
+        \Theta(i, j) = \left< i, j \right>_{grain} - \left< i, j \right>_{sample}
+        $$
+        
+        One U matrix will give us an angle difference matrix. The dimension of the matrix is equal to number of peaks chosen.
+
+        Parameters
+        ----------
+        u_mat_ids : IDS
+            Number or index of the chosen U matrix.
+        peak_ids : IDS
+            Number or index of the chosen peaks.
+
+        Returns
+        -------
+        T.List[xr.DataArray]
+            List of the angle difference matrix.
+        """
+        return _get_pair_angles(self._peak_index, u_mat_ids, peak_ids, self._ubmatrix)
+    
+    def matshow_pair_angles(self, pair_angles: T.List[xr.DataArray]) -> T.List[Figure]:
+        """Visualize a list of angle difference matrix.
+        
+        The angle difference matrix is a matrix $\Theta$, where each element (i, j) is the the angle between peak i and peak j in grain frame by that in sample frame.
+
+        $$
+        \Theta(i, j) = \left< i, j \right>_{grain} - \left< i, j \right>_{sample}
+        $$
+        
+        One U matrix will give us an angle difference matrix. The dimension of the matrix is equal to number of peaks chosen.
+
+        Parameters
+        ----------
+        pair_angles : T.List[xr.DataArray]
+            List of angle difference matrix
+
+        Returns
+        -------
+        T.List[Figure]
+            List of figures.
+        """
+        return _matshow_pair_angles(pair_angles)
