@@ -8,8 +8,10 @@ from crystalmapping.peakindexer import IndexerConfig, PeakIndexer
 
 
 def test_indexing_merged_data():
-    GRPOUP1 = ["1_1", "1_2"]
+    GRPOUP1 = ["1_1", "2_1"]
     config = IndexerConfig()
+    config.index_tth_tolerance = 1.
+    config.index_agl_tolerance = 10.
     pi = PeakIndexer(config)
     pi.load(
         [str(CRYSTAL_MAPS_FILE_0_DEG), str(CRYSTAL_MAPS_FILE_90_DEG)],
@@ -20,7 +22,7 @@ def test_indexing_merged_data():
     pi.guess_miller_index(GRPOUP1)
     pi.show(1)
     pi.visualize(0, ["1_1"])
-    pi.hist_error(["1_1", "1_2"])
+    pi.hist_error(["1_1", "2_1"])
     pi.fine_tune(1, 2)
     pi._previous_result = pi._peak_index
     pi.index_peaks_by_U(1)

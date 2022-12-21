@@ -19,11 +19,10 @@ from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
 from pyFAI.calibrant import Cell
 from scipy.optimize import least_squares
 from tqdm.auto import tqdm
-import matplotlib.ticker as mticker
 
 from crystalmapping.baseobject import _auto_plot_dataset, _show_crystal_maps
 from crystalmapping.preprocessor import EulerAngle, Preprocessor
-from crystalmapping.ubmatrix import UBMatrix
+from crystalmapping.ubmatrix import UBMatrix, _get_u_from_geo, _get_rot_matrix, _get_U_from_cart_and_inst
 
 HKL = np.ndarray
 Matrix = np.ndarray
@@ -156,7 +155,7 @@ def _normalize(v: np.ndarray) -> np.ndarray:
     return v / nv
 
 
-def _get_anlge(v1: np.ndarray, v2: np.ndarray) -> float:
+def _get_angle_in_deg(v1: np.ndarray, v2: np.ndarray) -> float:
     v1_u = _normalize(v1)
     v2_u = _normalize(v2)
     return np.rad2deg(np.arccos(np.clip(np.dot(v1_u, v2_u), -1.0, 1.0)))
@@ -237,7 +236,7 @@ def _get_hkl(ub: UBMatrix, row: pd.Series) -> np.ndarray:
     v_lab = ub.xy_to_lab(row[["x", "y"]].to_numpy())
     v_sample = ub.lab_to_sample_1(v_lab)
     v_grain = ub.sample_to_grain(v_sample)
-    v_lat = ub.grain_to_lat(v_grain)
+    v_lat = ub.grain_to_lat_1(v_grain)
     return v_lat
 
 
@@ -383,8 +382,8 @@ def _get_pair_angle(chosen_peak_index: xr.Dataset, ub: UBMatrix) -> xr.Dataset:
     mat = np.zeros((n, n))
     for i in range(n - 1):
         for j in range(i + 1, n):
-            a = _get_anlge(v_grain[i], v_grain[j])
-            ar = _get_anlge(rv_grain[i], rv_grain[j])
+            a = _get_angle_in_deg(v_grain[i], v_grain[j])
+            ar = _get_angle_in_deg(rv_grain[i], rv_grain[j])
             mat[j][i] = mat[i][j] = a - ar
     x = chosen_peak_index["peak"].data
     idx = np.arange(0, n, 1, dtype=np.uint64)
@@ -407,16 +406,93 @@ def _matshow_pair_angles(pair_angles: T.List[xr.Dataset]) -> T.List[Figure]:
 
 def _matshow_pair_angle(pair_angle: xr.Dataset) -> Figure:
     fig, ax = plt.subplots()
-    x: list = [""] + pair_angle["peak"].data.tolist() + [""]
+    x: list = pair_angle["peak"].data.tolist()
+    n = len(x)
+    loc = list(range(n))
     pair_angle["angle"].plot.imshow(ax=ax, infer_intervals=False, origin="upper")
     ax.set_aspect("equal")
-    xticks_loc = ax.get_xticks().tolist()
-    ax.xaxis.set_major_locator(mticker.FixedLocator(xticks_loc))
-    yticks_loc = ax.get_yticks().tolist()
-    ax.yaxis.set_major_locator(mticker.FixedLocator(yticks_loc))
+    ax.set_xticks(loc)
     ax.set_xticklabels(x)
+    ax.set_yticks(loc)
     ax.set_yticklabels(x)
     return fig
+
+
+def _get_tqdm(Vs: List):
+    n = len(Vs)
+    count = 0
+    for i in range(n):
+        for j in range(n):
+            for _ in range(len(Vs[i].T)):
+                for _ in range(len(Vs[j].T)):
+                    count += 1
+    return iter(tqdm(range(count)))
+
+
+def _guess_orientation(ubmatrix: UBMatrix, geo: AzimuthalIntegrator, chosen_peaks: pd.DataFrame, chosen_hkls: List[np.ndarray], error_in_deg: float) -> Tuple[List[Matrix], List[AngleComparsion], List, List]:
+    n = chosen_peaks.shape[0]
+    B = ubmatrix.B
+    V5 = chosen_hkls
+    index = chosen_peaks.index
+    del chosen_hkls
+    # get V2, list of vectors, the vectors are all vertical
+    V1 = [_get_u_from_geo(row.x, row.y, geo).T for row in chosen_peaks.itertuples()]
+    Rs = [_get_rot_matrix(row.alpha, row.beta, row.gamma) for row in chosen_peaks.itertuples()]
+    V2 = [Rs[i].T @ V1[i] for i in range(n)]
+    # get V4s, list of matrix of vertical vectors
+    V4s = [B @ V5[i].T for i in range(n)]
+    V3s = [Rs[i].T @ V4s[i] for i in range(n)]
+    # get U matrix
+    Us = []
+    acs = []
+    peaks1 = []
+    peaks2 = []
+    pbar = _get_tqdm(V3s)
+    for i in range(n):
+        for j in range(n):
+            if i == j:
+                continue
+            u1 = V2[i].T
+            u2 = V2[j].T
+            a_sam = _get_angle_in_deg(u1, u2)
+            V3i = V3s[i].T
+            V3j = V3s[j].T
+            for ii in range(len(V3i)):
+                for jj in range(len(V3j)):
+                    next(pbar)
+                    h1 = V3i[ii]
+                    h2 = V3j[jj]
+                    a_gra = _get_angle_in_deg(h1, h2)
+                    a_dif = abs(a_sam - a_gra)
+                    if a_dif > error_in_deg:
+                        continue
+                    ac = AngleComparsion(h1, h2, a_sam, a_gra, a_dif)
+                    U = _get_U_from_cart_and_inst(h1, h2, u1, u2)
+                    Us.append(U)
+                    acs.append(ac)
+                    peaks1.append(index[i])
+                    peaks2.append(index[j])
+    if len(Us) == 0:
+        raise IndexerError("Cannot find any valid vector pairs. Please increase the angle tolerance.")
+    return Us, acs, peaks1, peaks2
+
+
+def _guess_hkls(Us: List[Matrix], acs: List[AngleComparsion], peaks1: List, peaks2: List, ubmatrix: UBMatrix, geo: AzimuthalIntegrator, peaks: pd.DataFrame) -> List[IndexResult]:
+    invB = ubmatrix.invB
+    V1 = [_get_u_from_geo(row.x, row.y, geo).T for row in peaks.itertuples()]
+    Rs = [_get_rot_matrix(row.alpha, row.beta, row.gamma) for row in peaks.itertuples()]
+    irs = []
+    for U, ac, peak1, peak2 in zip(Us, acs, peaks1, peaks2):
+        hkls = []
+        for v1, R in zip(V1, Rs):
+            v5 = invB @ R @ U.T @ R.T @ v1
+            hkls.append(v5.T)
+        hkls = np.array(hkls)
+        losses = _get_losses(ubmatrix, hkls)
+        loss = np.min(losses)
+        ir = IndexResult(peak1, peak2, U, hkls, losses, loss, ac)
+        irs.append(ir)
+    return irs
 
 
 @dataclass
@@ -571,7 +647,7 @@ class PeakIndexer(object):
         )
         return
 
-    def guess_miller_index(self, peak_ids: T.List[str]) -> None:
+    def old_guess_miller_index(self, peak_ids: T.List[str]) -> None:
         """Guess the index of the peaks in one grain.
 
         Parameters
@@ -637,7 +713,7 @@ class PeakIndexer(object):
             right = np.searchsorted(self._pred.tth, tt + dtt, side="right")
             chosen = self._pred.hkls[left:right]
             if not chosen:
-                raise PeakIndexer(
+                raise IndexError(
                     "No candidate hkls found. Please increase the two theta tolerance."
                 )
             hkls = np.concatenate(chosen)
@@ -684,10 +760,10 @@ class PeakIndexer(object):
         return
 
     def _get_angle_in_sample_frame(self) -> float:
-        return _get_anlge(self._ubmatrix.u1, self._ubmatrix.u2)
+        return _get_angle_in_deg(self._ubmatrix.u1, self._ubmatrix.u2)
 
     def _get_anlge_in_grain_frame(self) -> float:
-        return _get_anlge(self._ubmatrix.h1, self._ubmatrix.h2)
+        return _get_angle_in_deg(self._ubmatrix.h1, self._ubmatrix.h2)
 
     def _get_U(self, h1: HKL, h2: HKL) -> Matrix:
         self._ubmatrix.h1 = h1
@@ -708,7 +784,7 @@ class PeakIndexer(object):
         v_lab = self._ubmatrix.xy_to_lab(xy)
         v_sample = self._ubmatrix.lab_to_sample_1(v_lab)
         v_grain = self._ubmatrix.sample_to_grain(v_sample)
-        v_lat = self._ubmatrix.grain_to_lat(v_grain)
+        v_lat = self._ubmatrix.grain_to_lat_1(v_grain)
         return v_lat
 
     def show(self, u_mat_ids: IDS = 1, peak_ids: IDS = 10) -> None:
@@ -888,3 +964,30 @@ class PeakIndexer(object):
             List of figures.
         """
         return _matshow_pair_angles(pair_angles)
+
+
+    def guess_miller_index(self, peak_ids: T.List[str]) -> None:
+        """Guess the index of the peaks in one grain.
+
+        Parameters
+        ----------
+        peaks : typing.List[str]
+            The index of the peaks in the table.
+        """
+        peak_ids: np.ndarray = np.unique(np.array(peak_ids))
+        for p in peak_ids:
+            if p not in self._peaks.index:
+                raise IndexerError(f"'{p}' is not a valid peak ID.")
+        index_all = self.config.index_all_peaks
+        error_in_deg = self.config.index_agl_tolerance
+        chosen_peaks = self._peaks.loc[peak_ids]
+        chosen_hkls = self._get_candidates(peak_ids)
+        all_peaks_ids = self._peaks.index if index_all else peak_ids
+        all_peaks = self._peaks.loc[all_peaks_ids]
+        Us, acs, peaks1, peaks2 = _guess_orientation(self._ubmatrix, self._ai, chosen_peaks, chosen_hkls, error_in_deg)
+        irs = _guess_hkls(Us, acs, peaks1, peaks2, self._ubmatrix, self._ai, all_peaks)
+        self._peak_index = _make_peak_index(irs, all_peaks_ids)
+        best_n = self.config.index_best_n
+        if best_n:
+            self._peak_index = self._peak_index.sortby("loss").isel({"candidate": slice(None, best_n)})
+        return

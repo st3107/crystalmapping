@@ -22,7 +22,7 @@ def _gram_schmidt(vs: np.ndarray) -> np.ndarray:
     # iterate column vectors
     for v in vs.transpose():
         n = len(us)
-        u = v
+        u = v.copy()
         for i in range(n):
             u -= _project(us[i], v)
         norm_u = np.linalg.norm(u)
@@ -230,12 +230,12 @@ class UBMatrix:
 
     def set_h1_from_hkl(self, hkl: np.ndarray) -> None:
         """Set self.h1 by hkl using B matrix."""
-        self.h1 = self.lat_to_grain(hkl)
+        self.h1 = self.lat_to_grain_1(hkl)
         return
 
     def set_h2_from_hkl(self, hkl: np.ndarray) -> None:
         """Set self.h2 by hkl using B matrix."""
-        self.h2 = self.lat_to_grain(hkl)
+        self.h2 = self.lat_to_grain_2(hkl)
         return
 
     def set_R1(self, alpha: float, beta: float, gamma: float) -> None:
@@ -297,11 +297,33 @@ class UBMatrix:
             raise UBMatrixError("`self.B` is None.")
         return np.matmul(self.B, v_lat.T).T
 
+    def lat_to_grain_1(self, v_lat: np.ndarray) -> np.ndarray:
+        """Transform a vector from reciprocal space (hkl) frame to crystal cartesian frame."""
+        if self.R1 is None:
+            raise UBMatrixError("R1 is None.")
+        v_grain = self.lat_to_grain(v_lat)
+        return np.matmul(self.R1, v_grain.T).T
+    
+    def lat_to_grain_2(self, v_lat: np.ndarray) -> np.ndarray:
+        """Transform a vector from reciprocal space (hkl) frame to crystal cartesian frame."""
+        if self.R2 is None:
+            raise UBMatrixError("R2 is None.")
+        v_grain = self.lat_to_grain(v_lat)
+        return np.matmul(self.R2, v_grain.T).T
+    
     def grain_to_lat(self, v_grain: np.ndarray) -> np.ndarray:
         """Transform a vector from the cartesian crystal frame to reciprocal space (hkl)."""
         if self.invB is None:
             raise UBMatrixError("`self.B` is None.")
         return np.matmul(self.invB, v_grain.T).T
+
+    def grain_to_lat_1(self, v_grain: np.ndarray) -> np.ndarray:
+        """Transform a vector from the cartesian crystal frame to reciprocal space (hkl)."""
+        return np.matmul(self.R1.T, v_grain.T).T
+    
+    def grain_to_lat_2(self, v_grain: np.ndarray) -> np.ndarray:
+        """Transform a vector from the cartesian crystal frame to reciprocal space (hkl)."""
+        return np.matmul(self.R2.T, v_grain.T).T
 
     def grain_to_sample(self, v_grain: np.ndarray) -> np.ndarray:
         """Transform a vector from cartesian crystal frame to lab frame."""
