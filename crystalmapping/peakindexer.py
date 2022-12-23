@@ -432,7 +432,7 @@ def _get_tqdm(Vs: List):
 def _guess_orientation(ubmatrix: UBMatrix, geo: AzimuthalIntegrator, chosen_peaks: pd.DataFrame, chosen_hkls: List[np.ndarray], error_in_deg: float) -> Tuple[List[Matrix], List[AngleComparsion], List, List]:
     n = chosen_peaks.shape[0]
     B = ubmatrix.B
-    V5 = chosen_hkls
+    V4 = chosen_hkls
     index = chosen_peaks.index
     del chosen_hkls
     # get V2, list of vectors, the vectors are all vertical
@@ -440,14 +440,13 @@ def _guess_orientation(ubmatrix: UBMatrix, geo: AzimuthalIntegrator, chosen_peak
     Rs = [_get_rot_matrix(row.alpha, row.beta, row.gamma) for row in chosen_peaks.itertuples()]
     V2 = [Rs[i].T @ V1[i] for i in range(n)]
     # get V4s, list of matrix of vertical vectors
-    V4s = [B @ V5[i].T for i in range(n)]
-    V3s = [Rs[i].T @ V4s[i] for i in range(n)]
+    V3 = [B @ V4[i].T for i in range(n)]
     # get U matrix
     Us = []
     acs = []
     peaks1 = []
     peaks2 = []
-    pbar = _get_tqdm(V3s)
+    pbar = _get_tqdm(V3)
     for i in range(n):
         for j in range(n):
             if i == j:
@@ -455,8 +454,8 @@ def _guess_orientation(ubmatrix: UBMatrix, geo: AzimuthalIntegrator, chosen_peak
             u1 = V2[i].T
             u2 = V2[j].T
             a_sam = _get_angle_in_deg(u1, u2)
-            V3i = V3s[i].T
-            V3j = V3s[j].T
+            V3i = V3[i].T
+            V3j = V3[j].T
             for ii in range(len(V3i)):
                 for jj in range(len(V3j)):
                     next(pbar)
@@ -485,8 +484,8 @@ def _guess_hkls(Us: List[Matrix], acs: List[AngleComparsion], peaks1: List, peak
     for U, ac, peak1, peak2 in zip(Us, acs, peaks1, peaks2):
         hkls = []
         for v1, R in zip(V1, Rs):
-            v5 = invB @ R @ U.T @ R.T @ v1
-            hkls.append(v5.T)
+            v4 = invB @ U.T @ R.T @ v1
+            hkls.append(v4.T)
         hkls = np.array(hkls)
         losses = _get_losses(ubmatrix, hkls)
         loss = np.min(losses)
